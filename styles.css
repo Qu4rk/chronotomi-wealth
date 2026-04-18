@@ -108,17 +108,13 @@ img.brand-mark {
   height: 80px;
   width: auto;
   object-fit: contain;
-  /* Since the background is fully transparent, brightness(0) turns the logo pure black, and invert(1) turns it pure white! */
   filter: grayscale(100%) brightness(0) invert(1);
   transform-origin: center center;
   transform: rotate(0deg);
-  /* 120 seconds of linear ticks backwards when unhovered */
   transition: transform 120s steps(600);
 }
 
 .brand:hover img.brand-mark {
-  /* Simulating infinite ticking for 2 minutes (3600deg).
-     This forces the transition to tick 5 times a second forward. */
   transform: rotate(3600deg);
 }
 
@@ -318,7 +314,6 @@ img.brand-mark {
 .hero-overlay {
   position: absolute;
   inset: 0;
-  /* Dark top (for header contrast), clear middle (for video), dark bottom (for scroll transition) */
   background: linear-gradient(180deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.3) 25%, rgba(0,0,0,0.9) 100%);
   z-index: 1;
 }
@@ -384,7 +379,7 @@ h1 {
   background-color: rgba(255,255,255,0.3);
 }
 
-/* EDITORIAL SPLIT TENSION */
+/* EDITORIAL SPLIT */
 .editorial-split {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -498,19 +493,13 @@ h1 {
   border-bottom-color: var(--text);
 }
 
-.inventory-grid {
+.inventory-grid, .services-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
   gap: 3rem;
 }
 
-.services-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 3rem;
-}
-
-.service-card {
+.service-card, .inventory-card {
   display: flex;
   flex-direction: column;
   background: var(--bg-soft);
@@ -521,23 +510,11 @@ h1 {
   overflow: hidden;
 }
 
-.service-card:hover {
+.service-card:hover, .inventory-card:hover {
   background: #141414;
 }
 
-.service-card .card-watermark {
-  position: absolute;
-  top: 68%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  height: 280px;
-  opacity: 0.08;
-  pointer-events: none;
-  filter: grayscale(100%) brightness(0) invert(1);
-  z-index: 0;
-}
-
-.service-image {
+.service-image, .inventory-image {
   width: 100%;
   aspect-ratio: 16 / 9;
   overflow: hidden;
@@ -545,42 +522,11 @@ h1 {
   margin-bottom: 2.5rem;
 }
 
-.service-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.service-card > div {
-  position: relative;
-  z-index: 1;
-}
-
-
-.inventory-card {
-  display: flex;
-  flex-direction: column;
-  background: var(--bg-soft);
-  padding: 0;
-  text-align: center;
-  border: 1px solid rgba(255,255,255,0.05);
-  transition: background 0.4s ease;
-  overflow: hidden;
-}
-
-.inventory-card:hover {
-  background: #141414;
-}
-
 .inventory-image {
-  width: 100%;
   aspect-ratio: 1 / 1.1;
-  overflow: hidden;
-  background: #000;
-  margin-bottom: 2rem;
 }
 
-.inventory-image img {
+.service-image img, .inventory-image img {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -623,18 +569,21 @@ h1 {
   border-right: 1px solid var(--line);
 }
 
-.btn-primary {
+.btn-primary, .btn-outline {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   padding: 1rem 2rem;
-  background: var(--text);
-  color: var(--bg);
   font-size: 0.75rem;
   font-weight: 500;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  transition: transform var(--transition-med);
+  transition: transform var(--transition-med), border-color 0.3s;
+}
+
+.btn-primary {
+  background: var(--text);
+  color: var(--bg);
 }
 
 .btn-primary:hover {
@@ -642,18 +591,9 @@ h1 {
 }
 
 .btn-outline {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1rem 2rem;
   background: transparent;
   color: var(--text);
   border: 1px solid var(--line);
-  font-size: 0.75rem;
-  font-weight: 500;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  transition: border-color 0.3s;
 }
 
 .btn-outline:hover {
@@ -698,7 +638,7 @@ h1 {
   text-align: left;
 }
 
-.selected-watch-panel {
+.selected-watch-panel, .direct-email-form {
   padding: 3rem;
   border: 1px solid var(--line);
   display: flex;
@@ -706,12 +646,8 @@ h1 {
 }
 
 .direct-email-form {
-  display: flex;
-  flex-direction: column;
   gap: 1.5rem;
   background: var(--bg);
-  padding: 3rem;
-  border: 1px solid var(--line);
 }
 
 .form-group {
@@ -741,20 +677,6 @@ h1 {
   color: #444;
 }
 
-.selected-watch-panel h3 {
-  font-size: 2rem;
-  margin: 1rem 0;
-}
-
-.microcopy {
-  display: block;
-  margin-top: 2rem;
-  font-size: 0.7rem;
-  color: #666;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-}
-
 /* FOOTER */
 .site-footer {
   padding: 4rem 3rem;
@@ -766,20 +688,24 @@ h1 {
   text-transform: uppercase;
   letter-spacing: 0.2em;
   color: var(--muted);
+  position: relative;
+  overflow: hidden;
 }
 
-.site-footer a {
-  color: var(--text);
+.footer-watermark {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  height: 120px;
+  width: auto;
+  opacity: 0.10;
+  pointer-events: none;
+  filter: grayscale(100%) brightness(0) invert(1);
+  z-index: 0;
 }
 
-/* ANIMATIONS */
-@keyframes heroZoom {
-  to {
-    transform: scale(1.1);
-  }
-}
-
-/* Base block reveal for images / containers */
+/* REVEAL ANIMATIONS */
 .reveal {
   opacity: 0;
   transform: translateY(40px);
@@ -791,11 +717,9 @@ h1 {
   transform: translateY(0);
 }
 
-/* Staggered Line Mask Animations (Artisans de Geneve style) */
 .text-mask {
   overflow: hidden;
   display: block;
-  /* Prevent descender clipping (g, y, p, q) while maintaining the clipping mask effect */
   padding-bottom: 0.3em;
   margin-bottom: -0.3em;
 }
@@ -812,17 +736,14 @@ span.text-mask {
   will-change: transform, opacity;
 }
 
-.reveal.is-visible .text-mask-inner,
-.reveal.is-visible.text-mask-inner {
+.reveal.is-visible .text-mask-inner {
   transform: translateY(0);
   opacity: 1;
 }
 
-/* Stagger utility classes */
 .delay-1 { transition-delay: 0.1s; }
 .delay-2 { transition-delay: 0.2s; }
 .delay-3 { transition-delay: 0.3s; }
-.delay-4 { transition-delay: 0.4s; }
 
 /* RESPONSIVE */
 @media (max-width: 900px) {
@@ -839,19 +760,14 @@ span.text-mask {
     height: 50px;
   }
 
-  .brand-copy strong {
-    font-size: 0.8rem;
-  }
-
-  .brand-copy small {
-    font-size: 0.55rem;
-  }
+  .brand-copy strong { font-size: 0.8rem; }
+  .brand-copy small { font-size: 0.55rem; }
 
   .nav-toggle {
     display: block;
   }
 
-.nav-links {
+  .nav-links {
     position: fixed;
     top: 0;
     left: 0;
@@ -886,16 +802,36 @@ span.text-mask {
     margin-top: 2rem;
   }
 
-  .editorial-image {
-    height: 40vh; /* Reduced from 50vh */
+  .editorial-split {
+    grid-template-columns: 1fr;
+    min-height: auto;
   }
 
-  .hero h1 {
-    margin-bottom: 1.5rem;
+  .editorial-image {
+    height: 40vh;
+  }
+
+  .editorial-text {
+    padding: 4rem 1.5rem;
+  }
+
+  .inventory-grid, .services-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 2rem;
   }
 
   .hero .btn-primary {
-    margin-top: 2rem; /* Added space above button */
+    margin-top: 2rem;
+  }
+
+  .inquire-layout {
+    grid-template-columns: 1fr;
+    margin-top: 3rem;
+    gap: 2rem;
+  }
+
+  .selected-watch-panel, .direct-email-form {
+    padding: 2rem 1.5rem;
   }
 
   .site-footer {
@@ -906,26 +842,12 @@ span.text-mask {
   }
 
   .footer-watermark {
-    height: 80px; /* Scaled down to prevent clipping */
+    height: 80px;
     top: 20%;
+    transform: translate(-50%, 0);
   }
 }
 
 @media (max-height: 750px) {
-  .scroll-indicator {
-    display: none;
-  }
-}
-
-.footer-watermark {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  height: 120px;
-  width: auto;
-  opacity: 0.10;
-  pointer-events: none;
-  filter: grayscale(100%) brightness(0) invert(1);
-  z-index: 0;
+  .scroll-indicator { display: none; }
 }
