@@ -546,12 +546,39 @@ h1 {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 120px;
+  width: 160px;
   height: auto;
-  opacity: 0.12;
+  opacity: 0.08;
   filter: grayscale(100%) brightness(0) invert(1);
   pointer-events: none;
+  z-index: 0;
+}
+
+.service-card-content {
+  position: relative;
+  overflow: hidden;
+  padding: 0 2rem 3rem 2rem;
+}
+
+.service-card-content h3 {
+  position: relative;
   z-index: 1;
+  margin-bottom: 1rem;
+}
+
+.service-card-content p {
+  position: relative;
+  z-index: 1;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.6;
+  margin-bottom: 2rem;
+}
+
+.service-card-content .btn-outline {
+  position: relative;
+  z-index: 1;
+  width: 100%;
 }
 
 .inventory-card:hover .inventory-image img {
