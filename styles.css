@@ -851,7 +851,7 @@ span.text-mask {
     display: block;
   }
 
-  .nav-links {
+.nav-links {
     position: fixed;
     top: 0;
     left: 0;
@@ -860,12 +860,14 @@ span.text-mask {
     background: var(--bg);
     flex-direction: column;
     justify-content: center;
-    gap: 3rem;
+    align-items: center;
+    gap: 2.5rem;
     padding: 2rem;
     z-index: 150;
     opacity: 0;
     visibility: hidden;
     transition: opacity 0.4s ease, visibility 0.4s ease;
+    text-align: center;
   }
 
   .nav-open .nav-links {
@@ -874,51 +876,38 @@ span.text-mask {
   }
 
   .nav-links a {
-    font-size: 1.25rem;
+    font-size: 1.1rem;
+    width: 100%;
+    display: block;
   }
 
   .role-switch {
     margin-left: 0;
-    margin-top: 1rem;
+    margin-top: 2rem;
   }
 
-  .editorial-split {
-    grid-template-columns: 1fr;
-    min-height: auto;
-  }
-  .editorial-split.reverse {
-    direction: ltr; /* Reset to normal flow */
-  }
   .editorial-image {
-    height: 50vh;
-  }
-  .editorial-text {
-    padding: 4rem 1.5rem;
-  }
-  
-  .section-header-center {
-    margin-bottom: 4rem;
+    height: 40vh; /* Reduced from 50vh */
   }
 
-  .inventory-grid, .services-grid {
-    gap: 2rem;
+  .hero h1 {
+    margin-bottom: 1.5rem;
   }
 
-  .inquire-layout {
-    grid-template-columns: 1fr;
-    margin-top: 3rem;
-    gap: 2rem;
-  }
-
-  .selected-watch-panel, .direct-email-form {
-    padding: 2rem 1.5rem;
+  .hero .btn-primary {
+    margin-top: 2rem; /* Added space above button */
   }
 
   .site-footer {
     flex-direction: column;
-    gap: 2rem;
+    gap: 2.5rem;
     text-align: center;
-    padding: 3rem 1.5rem;
+    padding: 4rem 1.5rem;
+  }
+
+  .footer-watermark {
+    height: 80px; /* Scaled down to prevent clipping */
+    top: 20%;
   }
 }
 
