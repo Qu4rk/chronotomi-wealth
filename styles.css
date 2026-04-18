@@ -546,7 +546,7 @@ h1 {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 160px;
+  width: 280px;
   height: auto;
   opacity: 0.08;
   filter: grayscale(100%) brightness(0) invert(1);
