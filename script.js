@@ -78,10 +78,25 @@ const copyButton = document.querySelector("#copy-reference");
 const copyFeedback = document.querySelector("#copy-feedback");
 const instagramLink = document.querySelector("#instagram-inquire");
 
-let activeWatch = null; // No initial active watch
+let activeWatch = null;
+
+// Intersection Observer for Reveal animations
+const revealObserver = new IntersectionObserver(
+  (entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add("is-visible");
+      }
+    });
+  },
+  { 
+    threshold: 0.05, 
+    rootMargin: "0px 0px -50px 0px" 
+  }
+);
 
 function renderInventory(filter = "All") {
-  if (!inventoryGrid) return; // Safely exit if not on the watches page
+  if (!inventoryGrid) return;
 
   const filteredWatches =
     filter === "All" ? watches : watches.filter((watch) => watch.brand === filter);
@@ -100,7 +115,7 @@ function renderInventory(filter = "All") {
   inventoryGrid.innerHTML = filteredWatches
     .map(
       (watch) => `
-        <article class="inventory-card reveal is-visible" style="position: relative; overflow: hidden;">
+        <article class="inventory-card reveal" style="position: relative; overflow: hidden;">
           <div class="inventory-image" style="position: relative; z-index: 1;">
             <img src="${watch.image}" alt="${watch.brand} ${watch.model}" loading="lazy" />
           </div>
@@ -156,9 +171,13 @@ function renderInventory(filter = "All") {
       instagramLink.classList.add("btn-primary");
       instagramLink.setAttribute("aria-label", `Discuss ${watchName} on Instagram`);
       
-      // Scroll to inquire smoothly
       document.querySelector("#inquire").scrollIntoView({ behavior: "smooth" });
     });
+  });
+
+  // Observe newly created cards
+  document.querySelectorAll(".inventory-card").forEach((card) => {
+    revealObserver.observe(card);
   });
 }
 
@@ -170,7 +189,6 @@ filterButtons.forEach((button) => {
   });
 });
 
-// Setup Initial Links
 if (instagramLink) {
   instagramLink.href = INSTAGRAM_URL;
 }
@@ -238,18 +256,6 @@ if (advisoryContactForm) {
   });
 }
 
-// Intersection Observer for Reveal animations
-const revealObserver = new IntersectionObserver(
-  (entries) => {
-    entries.forEach((entry) => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add("is-visible");
-      }
-    });
-  },
-  { threshold: 0.25 }
-);
-
 document.querySelectorAll(".reveal").forEach((element) => {
   revealObserver.observe(element);
 });
@@ -267,10 +273,8 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Close menu when clicking a link
   navLinks.forEach(link => {
     link.addEventListener("click", () => {
-      // If it's a regular link or anchor (not the role switch logic handled separately)
       if (body.classList.contains("nav-open")) {
         body.classList.remove("nav-open");
         if (navToggle) navToggle.setAttribute("aria-expanded", "false");
@@ -279,7 +283,6 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
-// Init
 renderInventory();
 
 // Role Switch Sliding Animation Logic
@@ -303,8 +306,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Ensure perfect math by ignoring the DOMContentLoaded timing entirely
-  // and exclusively setting the initial state after typography finishes rendering.
   document.fonts.ready.then(() => {
     const currentActive = switchBox.querySelector(".role-active");
     if (currentActive) {
@@ -313,35 +314,26 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Handle clicks on toggle links
   switchBox.querySelectorAll("a").forEach(link => {
     link.addEventListener("click", (e) => {
-      // Don't re-animate if already active
       if (link.classList.contains("role-active")) return;
       
-      e.preventDefault(); // Stop instant navigation
-
-      // Step 1: Slide the capsule
+      e.preventDefault();
       updateSlider(link, false);
-      
-      // Update text colors immediately
       switchBox.querySelectorAll("a").forEach(l => l.classList.remove("role-active"));
       link.classList.add("role-active");
 
-      // Step 2: After capsule settles (200ms), fade out the page content
       const targetHref = link.getAttribute("href");
       setTimeout(() => {
         document.body.classList.add("page-leaving");
       }, 200);
 
-      // Step 3: Navigate after fade-out completes (200 + 350 = 550ms total)
       setTimeout(() => {
         window.location.href = targetHref;
       }, 550); 
     });
   });
   
-  // Recalculate on window resize as a failsafe
   window.addEventListener("resize", () => {
     const currentActive = switchBox.querySelector(".role-active");
     updateSlider(currentActive, true);

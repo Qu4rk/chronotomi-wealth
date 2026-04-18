@@ -98,6 +98,12 @@ button {
   mix-blend-mode: normal;
 }
 
+body.nav-open .site-header {
+  mix-blend-mode: normal !important;
+  background: var(--bg) !important;
+  backdrop-filter: none !important;
+}
+
 .brand {
   display: inline-flex;
   align-items: center;
