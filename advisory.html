@@ -27,13 +27,18 @@
       </a>
 
       <nav class="site-nav" aria-label="Primary">
-        <a href="#philosophy">Philosophy</a>
-        <a href="#services">Services</a>
-        <a href="#inquire">Inquire</a>
-        <div class="role-switch">
-          <div class="role-slider"></div>
-          <a href="index.html">Timepieces</a>
-          <a href="advisory.html" class="role-active">Advisory</a>
+        <button class="nav-toggle" id="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
+          <span class="hamburger"></span>
+        </button>
+        <div class="nav-links">
+          <a href="#philosophy">Philosophy</a>
+          <a href="#services">Services</a>
+          <a href="#inquire">Inquire</a>
+          <div class="role-switch">
+            <div class="role-slider"></div>
+            <a href="index.html">Timepieces</a>
+            <a href="advisory.html" class="role-active">Advisory</a>
+          </div>
         </div>
       </nav>
     </header>
@@ -197,17 +202,9 @@
       const header = document.getElementById('site-header');
       window.addEventListener('scroll', () => {
         if (window.scrollY > 50) {
-          header.style.padding = "1rem 3rem";
-          header.style.background = "rgba(0,0,0,0.85)";
-          header.style.backdropFilter = "blur(10px)";
-          header.style.borderBottom = "1px solid rgba(255,255,255,0.05)";
-          header.style.mixBlendMode = "normal";
+          header.classList.add('is-scrolled');
         } else {
-          header.style.padding = "1.5rem 3rem";
-          header.style.background = "transparent";
-          header.style.backdropFilter = "none";
-          header.style.borderBottom = "none";
-          header.style.mixBlendMode = "difference";
+          header.classList.remove('is-scrolled');
         }
       });
     </script>

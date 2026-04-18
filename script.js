@@ -254,6 +254,31 @@ document.querySelectorAll(".reveal").forEach((element) => {
   revealObserver.observe(element);
 });
 
+// Navigation Toggle Logic
+document.addEventListener("DOMContentLoaded", () => {
+  const navToggle = document.getElementById("nav-toggle");
+  const body = document.body;
+  const navLinks = document.querySelectorAll(".nav-links a");
+
+  if (navToggle) {
+    navToggle.addEventListener("click", () => {
+      const isOpen = body.classList.toggle("nav-open");
+      navToggle.setAttribute("aria-expanded", isOpen);
+    });
+  }
+
+  // Close menu when clicking a link
+  navLinks.forEach(link => {
+    link.addEventListener("click", () => {
+      // If it's a regular link or anchor (not the role switch logic handled separately)
+      if (body.classList.contains("nav-open")) {
+        body.classList.remove("nav-open");
+        if (navToggle) navToggle.setAttribute("aria-expanded", "false");
+      }
+    });
+  });
+});
+
 // Init
 renderInventory();
 
