@@ -808,6 +808,10 @@ span.text-mask {
     margin-top: 2rem;
   }
 
+  .role-switch a.role-active {
+    color: #fff;
+  }
+
   .editorial-split {
     grid-template-columns: 1fr;
     min-height: auto;
