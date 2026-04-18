@@ -355,7 +355,7 @@ h1 {
 }
 
 .hero-text {
-  margin: 2rem auto 3rem;
+  margin: 3rem auto 4.5rem;
   max-width: 600px;
   font-size: 1.1rem;
   color: var(--muted);
@@ -825,10 +825,6 @@ span.text-mask {
   .inventory-grid, .services-grid {
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 2rem;
-  }
-
-  .hero .btn-primary {
-    margin-top: 2rem;
   }
 
   .inquire-layout {
