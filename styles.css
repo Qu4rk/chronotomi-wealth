@@ -847,34 +847,38 @@ span.text-mask {
     opacity: 1;
   }
 
-  .nav-links a, .nav-links .role-switch {
+  .nav-links > a, .nav-links .role-switch {
     font-size: 1.1rem;
-    width: 100%;
-    display: block;
     opacity: 0;
     transform: translateY(20px);
     transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1),
                 transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
-  .nav-open .nav-links a,
+  .nav-links > a {
+    width: 100%;
+    display: block;
+  }
+
+  .nav-open .nav-links > a,
   .nav-open .nav-links .role-switch {
     opacity: 1;
     transform: translateY(0);
   }
 
-  .nav-open .nav-links a:nth-child(1) { transition-delay: 0.08s; }
-  .nav-open .nav-links a:nth-child(2) { transition-delay: 0.14s; }
-  .nav-open .nav-links a:nth-child(3) { transition-delay: 0.20s; }
+  .nav-open .nav-links > a:nth-child(1) { transition-delay: 0.08s; }
+  .nav-open .nav-links > a:nth-child(2) { transition-delay: 0.14s; }
+  .nav-open .nav-links > a:nth-child(3) { transition-delay: 0.20s; }
   .nav-open .nav-links .role-switch   { transition-delay: 0.26s; }
 
   .role-switch {
     margin-left: 0;
     margin-top: 2rem;
+    display: inline-flex; /* Ensure it stays inline-flex on mobile */
   }
 
   .role-switch a.role-active {
-    color: #fff;
+    color: #000;
   }
 
   .editorial-split {
