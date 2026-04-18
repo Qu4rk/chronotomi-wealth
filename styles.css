@@ -355,7 +355,7 @@ h1 {
 }
 
 .hero-text {
-  margin: 3rem auto 5rem;
+  margin: 3rem auto 7rem;
   max-width: 600px;
   font-size: 1.1rem;
   color: var(--muted);
