@@ -527,6 +527,7 @@ h1 {
   overflow: hidden;
   background: #000;
   margin-bottom: 2.5rem;
+  position: relative;
 }
 
 .inventory-image {
@@ -538,6 +539,19 @@ h1 {
   height: 100%;
   object-fit: cover;
   transition: transform var(--transition-slow);
+}
+
+.service-logo-watermark {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 120px;
+  height: auto;
+  opacity: 0.12;
+  filter: grayscale(100%) brightness(0) invert(1);
+  pointer-events: none;
+  z-index: 1;
 }
 
 .inventory-card:hover .inventory-image img {
