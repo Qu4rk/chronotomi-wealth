@@ -403,6 +403,7 @@ h1 {
   position: relative;
   overflow: hidden;
   height: 100%;
+  background: #000;
 }
 
 .editorial-image img {
