@@ -270,6 +270,10 @@ document.addEventListener("DOMContentLoaded", () => {
     navToggle.addEventListener("click", () => {
       const isOpen = body.classList.toggle("nav-open");
       navToggle.setAttribute("aria-expanded", isOpen);
+      if (isOpen) {
+        // Trigger resize event to recalculate role-switch slider position
+        window.dispatchEvent(new Event('resize'));
+      }
     });
   }
 
