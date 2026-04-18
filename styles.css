@@ -355,11 +355,15 @@ h1 {
 }
 
 .hero-text {
-  margin: 3rem auto 7rem;
+  margin: 3rem auto 0;
   max-width: 600px;
   font-size: 1.1rem;
   color: var(--muted);
   font-weight: 300;
+}
+
+.hero-content .btn-primary {
+  margin-top: 3rem;
 }
 
 .scroll-indicator {
