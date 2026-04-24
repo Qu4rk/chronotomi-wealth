@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Watch Inventory</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body { padding: 2rem; background-color: #050505; color: #fff; }
+        .admin-container { max-width: 1000px; margin: 0 auto; display: none; }
+        .login-container { max-width: 400px; margin: 10vh auto; background: #111; padding: 2.5rem; border-radius: 8px; border: 1px solid #333; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .login-container h2 { margin-top: 0; font-family: 'Playfair Display', serif; color: #e5b05c; font-size: 2rem; }
+        .login-container input { width: 100%; padding: 0.85rem; margin: 1.5rem 0; background: #000; border: 1px solid #333; color: #fff; border-radius: 4px; text-align: center; font-family: inherit; font-size: 1.1rem; }
+        .login-container button { background: #e5b05c; color: #000; border: none; padding: 0.85rem 2rem; border-radius: 4px; cursor: pointer; font-weight: 600; width: 100%; font-size: 1.1rem; transition: background 0.2s; }
+        .login-container button:hover { background: #f5c06c; }
+        .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; border-bottom: 1px solid #333; padding-bottom: 1rem; flex-wrap: wrap; gap: 1rem; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 2rem; background: #0a0a0a; border-radius: 8px; overflow: hidden; }
+        th, td { padding: 1rem; text-align: left; border-bottom: 1px solid #222; }
+        th { background: #111; color: #888; font-weight: 500; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; }
+        td img { width: 60px; height: 60px; object-fit: cover; border-radius: 4px; border: 1px solid #333; background: #000; }
+        .action-btn { background: none; border: 1px solid #444; color: #fff; padding: 0.5rem 1rem; cursor: pointer; border-radius: 4px; font-size: 0.8rem; transition: all 0.2s; }
+        .action-btn:hover { border-color: #fff; }
+        .btn-delete { border-color: #622; color: #f88; margin-left: 0.5rem; }
+        .btn-delete:hover { border-color: #f88; background: rgba(255,0,0,0.1); }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; }
+        .modal.active { display: flex; }
+        .modal-content { background: #111; padding: 2rem; border-radius: 8px; width: 100%; max-width: 500px; border: 1px solid #333; max-height: 90vh; overflow-y: auto; }
+        .form-group { margin-bottom: 1rem; }
+        .form-group label { display: block; margin-bottom: 0.5rem; font-size: 0.85rem; color: #aaa; }
+        .form-group input, .form-group select { width: 100%; padding: 0.75rem; background: #000; border: 1px solid #333; color: #fff; border-radius: 4px; font-family: inherit; }
+        .form-row { display: flex; gap: 1rem; }
+        .form-row .form-group { flex: 1; }
+        .modal-actions { display: flex; justify-content: flex-end; gap: 1rem; margin-top: 2rem; }
+        .btn-save { background: #fff; color: #000; border: none; padding: 0.75rem 1.5rem; border-radius: 4px; cursor: pointer; font-weight: 500; }
+        .btn-cancel { background: transparent; color: #fff; border: 1px solid #444; padding: 0.75rem 1.5rem; border-radius: 4px; cursor: pointer; }
+        .instructions { background: #1a1a1a; padding: 1.5rem; border-radius: 8px; border: 1px solid #333; margin-bottom: 2rem; }
+        .instructions h3 { margin-top: 0; color: #e5b05c; font-family: 'Playfair Display', serif; font-size: 1.5rem; }
+        .instructions ol { margin-bottom: 0; padding-left: 1.5rem; line-height: 1.6; }
+        .instructions li { margin-bottom: 0.5rem; color: #ddd; }
+        .download-section { text-align: center; margin-top: 3rem; padding-top: 2rem; border-top: 1px solid #333; }
+        .btn-download { background: #e5b05c; color: #000; border: none; padding: 1rem 2rem; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 1.1rem; box-shadow: 0 4px 15px rgba(229,176,92,0.2); transition: all 0.2s; }
+        .btn-download:hover { background: #f5c06c; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(229,176,92,0.3); }
+        .top-nav { display: flex; gap: 1rem; margin-bottom: 2rem; }
+        .top-nav a { color: #888; text-decoration: none; font-size: 0.9rem; transition: color 0.2s; }
+        .top-nav a:hover { color: #fff; }
+    </style>
+</head>
+<body>
+
+<div class="login-container" id="login-container">
+    <h2>Admin Access</h2>
+    <p style="color: #888; font-size: 0.9rem; margin-bottom: 1rem;">Please enter the password to manage inventory.</p>
+    <input type="password" id="admin-pass" placeholder="Password" onkeypress="if(event.key === 'Enter') checkPassword()">
+    <button onclick="checkPassword()">Unlock</button>
+    <p id="login-error" style="color: #f88; display: none; margin-top: 1rem; font-size: 0.9rem;">Incorrect password.</p>
+</div>
+
+<div class="admin-container" id="admin-container">
+    <div class="top-nav">
+        <a href="index.html">← Back to Main Website</a>
+    </div>
+
+    <div class="admin-header">
+        <div>
+            <h1 style="margin:0; font-family: 'Playfair Display', serif; font-size: 2.5rem;">Inventory Management</h1>
+            <p style="color: #888; margin-top: 0.5rem; font-size: 1.1rem;">Add, edit, or remove watches from the collection.</p>
+        </div>
+        <button class="action-btn" onclick="openAddModal()" style="border-color: #e5b05c; color: #e5b05c; font-size: 1rem; padding: 0.75rem 1.5rem;">+ Add New Watch</button>
+    </div>
+
+    <div class="instructions">
+        <h3>How to update the website:</h3>
+        <ol>
+            <li>Make your changes to the inventory list below by adding, editing, or deleting watches.</li>
+            <li>Click the large <strong>"Download Updated watches.js"</strong> button at the bottom of the page.</li>
+            <li>Move the downloaded file into your <code>Chronotomi</code> folder, replacing the old <code>watches.js</code> file.</li>
+            <li>If you added a new watch, make sure to move its picture into the <code>assets</code> folder.</li>
+            <li>Refresh your website to see the changes.</li>
+        </ol>
+    </div>
+
+    <table id="inventory-table">
+        <thead>
+            <tr>
+                <th>Image</th>
+                <th>Brand & Model</th>
+                <th>Reference</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="inventory-body">
+            <!-- Populated by JS -->
+        </tbody>
+    </table>
+
+    <div class="download-section">
+        <button class="btn-download" onclick="downloadWatchesFile()">⬇ Download Updated watches.js</button>
+        <p style="color: #888; font-size: 0.9rem; margin-top: 1rem;">This will save your changes to a file you can use to update the site.</p>
+    </div>
+</div>
+
+<!-- Modal for Add/Edit -->
+<div class="modal" id="watchModal">
+    <div class="modal-content">
+        <h2 id="modalTitle" style="margin-top: 0; font-family: 'Playfair Display', serif; font-size: 2rem;">Add Watch</h2>
+        <form id="watchForm">
+            <input type="hidden" id="editIndex" value="-1">
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Brand</label>
+                    <input type="text" id="wBrand" required placeholder="e.g. Rolex">
+                </div>
+                <div class="form-group">
+                    <label>Model</label>
+                    <input type="text" id="wModel" required placeholder="e.g. Daytona 126500LN">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Reference #</label>
+                    <input type="text" id="wReference" required placeholder="e.g. 126500LN">
+                </div>
+                <div class="form-group">
+                    <label>Year</label>
+                    <input type="text" id="wYear" required placeholder="e.g. 2024">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Condition</label>
+                    <input type="text" id="wCondition" required placeholder="e.g. Unworn">
+                </div>
+                <div class="form-group">
+                    <label>Set Completeness</label>
+                    <input type="text" id="wSet" required placeholder="e.g. Full Set">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Case Size</label>
+                    <input type="text" id="wCaseSize" required placeholder="e.g. 40mm">
+                </div>
+                <div class="form-group">
+                    <label>Status</label>
+                    <select id="wStatus">
+                        <option value="In Stock">In Stock</option>
+                        <option value="Reserved">Reserved</option>
+                        <option value="Sold">Sold</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Image Selection</label>
+                <input type="file" id="wImageFile" accept="image/*" onchange="handleImageSelection(this)" style="padding: 0.5rem; background: #111;">
+                <p style="font-size: 0.8rem; color: #e5b05c; margin-top: 0.5rem;">Select the image from your computer to automatically fill the path below.</p>
+                
+                <label style="margin-top: 1rem;">Image Path</label>
+                <input type="text" id="wImage" required placeholder="assets/image_name.png">
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
+                <button type="submit" class="btn-save">Save Watch</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="watches.js"></script>
+<script>
+    function checkPassword() {
+        const pass = document.getElementById('admin-pass').value;
+        // Password is "watches2026" (encoded as "d2F0Y2hlczIwMjY=")
+        if (btoa(pass) === "d2F0Y2hlczIwMjY=") {
+            document.getElementById('login-container').style.display = 'none';
+            document.getElementById('admin-container').style.display = 'block';
+        } else {
+            document.getElementById('login-error').style.display = 'block';
+            document.getElementById('admin-pass').value = '';
+        }
+    }
+
+    // currentWatches is a deep copy of watches from watches.js
+    let currentWatches = [];
+    if (typeof watches !== 'undefined') {
+        currentWatches = JSON.parse(JSON.stringify(watches));
+    }
+
+    function renderTable() {
+        const tbody = document.getElementById('inventory-body');
+        tbody.innerHTML = '';
+        
+        currentWatches.forEach((w, index) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><img src="${w.image}" alt="${w.model}" onerror="this.src='assets/logo_transparent.png'"></td>
+                <td>
+                    <strong style="font-size: 1.1rem;">${w.brand}</strong><br>
+                    <span style="color: #aaa; font-size: 0.95rem;">${w.model}</span>
+                </td>
+                <td style="color: #aaa;">${w.reference}</td>
+                <td>
+                    <span style="display: inline-block; padding: 0.35rem 0.6rem; border-radius: 4px; font-size: 0.85rem; font-weight: 500;
+                    background: ${w.status === 'In Stock' ? 'rgba(0,255,0,0.1)' : w.status === 'Reserved' ? 'rgba(255,165,0,0.1)' : 'rgba(255,0,0,0.1)'};
+                    color: ${w.status === 'In Stock' ? '#8f8' : w.status === 'Reserved' ? '#fa4' : '#f88'};">
+                        ${w.status}
+                    </span>
+                </td>
+                <td>
+                    <button class="action-btn" onclick="openEditModal(${index})">Edit</button>
+                    <button class="action-btn btn-delete" onclick="deleteWatch(${index})">Delete</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function handleImageSelection(input) {
+        if (input.files && input.files[0]) {
+            const fileName = input.files[0].name;
+            document.getElementById('wImage').value = 'assets/' + fileName;
+        }
+    }
+
+    function openModal() {
+        document.getElementById('watchModal').classList.add('active');
+    }
+
+    function closeModal() {
+        document.getElementById('watchModal').classList.remove('active');
+        document.getElementById('watchForm').reset();
+    }
+
+    function openAddModal() {
+        document.getElementById('modalTitle').innerText = 'Add New Watch';
+        document.getElementById('editIndex').value = -1;
+        document.getElementById('watchForm').reset();
+        openModal();
+    }
+
+    function openEditModal(index) {
+        document.getElementById('modalTitle').innerText = 'Edit Watch';
+        document.getElementById('editIndex').value = index;
+        
+        const w = currentWatches[index];
+        document.getElementById('wBrand').value = w.brand;
+        document.getElementById('wModel').value = w.model;
+        document.getElementById('wReference').value = w.reference;
+        document.getElementById('wYear').value = w.year;
+        document.getElementById('wCondition').value = w.condition;
+        document.getElementById('wSet').value = w.set;
+        document.getElementById('wCaseSize').value = w.caseSize;
+        document.getElementById('wStatus').value = w.status;
+        document.getElementById('wImage').value = w.image;
+        
+        openModal();
+    }
+
+    function deleteWatch(index) {
+        if(confirm('Are you sure you want to delete this watch?')) {
+            currentWatches.splice(index, 1);
+            renderTable();
+        }
+    }
+
+    document.getElementById('watchForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const watch = {
+            brand: document.getElementById('wBrand').value,
+            model: document.getElementById('wModel').value,
+            reference: document.getElementById('wReference').value,
+            year: document.getElementById('wYear').value,
+            condition: document.getElementById('wCondition').value,
+            set: document.getElementById('wSet').value,
+            caseSize: document.getElementById('wCaseSize').value,
+            status: document.getElementById('wStatus').value,
+            image: document.getElementById('wImage').value
+        };
+
+        const idx = parseInt(document.getElementById('editIndex').value);
+        if (idx >= 0) {
+            currentWatches[idx] = watch;
+        } else {
+            currentWatches.push(watch);
+        }
+
+        closeModal();
+        renderTable();
+    });
+
+    function downloadWatchesFile() {
+        const fileContent = `// ==========================================
+// CHRONOTOMI WEALTH - WATCH COLLECTION
+// ==========================================
+// To add a new watch:
+// 1. Copy one of the existing blocks { ... } below.
+// 2. Paste it into the list (make sure there is a comma after the previous block).
+// 3. Update the details and image path.
+// 
+// To remove a watch:
+// 1. Delete its corresponding block { ... }, from the list.
+// 
+// Note: Ensure the 'image' property matches a file in the "assets/" folder.
+// ==========================================
+
+const watches = ${JSON.stringify(currentWatches, null, 2)};
+`;
+
+        const blob = new Blob([fileContent], { type: "text/javascript" });
+        const url = URL.createObjectURL(blob);
+        
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'watches.js';
+        document.body.appendChild(a);
+        a.click();
+        
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        alert('File generated! Look in your Downloads folder for "watches.js" and move it to your website folder.');
+    }
+
+    // Initial render
+    renderTable();
+</script>
+
+</body>
+</html>
