@@ -23,7 +23,7 @@ const revealObserver = new IntersectionObserver(
   },
   { 
     threshold: 0.05, 
-    rootMargin: "0px 0px -50px 0px" 
+    rootMargin: "0px 0px -10% 0px" 
   }
 );
 
@@ -108,8 +108,10 @@ function renderInventory(filter = "All") {
   });
 
   // Observe newly created cards
-  document.querySelectorAll(".inventory-card").forEach((card) => {
-    revealObserver.observe(card);
+  requestAnimationFrame(() => {
+    document.querySelectorAll(".inventory-card").forEach((card) => {
+      revealObserver.observe(card);
+    });
   });
 }
 
@@ -249,6 +251,13 @@ document.addEventListener("DOMContentLoaded", () => {
       slider.style.opacity = "1";
     }
   });
+
+  // Fallback in case fonts load quickly or are cached
+  const currentActiveFallback = switchBox.querySelector(".role-active");
+  if (currentActiveFallback) {
+    updateSlider(currentActiveFallback, true);
+    slider.style.opacity = "1";
+  }
 
   switchBox.querySelectorAll("a").forEach(link => {
     link.addEventListener("click", (e) => {
