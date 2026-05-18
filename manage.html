@@ -3,145 +3,203 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage Watch Inventory</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
+    <title>Manage Inventory — Chronotomi Wealth</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
     <style>
-        body { padding: 2rem; background-color: #050505; color: #fff; }
-        .admin-container { max-width: 1000px; margin: 0 auto; display: none; }
-        .login-container { max-width: 400px; margin: 10vh auto; background: #111; padding: 2.5rem; border-radius: 8px; border: 1px solid #333; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .login-container h2 { margin-top: 0; font-family: 'Playfair Display', serif; color: #e5b05c; font-size: 2rem; }
-        .login-container input { width: 100%; padding: 0.85rem; margin: 1.5rem 0; background: #000; border: 1px solid #333; color: #fff; border-radius: 4px; text-align: center; font-family: inherit; font-size: 1.1rem; }
-        .login-container button { background: #e5b05c; color: #000; border: none; padding: 0.85rem 2rem; border-radius: 4px; cursor: pointer; font-weight: 600; width: 100%; font-size: 1.1rem; transition: background 0.2s; }
-        .login-container button:hover { background: #f5c06c; }
-        .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; border-bottom: 1px solid #333; padding-bottom: 1rem; flex-wrap: wrap; gap: 1rem; }
-        table { width: 100%; border-collapse: collapse; margin-bottom: 2rem; background: #0a0a0a; border-radius: 8px; overflow: hidden; }
-        th, td { padding: 1rem; text-align: left; border-bottom: 1px solid #222; }
-        th { background: #111; color: #888; font-weight: 500; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; }
-        td img { width: 60px; height: 60px; object-fit: cover; border-radius: 4px; border: 1px solid #333; background: #000; }
-        .action-btn { background: none; border: 1px solid #444; color: #fff; padding: 0.5rem 1rem; cursor: pointer; border-radius: 4px; font-size: 0.8rem; transition: all 0.2s; }
-        .action-btn:hover { border-color: #fff; }
-        .btn-delete { border-color: #622; color: #f88; margin-left: 0.5rem; }
-        .btn-delete:hover { border-color: #f88; background: rgba(255,0,0,0.1); }
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --bg: #050505; --bg-card: #111; --bg-elevated: #1a1a1a;
+            --border: #222; --border-hover: #444;
+            --text: #fff; --text-muted: #888; --text-dim: #555;
+            --gold: #e5b05c; --gold-hover: #f5c06c;
+            --green: #4ade80; --orange: #fb923c; --red: #f87171;
+            --green-bg: rgba(74,222,128,0.1); --orange-bg: rgba(251,146,60,0.1); --red-bg: rgba(248,113,113,0.1);
+            --radius: 10px; --radius-sm: 6px;
+        }
+        body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; min-height: 100vh; }
+
+        /* ── LOGIN ── */
+        .login-screen { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 1.5rem; }
+        .login-box { background: var(--bg-card); padding: 3rem; border-radius: var(--radius); border: 1px solid var(--border); text-align: center; width: 100%; max-width: 420px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
+        .login-box h2 { font-family: 'Playfair Display', serif; color: var(--gold); font-size: 2rem; margin-bottom: 0.5rem; }
+        .login-box p { color: var(--text-muted); font-size: 0.95rem; margin-bottom: 2rem; }
+        .login-box input { width: 100%; padding: 1rem; background: #000; border: 1px solid var(--border); color: var(--text); border-radius: var(--radius-sm); text-align: center; font-family: inherit; font-size: 1.1rem; margin-bottom: 1.25rem; transition: border-color 0.2s; }
+        .login-box input:focus { outline: none; border-color: var(--gold); }
+        .login-box .btn-login { background: var(--gold); color: #000; border: none; padding: 1rem; border-radius: var(--radius-sm); cursor: pointer; font-weight: 600; width: 100%; font-size: 1.1rem; transition: background 0.2s, transform 0.1s; }
+        .login-box .btn-login:hover { background: var(--gold-hover); }
+        .login-box .btn-login:active { transform: scale(0.98); }
+        .login-error { color: var(--red); display: none; margin-top: 1rem; font-size: 0.9rem; }
+
+        /* ── DASHBOARD ── */
+        #dashboard { display: none; max-width: 1200px; margin: 0 auto; padding: 1.5rem; }
+        .dash-header { display: flex; align-items: center; justify-content: space-between; padding: 1rem 0 1.5rem; border-bottom: 1px solid var(--border); margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem; }
+        .dash-header-left h1 { font-family: 'Playfair Display', serif; font-size: 2rem; }
+        .dash-header-left .subtitle { color: var(--text-muted); font-size: 0.95rem; margin-top: 0.25rem; }
+        .dash-header-right { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+        .back-link { color: var(--text-muted); text-decoration: none; font-size: 0.85rem; transition: color 0.2s; }
+        .back-link:hover { color: var(--text); }
+
+        .btn-settings { background: none; border: 1px solid var(--border); color: var(--text-muted); width: 44px; height: 44px; border-radius: var(--radius-sm); cursor: pointer; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+        .btn-settings:hover { border-color: var(--text); color: var(--text); }
+
+        .btn-publish { background: var(--bg-card); border: 1px solid var(--border); color: var(--text-muted); padding: 0.75rem 1.5rem; border-radius: var(--radius-sm); cursor: pointer; font-size: 0.95rem; font-weight: 500; transition: all 0.3s; display: flex; align-items: center; gap: 0.5rem; }
+        .btn-publish.has-changes { background: var(--gold); color: #000; border-color: var(--gold); font-weight: 600; animation: pulse-gold 2s infinite; }
+        .btn-publish.has-changes:hover { background: var(--gold-hover); }
+        @keyframes pulse-gold { 0%, 100% { box-shadow: 0 0 0 0 rgba(229,176,92,0.4); } 50% { box-shadow: 0 0 0 8px rgba(229,176,92,0); } }
+
+        /* ── CHANGES BANNER ── */
+        .changes-banner { background: rgba(229,176,92,0.08); border: 1px solid rgba(229,176,92,0.2); border-radius: var(--radius-sm); padding: 0.85rem 1.25rem; margin-bottom: 1.5rem; display: none; align-items: center; gap: 0.75rem; font-size: 0.95rem; color: var(--gold); }
+        .changes-banner.visible { display: flex; }
+        .changes-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--gold); flex-shrink: 0; animation: blink 1.5s infinite; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+        /* ── WATCH GRID ── */
+        .watch-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.25rem; margin-bottom: 3rem; }
+        .watch-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; transition: border-color 0.2s, transform 0.2s; }
+        .watch-card:hover { border-color: var(--border-hover); transform: translateY(-2px); }
+        .add-card { cursor: pointer; border-style: dashed; display: flex; align-items: center; justify-content: center; min-height: 340px; }
+        .add-card:hover { border-color: var(--gold); background: rgba(229,176,92,0.03); }
+        .add-card-inner { text-align: center; color: var(--text-muted); }
+        .add-icon { display: block; font-size: 2.5rem; margin-bottom: 0.5rem; color: var(--gold); }
+
+        .card-image { height: 200px; background: #000; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .card-image img { width: 100%; height: 100%; object-fit: contain; }
+        .card-body { padding: 1.25rem; }
+        .card-brand { font-weight: 600; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--gold); margin-bottom: 0.25rem; }
+        .card-model { font-size: 1.1rem; font-weight: 500; margin-bottom: 0.15rem; }
+        .card-ref { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.85rem; }
+
+        .status-select { background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 0.5rem 0.75rem; border-radius: var(--radius-sm); font-family: inherit; font-size: 0.85rem; cursor: pointer; width: 100%; margin-bottom: 0.85rem; transition: border-color 0.2s; font-weight: 500; }
+        .status-select:focus { outline: none; border-color: var(--gold); }
+        .status-select.status-instock { color: var(--green); }
+        .status-select.status-reserved { color: var(--orange); }
+        .status-select.status-sold { color: var(--red); }
+
+        .card-actions { display: flex; gap: 0.5rem; }
+        .btn-edit, .btn-remove { flex: 1; padding: 0.65rem; border-radius: var(--radius-sm); cursor: pointer; font-family: inherit; font-size: 0.85rem; font-weight: 500; transition: all 0.2s; }
+        .btn-edit { background: none; border: 1px solid var(--border); color: var(--text); }
+        .btn-edit:hover { border-color: var(--text); }
+        .btn-remove { background: none; border: 1px solid #331111; color: var(--red); }
+        .btn-remove:hover { border-color: var(--red); background: rgba(248,113,113,0.05); }
+
+        /* ── MODALS ── */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; padding: 1rem; backdrop-filter: blur(4px); }
         .modal.active { display: flex; }
-        .modal-content { background: #111; padding: 2rem; border-radius: 8px; width: 100%; max-width: 500px; border: 1px solid #333; max-height: 90vh; overflow-y: auto; }
+        .modal-box { background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius); width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; padding: 2rem; }
+        .modal-box h2 { font-family: 'Playfair Display', serif; font-size: 1.75rem; margin-bottom: 1.5rem; }
+
         .form-group { margin-bottom: 1rem; }
-        .form-group label { display: block; margin-bottom: 0.5rem; font-size: 0.85rem; color: #aaa; }
-        .form-group input, .form-group select { width: 100%; padding: 0.75rem; background: #000; border: 1px solid #333; color: #fff; border-radius: 4px; font-family: inherit; }
+        .form-group label { display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.4rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; }
+        .form-group input, .form-group select { width: 100%; padding: 0.85rem; background: #000; border: 1px solid var(--border); color: var(--text); border-radius: var(--radius-sm); font-family: inherit; font-size: 1rem; transition: border-color 0.2s; }
+        .form-group input:focus, .form-group select:focus { outline: none; border-color: var(--gold); }
         .form-row { display: flex; gap: 1rem; }
         .form-row .form-group { flex: 1; }
-        .modal-actions { display: flex; justify-content: flex-end; gap: 1rem; margin-top: 2rem; }
-        .btn-save { background: #fff; color: #000; border: none; padding: 0.75rem 1.5rem; border-radius: 4px; cursor: pointer; font-weight: 500; }
-        .btn-cancel { background: transparent; color: #fff; border: 1px solid #444; padding: 0.75rem 1.5rem; border-radius: 4px; cursor: pointer; }
-        .instructions { background: #1a1a1a; padding: 1.5rem; border-radius: 8px; border: 1px solid #333; margin-bottom: 2rem; }
-        .instructions h3 { margin-top: 0; color: #e5b05c; font-family: 'Playfair Display', serif; font-size: 1.5rem; }
-        .instructions ol { margin-bottom: 0; padding-left: 1.5rem; line-height: 1.6; }
-        .instructions li { margin-bottom: 0.5rem; color: #ddd; }
-        .download-section { text-align: center; margin-top: 3rem; padding-top: 2rem; border-top: 1px solid #333; }
-        .btn-download { background: #e5b05c; color: #000; border: none; padding: 1rem 2rem; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 1.1rem; box-shadow: 0 4px 15px rgba(229,176,92,0.2); transition: all 0.2s; }
-        .btn-download:hover { background: #f5c06c; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(229,176,92,0.3); }
-        .top-nav { display: flex; gap: 1rem; margin-bottom: 2rem; }
-        .top-nav a { color: #888; text-decoration: none; font-size: 0.9rem; transition: color 0.2s; }
-        .top-nav a:hover { color: #fff; }
-        
-        /* Mobile Responsiveness & Improvements */
-        * { box-sizing: border-box; }
-        .table-responsive-wrapper { width: 100%; overflow-x: auto; margin-bottom: 2rem; border-radius: 8px; background: #0a0a0a; border: 1px solid #222; }
-        table { margin-bottom: 0; border: none; min-width: 600px; }
-        .action-buttons-container { display: flex; gap: 0.5rem; flex-wrap: wrap; }
-        
-        @media (max-width: 768px) {
-            body { padding: 1rem; }
-            .login-container { margin: 5vh auto; padding: 1.5rem; width: 100%; }
-            .admin-header { flex-direction: column; align-items: stretch; text-align: center; gap: 1rem; border-bottom: none; padding-bottom: 0; }
-            .admin-header h1 { font-size: 2rem; }
-            .admin-header p { font-size: 0.95rem; margin-bottom: 1rem; }
-            .admin-header button { width: 100%; padding: 1rem; font-weight: 600; }
-            
+
+        .image-upload-area { border: 2px dashed var(--border); border-radius: var(--radius-sm); padding: 1.5rem; text-align: center; cursor: pointer; transition: all 0.2s; position: relative; }
+        .image-upload-area:hover { border-color: var(--gold); background: rgba(229,176,92,0.03); }
+        .image-upload-area input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+        .image-upload-area .upload-text { color: var(--text-muted); font-size: 0.9rem; }
+        .image-upload-area .upload-text strong { color: var(--gold); }
+
+        #image-preview { margin-top: 0.75rem; border-radius: var(--radius-sm); overflow: hidden; max-height: 150px; display: flex; align-items: center; justify-content: center; }
+        #image-preview img { max-height: 150px; max-width: 100%; object-fit: contain; border-radius: var(--radius-sm); }
+        .preview-placeholder { color: var(--text-dim); font-size: 0.85rem; }
+
+        .modal-buttons { display: flex; gap: 0.75rem; margin-top: 1.5rem; }
+        .modal-buttons button { flex: 1; padding: 0.85rem; border-radius: var(--radius-sm); cursor: pointer; font-family: inherit; font-size: 1rem; font-weight: 500; transition: all 0.2s; }
+        .btn-save { background: var(--gold); color: #000; border: none; }
+        .btn-save:hover { background: var(--gold-hover); }
+        .btn-cancel { background: none; border: 1px solid var(--border); color: var(--text); }
+        .btn-cancel:hover { border-color: var(--text); }
+
+        .btn-danger { background: var(--red); color: #000; border: none; }
+        .btn-danger:hover { background: #fca5a5; }
+
+        /* ── DELETE MODAL ── */
+        .delete-warning { text-align: center; padding: 1rem 0; }
+        .delete-warning .del-icon { font-size: 3rem; margin-bottom: 1rem; }
+        .delete-warning p { color: var(--text-muted); font-size: 0.95rem; margin-top: 0.5rem; }
+
+        /* ── PUBLISH MODAL ── */
+        .publish-info { text-align: center; padding: 1rem 0; }
+        .publish-info .pub-icon { font-size: 3rem; margin-bottom: 1rem; }
+        #publish-status { color: var(--text-muted); font-size: 0.95rem; margin-top: 0.5rem; min-height: 1.5em; }
+        #publish-progress { display: none; margin: 1.5rem auto 0; }
+        .spinner { width: 36px; height: 36px; border: 3px solid var(--border); border-top-color: var(--gold); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ── SETTINGS ── */
+        .settings-help { color: var(--text-muted); font-size: 0.85rem; line-height: 1.6; margin-bottom: 1rem; }
+        .settings-help ol { padding-left: 1.2rem; }
+        .settings-help li { margin-bottom: 0.5rem; }
+        .settings-help code { background: #000; padding: 0.15rem 0.4rem; border-radius: 3px; font-size: 0.8rem; }
+
+        /* ── TOAST ── */
+        #toast-container { position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 2000; display: flex; flex-direction: column; gap: 0.5rem; }
+        .toast { background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.85rem 1.25rem; display: flex; align-items: center; gap: 0.75rem; font-size: 0.9rem; transform: translateX(120%); transition: transform 0.3s ease; box-shadow: 0 8px 30px rgba(0,0,0,0.4); }
+        .toast.show { transform: translateX(0); }
+        .toast-success { border-color: rgba(74,222,128,0.3); }
+        .toast-error { border-color: rgba(248,113,113,0.3); }
+        .toast-success .toast-icon { color: var(--green); }
+        .toast-error .toast-icon { color: var(--red); }
+        .toast-icon { font-weight: 700; font-size: 1.1rem; }
+
+        /* ── RESPONSIVE ── */
+        @media (max-width: 640px) {
+            .dash-header { flex-direction: column; align-items: stretch; text-align: center; }
+            .dash-header-right { justify-content: center; }
+            .watch-grid { grid-template-columns: 1fr; }
             .form-row { flex-direction: column; gap: 0; }
-            .modal-content { padding: 1.5rem; width: 100%; max-height: 90vh; }
-            
-            .action-btn { padding: 0.6rem 1rem; flex: 1; text-align: center; }
-            .btn-delete { margin-left: 0; }
-            .action-buttons-container { flex-direction: column; }
-            
-            .instructions { padding: 1rem; font-size: 0.95rem; }
-            .instructions h3 { font-size: 1.25rem; }
-            .instructions ol { padding-left: 1.2rem; }
-            
-            .btn-download { width: 100%; padding: 1rem; font-size: 1rem; white-space: normal; }
-            .download-section { margin-top: 1.5rem; padding-top: 1.5rem; }
-            
-            .modal-actions { flex-direction: column-reverse; gap: 0.75rem; }
-            .modal-actions button { width: 100%; padding: 1rem; font-size: 1rem; }
+            .modal-box { padding: 1.5rem; }
+            .modal-buttons { flex-direction: column-reverse; }
+            .btn-publish { width: 100%; justify-content: center; }
         }
     </style>
 </head>
 <body>
 
-<div class="login-container" id="login-container">
-    <h2>Admin Access</h2>
-    <p style="color: #888; font-size: 0.9rem; margin-bottom: 1rem;">Please enter the password to manage inventory.</p>
-    <input type="password" id="admin-pass" placeholder="Password" onkeypress="if(event.key === 'Enter') checkPassword()">
-    <button onclick="checkPassword()">Unlock</button>
-    <p id="login-error" style="color: #f88; display: none; margin-top: 1rem; font-size: 0.9rem;">Incorrect password.</p>
+<!-- ═══ LOGIN ═══ -->
+<div class="login-screen" id="login-screen">
+    <div class="login-box">
+        <h2>Chronotomi Wealth</h2>
+        <p>Enter the admin password to manage your inventory.</p>
+        <input type="password" id="admin-pass" placeholder="Password" onkeypress="if(event.key==='Enter')checkPassword()">
+        <button class="btn-login" onclick="checkPassword()">Unlock</button>
+        <p class="login-error" id="login-error">Incorrect password. Please try again.</p>
+    </div>
 </div>
 
-<div class="admin-container" id="admin-container">
-    <div class="top-nav">
-        <a href="index.html">← Back to Main Website</a>
-    </div>
-
-    <div class="admin-header">
-        <div>
-            <h1 style="margin:0; font-family: 'Playfair Display', serif; font-size: 2.5rem;">Inventory Management</h1>
-            <p style="color: #888; margin-top: 0.5rem; font-size: 1.1rem;">Add, edit, or remove watches from the collection.</p>
+<!-- ═══ DASHBOARD ═══ -->
+<div id="dashboard">
+    <div class="dash-header">
+        <div class="dash-header-left">
+            <h1>Inventory Management</h1>
+            <div class="subtitle"><span id="watch-count">0 watches</span> in your collection</div>
         </div>
-        <button class="action-btn" onclick="openAddModal()" style="border-color: #e5b05c; color: #e5b05c; font-size: 1rem; padding: 0.75rem 1.5rem;">+ Add New Watch</button>
+        <div class="dash-header-right">
+            <a href="index.html" class="back-link">← Back to Website</a>
+            <button class="btn-settings" onclick="openSettings()" title="Settings">⚙</button>
+            <button class="btn-publish" id="publish-btn" onclick="startPublish()">
+                <span>Publish to Website</span>
+            </button>
+        </div>
     </div>
 
-    <div class="instructions">
-        <h3>How to update the website:</h3>
-        <ol>
-            <li>Make your changes to the inventory list below by adding, editing, or deleting watches.</li>
-            <li>Click the large <strong>"Download Updated watches.js"</strong> button at the bottom of the page.</li>
-            <li>Move the downloaded file into your <code>Chronotomi</code> folder, replacing the old <code>watches.js</code> file.</li>
-            <li>If you added a new watch, make sure to move its picture into the <code>assets</code> folder.</li>
-            <li>Refresh your website to see the changes.</li>
-        </ol>
+    <div class="changes-banner" id="changes-banner">
+        <span class="changes-dot"></span>
+        <span>You have unpublished changes. Click <strong>"Publish to Website"</strong> to make them live.</span>
     </div>
 
-    <div class="table-responsive-wrapper">
-        <table id="inventory-table">
-            <thead>
-                <tr>
-                    <th>Image</th>
-                    <th>Brand & Model</th>
-                    <th>Reference</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody id="inventory-body">
-                <!-- Populated by JS -->
-            </tbody>
-        </table>
-    </div>
-
-    <div class="download-section">
-        <button class="btn-download" onclick="downloadWatchesFile()">⬇ Download Updated watches.js</button>
-        <p style="color: #888; font-size: 0.9rem; margin-top: 1rem;">This will save your changes to a file you can use to update the site.</p>
+    <div class="watch-grid" id="watch-grid">
+        <!-- Populated by JS -->
     </div>
 </div>
 
-<!-- Modal for Add/Edit -->
-<div class="modal" id="watchModal">
-    <div class="modal-content">
-        <h2 id="modalTitle" style="margin-top: 0; font-family: 'Playfair Display', serif; font-size: 2rem;">Add Watch</h2>
-        <form id="watchForm">
-            <input type="hidden" id="editIndex" value="-1">
-            
+<!-- ═══ ADD/EDIT WATCH MODAL ═══ -->
+<div class="modal" id="watch-modal">
+    <div class="modal-box">
+        <h2 id="modal-title">Add New Watch</h2>
+        <form id="watchForm" onsubmit="saveWatch(event)">
             <div class="form-row">
                 <div class="form-group">
                     <label>Brand</label>
@@ -152,10 +210,9 @@
                     <input type="text" id="wModel" required placeholder="e.g. Daytona 126500LN">
                 </div>
             </div>
-
             <div class="form-row">
                 <div class="form-group">
-                    <label>Reference #</label>
+                    <label>Reference Number</label>
                     <input type="text" id="wReference" required placeholder="e.g. 126500LN">
                 </div>
                 <div class="form-group">
@@ -163,7 +220,6 @@
                     <input type="text" id="wYear" required placeholder="e.g. 2024">
                 </div>
             </div>
-
             <div class="form-row">
                 <div class="form-group">
                     <label>Condition</label>
@@ -174,7 +230,6 @@
                     <input type="text" id="wSet" required placeholder="e.g. Full Set">
                 </div>
             </div>
-
             <div class="form-row">
                 <div class="form-group">
                     <label>Case Size</label>
@@ -189,185 +244,86 @@
                     </select>
                 </div>
             </div>
-
             <div class="form-group">
-                <label>Image Selection</label>
-                <input type="file" id="wImageFile" accept="image/*" onchange="handleImageSelection(this)" style="padding: 0.5rem; background: #111;">
-                <p style="font-size: 0.8rem; color: #e5b05c; margin-top: 0.5rem;">Select the image from your computer to automatically fill the path below.</p>
-                
-                <label style="margin-top: 1rem;">Image Path</label>
-                <input type="text" id="wImage" required placeholder="assets/image_name.png">
+                <label>Watch Image</label>
+                <div class="image-upload-area">
+                    <input type="file" accept="image/*" onchange="handleImageSelect(this)">
+                    <div class="upload-text">Click to <strong>choose an image</strong> from your computer</div>
+                </div>
+                <div id="image-preview"><span class="preview-placeholder">No image selected</span></div>
+                <input type="hidden" id="wImagePath">
             </div>
-
-            <div class="modal-actions">
-                <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
+            <div class="modal-buttons">
+                <button type="button" class="btn-cancel" onclick="closeAllModals()">Cancel</button>
                 <button type="submit" class="btn-save">Save Watch</button>
             </div>
         </form>
     </div>
 </div>
 
+<!-- ═══ DELETE CONFIRMATION ═══ -->
+<div class="modal" id="delete-modal">
+    <div class="modal-box" style="max-width: 400px;">
+        <div class="delete-warning">
+            <div class="del-icon">⚠</div>
+            <h2>Remove Watch?</h2>
+            <p>Are you sure you want to remove <strong id="delete-watch-name"></strong> from your inventory?</p>
+        </div>
+        <div class="modal-buttons">
+            <button class="btn-cancel" onclick="closeAllModals()">Keep It</button>
+            <button class="btn-danger" id="delete-confirm-btn">Yes, Remove</button>
+        </div>
+    </div>
+</div>
+
+<!-- ═══ PUBLISH MODAL ═══ -->
+<div class="modal" id="publish-modal">
+    <div class="modal-box" style="max-width: 420px;">
+        <div class="publish-info">
+            <div class="pub-icon">🌐</div>
+            <h2>Publish to Website</h2>
+            <p id="publish-status">This will update the live website with your changes.</p>
+        </div>
+        <div id="publish-progress"><div class="spinner"></div></div>
+        <div class="modal-buttons" id="publish-actions">
+            <button class="btn-cancel" onclick="closeAllModals()">Cancel</button>
+            <button class="btn-save" onclick="executePublish()">Yes, Publish</button>
+        </div>
+        <div class="modal-buttons" id="publish-done-actions" style="display: none;">
+            <button class="btn-save" onclick="closeAllModals()" style="width: 100%;">Done</button>
+        </div>
+    </div>
+</div>
+
+<!-- ═══ SETTINGS MODAL ═══ -->
+<div class="modal" id="settings-modal">
+    <div class="modal-box" style="max-width: 480px;">
+        <h2>Settings</h2>
+        <div class="settings-help">
+            <p>To publish changes directly to the website, a GitHub access token is required. This only needs to be set up once.</p>
+            <ol>
+                <li>Go to <strong>github.com</strong> → Settings → Developer settings → Personal access tokens</li>
+                <li>Create a <strong>Fine-grained token</strong> for the <code>chronotomi-wealth</code> repository</li>
+                <li>Grant <strong>Contents: Read and write</strong> permission</li>
+                <li>Paste the token below</li>
+            </ol>
+        </div>
+        <div class="form-group">
+            <label>GitHub Token</label>
+            <input type="password" id="settings-token" placeholder="Paste your token here">
+        </div>
+        <div class="modal-buttons">
+            <button class="btn-cancel" onclick="closeAllModals()">Cancel</button>
+            <button class="btn-save" onclick="saveToken()">Save Token</button>
+        </div>
+    </div>
+</div>
+
+<!-- ═══ TOASTS ═══ -->
+<div id="toast-container"></div>
+
 <script src="watches.js"></script>
-<script>
-    function checkPassword() {
-        const pass = document.getElementById('admin-pass').value;
-        // Password is "watches2026" (encoded as "d2F0Y2hlczIwMjY=")
-        if (btoa(pass) === "d2F0Y2hlczIwMjY=") {
-            document.getElementById('login-container').style.display = 'none';
-            document.getElementById('admin-container').style.display = 'block';
-        } else {
-            document.getElementById('login-error').style.display = 'block';
-            document.getElementById('admin-pass').value = '';
-        }
-    }
-
-    // currentWatches is a deep copy of watches from watches.js
-    let currentWatches = [];
-    if (typeof watches !== 'undefined') {
-        currentWatches = JSON.parse(JSON.stringify(watches));
-    }
-
-    function renderTable() {
-        const tbody = document.getElementById('inventory-body');
-        tbody.innerHTML = '';
-        
-        currentWatches.forEach((w, index) => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td><img src="${w.image}" alt="${w.model}" onerror="this.src='assets/logo_transparent.png'"></td>
-                <td>
-                    <strong style="font-size: 1.1rem;">${w.brand}</strong><br>
-                    <span style="color: #aaa; font-size: 0.95rem;">${w.model}</span>
-                </td>
-                <td style="color: #aaa;">${w.reference}</td>
-                <td>
-                    <span style="display: inline-block; padding: 0.35rem 0.6rem; border-radius: 4px; font-size: 0.85rem; font-weight: 500;
-                    background: ${w.status === 'In Stock' ? 'rgba(0,255,0,0.1)' : w.status === 'Reserved' ? 'rgba(255,165,0,0.1)' : 'rgba(255,0,0,0.1)'};
-                    color: ${w.status === 'In Stock' ? '#8f8' : w.status === 'Reserved' ? '#fa4' : '#f88'};">
-                        ${w.status}
-                    </span>
-                </td>
-                <td>
-                    <div class="action-buttons-container">
-                        <button class="action-btn" onclick="openEditModal(${index})">Edit</button>
-                        <button class="action-btn btn-delete" onclick="deleteWatch(${index})">Delete</button>
-                    </div>
-                </td>
-            `;
-            tbody.appendChild(tr);
-        });
-    }
-
-    function handleImageSelection(input) {
-        if (input.files && input.files[0]) {
-            const fileName = input.files[0].name;
-            document.getElementById('wImage').value = 'assets/' + fileName;
-        }
-    }
-
-    function openModal() {
-        document.getElementById('watchModal').classList.add('active');
-    }
-
-    function closeModal() {
-        document.getElementById('watchModal').classList.remove('active');
-        document.getElementById('watchForm').reset();
-    }
-
-    function openAddModal() {
-        document.getElementById('modalTitle').innerText = 'Add New Watch';
-        document.getElementById('editIndex').value = -1;
-        document.getElementById('watchForm').reset();
-        openModal();
-    }
-
-    function openEditModal(index) {
-        document.getElementById('modalTitle').innerText = 'Edit Watch';
-        document.getElementById('editIndex').value = index;
-        
-        const w = currentWatches[index];
-        document.getElementById('wBrand').value = w.brand;
-        document.getElementById('wModel').value = w.model;
-        document.getElementById('wReference').value = w.reference;
-        document.getElementById('wYear').value = w.year;
-        document.getElementById('wCondition').value = w.condition;
-        document.getElementById('wSet').value = w.set;
-        document.getElementById('wCaseSize').value = w.caseSize;
-        document.getElementById('wStatus').value = w.status;
-        document.getElementById('wImage').value = w.image;
-        
-        openModal();
-    }
-
-    function deleteWatch(index) {
-        if(confirm('Are you sure you want to delete this watch?')) {
-            currentWatches.splice(index, 1);
-            renderTable();
-        }
-    }
-
-    document.getElementById('watchForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        const watch = {
-            brand: document.getElementById('wBrand').value,
-            model: document.getElementById('wModel').value,
-            reference: document.getElementById('wReference').value,
-            year: document.getElementById('wYear').value,
-            condition: document.getElementById('wCondition').value,
-            set: document.getElementById('wSet').value,
-            caseSize: document.getElementById('wCaseSize').value,
-            status: document.getElementById('wStatus').value,
-            image: document.getElementById('wImage').value
-        };
-
-        const idx = parseInt(document.getElementById('editIndex').value);
-        if (idx >= 0) {
-            currentWatches[idx] = watch;
-        } else {
-            currentWatches.push(watch);
-        }
-
-        closeModal();
-        renderTable();
-    });
-
-    function downloadWatchesFile() {
-        const fileContent = `// ==========================================
-// CHRONOTOMI WEALTH - WATCH COLLECTION
-// ==========================================
-// To add a new watch:
-// 1. Copy one of the existing blocks { ... } below.
-// 2. Paste it into the list (make sure there is a comma after the previous block).
-// 3. Update the details and image path.
-// 
-// To remove a watch:
-// 1. Delete its corresponding block { ... }, from the list.
-// 
-// Note: Ensure the 'image' property matches a file in the "assets/" folder.
-// ==========================================
-
-const watches = ${JSON.stringify(currentWatches, null, 2)};
-`;
-
-        const blob = new Blob([fileContent], { type: "text/javascript" });
-        const url = URL.createObjectURL(blob);
-        
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'watches.js';
-        document.body.appendChild(a);
-        a.click();
-        
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-        
-        alert('File generated! Look in your Downloads folder for "watches.js" and move it to your website folder.');
-    }
-
-    // Initial render
-    renderTable();
-</script>
+<script src="manage.js"></script>
 
 </body>
 </html>
