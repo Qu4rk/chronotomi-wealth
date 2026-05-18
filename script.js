@@ -223,6 +223,25 @@ document.addEventListener("DOMContentLoaded", () => {
 
 renderInventory();
 
+// Fetch latest inventory from GitHub to ensure data is current
+// (critical when hosted on GoDaddy or any non-GitHub-Pages host)
+(async function fetchLatestInventory() {
+    try {
+        const res = await fetch(
+            'https://raw.githubusercontent.com/Qu4rk/chronotomi-wealth/main/watches.json?t=' + Date.now()
+        );
+        if (res.ok) {
+            const data = await res.json();
+            if (Array.isArray(data) && data.length > 0) {
+                watches = data;
+                renderInventory();
+            }
+        }
+    } catch (e) {
+        // Fallback to local watches.js — already rendered above
+    }
+})();
+
 // Role Switch Sliding Animation Logic
 document.addEventListener("DOMContentLoaded", () => {
   const switchBox = document.querySelector(".role-switch");

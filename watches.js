@@ -12,7 +12,7 @@
 // Note: Ensure the 'image' property matches a file in the "assets/" folder.
 // ==========================================
 
-const watches = [
+let watches = [
   {
     brand: "Rolex",
     model: "Daytona 126500LN",

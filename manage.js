@@ -17,7 +17,28 @@ let editingIndex = -1;
 // ═══════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════
-function init() {
+async function init() {
+    // Try to load the latest data from GitHub (critical for GoDaddy hosting
+    // where local files may be stale)
+    try {
+        const res = await fetch(
+            'https://raw.githubusercontent.com/Qu4rk/chronotomi-wealth/main/watches.json?t=' + Date.now()
+        );
+        if (res.ok) {
+            const data = await res.json();
+            if (Array.isArray(data) && data.length > 0) {
+                currentWatches = data;
+                originalWatchesJSON = JSON.stringify(data);
+                renderWatchGrid();
+                updatePublishState();
+                return;
+            }
+        }
+    } catch (e) {
+        console.log('Could not fetch from GitHub, using local data');
+    }
+
+    // Fallback to local watches.js
     if (typeof watches !== 'undefined') {
         currentWatches = JSON.parse(JSON.stringify(watches));
         originalWatchesJSON = JSON.stringify(watches);
@@ -319,6 +340,18 @@ async function executePublish() {
         // Get current SHA
         const fileData = await githubGetFile(token, 'watches.js');
         await githubUpdateFile(token, 'watches.js', base64, fileData.sha, 'Update watch inventory');
+
+        // Step 3: Also update watches.json (used by live site fetch)
+        status.textContent = 'Syncing live inventory data...';
+        const jsonContent = JSON.stringify(currentWatches, null, 2);
+        const jsonBase64 = utf8ToBase64(jsonContent);
+        try {
+            const jsonFile = await githubGetFile(token, 'watches.json');
+            await githubUpdateFile(token, 'watches.json', jsonBase64, jsonFile.sha, 'Update watch inventory data');
+        } catch (e) {
+            // File might not exist yet, create it
+            await githubCreateFile(token, 'watches.json', jsonBase64, 'Create watch inventory data');
+        }
 
         // Success
         status.textContent = '✓ Published successfully! Changes will appear on the website within a minute.';
