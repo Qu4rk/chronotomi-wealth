@@ -290,6 +290,18 @@ img.brand-mark {
   color: #fff;
 }
 
+.social-icon {
+  color: rgba(255,255,255,0.5);
+  transition: color 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.social-icon:hover {
+  color: #ffffff;
+}
+
 /* SECTIONS */
 .section {
   width: 100%;
