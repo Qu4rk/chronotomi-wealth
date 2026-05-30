@@ -721,7 +721,7 @@ h1 {
   gap: 0.5rem;
 }
 
-.form-group input, .form-group textarea {
+.form-group input, .form-group textarea, .form-group select {
   width: 100%;
   background: transparent;
   border: none;
@@ -733,7 +733,7 @@ h1 {
   transition: border-color 0.3s;
 }
 
-.form-group input:focus, .form-group textarea:focus {
+.form-group input:focus, .form-group textarea:focus, .form-group select:focus {
   outline: none;
   border-bottom-color: var(--text);
 }
