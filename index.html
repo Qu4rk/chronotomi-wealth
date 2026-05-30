@@ -34,6 +34,7 @@
         <div class="nav-links">
           <a href="#collection">Collection</a>
           <a href="#experience">Experience</a>
+          <a href="#source">Source</a>
           <a href="#inquire">Inquire</a>
           <a href="about.html">About Us</a>
           <div class="role-switch">
@@ -125,6 +126,49 @@
 
         <div class="inventory-grid" id="inventory-grid" aria-live="polite">
           <!-- Populated by JS -->
+        </div>
+      </section>
+
+      <section class="source section" id="source" style="padding: var(--section-padding); background: var(--bg); text-align: center; border-top: 1px solid var(--line);">
+        <div class="inquire-container reveal">
+          <span class="eyebrow text-mask"><span class="text-mask-inner">Concierge Sourcing</span></span>
+          <h2>
+            <span class="text-mask"><span class="text-mask-inner delay-1">Looking for a</span></span>
+            <span class="text-mask"><span class="text-mask-inner delay-2">specific timepiece?</span></span>
+          </h2>
+          <p class="text-mask">
+            <span class="text-mask-inner delay-3">Leverage our network to source the exact watch you desire. Provide the details below, and our concierges will reach out to you privately.</span>
+          </p>
+
+          <div class="reveal" style="max-width: 600px; margin: 4rem auto 0; text-align: left;">
+            <form id="source-form" class="direct-email-form" style="padding: 3rem; border: 1px solid var(--line); background: var(--bg-soft);">
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;">
+                <div class="form-group">
+                  <label for="source-brand" class="eyebrow" style="margin: 0; font-size: 0.65rem;">Brand</label>
+                  <input type="text" id="source-brand" required placeholder="e.g. Rolex, Patek Philippe" />
+                </div>
+                <div class="form-group">
+                  <label for="source-ref" class="eyebrow" style="margin: 0; font-size: 0.65rem;">Reference Number</label>
+                  <input type="text" id="source-ref" required placeholder="e.g. 116500LN" />
+                </div>
+              </div>
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-top: 1.5rem;">
+                <div class="form-group">
+                  <label for="source-name" class="eyebrow" style="margin: 0; font-size: 0.65rem;">Full Name</label>
+                  <input type="text" id="source-name" required placeholder="Your Name" />
+                </div>
+                <div class="form-group">
+                  <label for="source-email" class="eyebrow" style="margin: 0; font-size: 0.65rem;">Email Address</label>
+                  <input type="email" id="source-email" required placeholder="name@example.com" />
+                </div>
+              </div>
+              <div class="form-group" style="margin-top: 1.5rem;">
+                <label for="source-details" class="eyebrow" style="margin: 0; font-size: 0.65rem;">Additional Details (Optional)</label>
+                <textarea id="source-details" rows="3" placeholder="Condition preferences, year, full set requirements..."></textarea>
+              </div>
+              <button type="submit" class="btn-primary" style="width: 100%; margin-top: 2rem;">Submit Sourcing Request</button>
+            </form>
+          </div>
         </div>
       </section>
 
