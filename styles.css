@@ -762,7 +762,7 @@ h1 {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  height: 60px;
+  height: 160px;
   width: auto;
   opacity: 0.15;
   pointer-events: none;
@@ -966,9 +966,9 @@ span.text-mask {
   }
 
   .footer-watermark {
-    height: 80px;
-    top: 20%;
-    transform: translate(-50%, 0);
+    height: 160px;
+    top: 50%;
+    transform: translate(-50%, -50%);
   }
 }
 
