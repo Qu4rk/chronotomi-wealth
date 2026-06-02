@@ -1,6 +1,6 @@
 
 const INSTAGRAM_URL =
-  "https://www.instagram.com/chronotomiwealth/?utm_source=ig_web_button_share_sheet";
+  "https://www.instagram.com/chronotomi.wealth?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==";
 
 const inventoryGrid = document.querySelector("#inventory-grid");
 const filterButtons = document.querySelectorAll(".filter-chip");
