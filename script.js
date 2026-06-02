@@ -143,7 +143,74 @@ if (copyButton) {
     }
   });
 }
+// ═══════════════════════════════════════
+// EMAIL FORM SUBMISSION LOGIC
+// ═══════════════════════════════════════
+async function submitToWeb3Forms(form, subject, message, successText) {
+  const submitBtn = form.querySelector('button[type="submit"]');
+  if (!submitBtn) return;
+  const originalBtnText = submitBtn.innerText;
+  
+  submitBtn.innerText = "Sending...";
+  submitBtn.disabled = true;
+  
+  try {
+    const response = await fetch("https://api.web3forms.com/submit", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify({
+        access_key: WEB3FORMS_ACCESS_KEY,
+        subject: subject,
+        message: message,
+        from_name: "Chronotomi Wealth Site",
+      }),
+    });
+    
+    const result = await response.json();
+    if (response.status === 200) {
+      form.reset();
+      submitBtn.innerText = "Sent Successfully!";
+      submitBtn.style.backgroundColor = "var(--gold)";
+      submitBtn.style.color = "#000";
+      
+      let msgDiv = form.querySelector('.form-status-msg');
+      if (!msgDiv) {
+        msgDiv = document.createElement('div');
+        msgDiv.className = 'form-status-msg success';
+        form.appendChild(msgDiv);
+      }
+      msgDiv.innerText = successText || "Thank you. We will be in touch shortly.";
+      msgDiv.style.display = "block";
+    } else {
+      throw new Error(result.message || "Failed to send");
+    }
+  } catch (error) {
+    submitBtn.innerText = "Error Sending";
+    let msgDiv = form.querySelector('.form-status-msg');
+    if (!msgDiv) {
+      msgDiv = document.createElement('div');
+      msgDiv.className = 'form-status-msg error';
+      form.appendChild(msgDiv);
+    }
+    msgDiv.innerText = "Something went wrong. Please try again or email us directly at sales@chronotomi.com";
+    msgDiv.style.display = "block";
+  } finally {
+    setTimeout(() => {
+      submitBtn.innerText = originalBtnText;
+      submitBtn.disabled = false;
+      submitBtn.style.backgroundColor = "";
+      submitBtn.style.color = "";
+      
+      const msgDiv = form.querySelector('.form-status-msg');
+      if (msgDiv) msgDiv.style.display = "none";
+    }, 5000);
+  }
+}
 
+// 1. Timepiece Inquiry Form
 const contactForm = document.querySelector("#contact-form");
 if (contactForm) {
   contactForm.addEventListener("submit", (e) => {
@@ -155,10 +222,11 @@ if (contactForm) {
     const subject = activeWatch ? `Inquiry: ${activeWatch.brand} ${activeWatch.model}` : "General Inquiry from Chronotomi Wealth";
     const body = `Name: ${name}\nEmail: ${email}\n\nMessage:\n${message}`;
 
-    window.location.href = `mailto:sales@chronotomi.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    submitToWeb3Forms(contactForm, subject, body, "Thank you for your inquiry. A concierge will be in touch shortly.");
   });
 }
 
+// 2. Advisory Inquiry Form
 const advisoryContactForm = document.querySelector("#advisory-contact-form");
 if (advisoryContactForm) {
   let activeService = null;
@@ -186,7 +254,40 @@ if (advisoryContactForm) {
     const subject = activeService ? `Advisory Inquiry: ${activeService}` : "Advisory Consultation Inquiry";
     const body = `Name: ${name}\nEmail: ${email}\n\nExecutive Summary:\n${message}`;
 
-    window.location.href = `mailto:sales@chronotomi.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    submitToWeb3Forms(advisoryContactForm, subject, body, "Thank you. We will contact you to schedule a consultation.");
+  });
+}
+
+// 3. Sourcing Request Form
+const sourceForm = document.querySelector("#source-form");
+if (sourceForm) {
+  sourceForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const brand = document.querySelector("#source-brand").value;
+    const ref = document.querySelector("#source-ref").value;
+    const name = document.querySelector("#source-name").value;
+    const email = document.querySelector("#source-email").value;
+    const countryCode = document.querySelector("#source-country-code").value;
+    const phone = document.querySelector("#source-phone").value;
+    const details = document.querySelector("#source-details").value;
+
+    const subject = `Sourcing Request: ${brand} ${ref}`;
+    const body = `Sourcing Request Details:
+-------------------------
+Brand: ${brand}
+Reference: ${ref}
+
+Client Information:
+-------------------------
+Name: ${name}
+Email: ${email}
+Phone: ${countryCode} ${phone}
+
+Additional Details:
+-------------------------
+${details || "None provided."}`;
+
+    submitToWeb3Forms(sourceForm, subject, body, "Thank you. Our sourcing team will contact you privately.");
   });
 }
 
