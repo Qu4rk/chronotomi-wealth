@@ -151,6 +151,19 @@ async function submitToWeb3Forms(form, subject, message, successText) {
   if (!submitBtn) return;
   const originalBtnText = submitBtn.innerText;
   
+  // Web3Forms AJAX is blocked by Cloudflare when running directly from a file:// URL.
+  if (window.location.protocol === 'file:') {
+    let msgDiv = form.querySelector('.form-status-msg');
+    if (!msgDiv) {
+      msgDiv = document.createElement('div');
+      msgDiv.className = 'form-status-msg error';
+      form.appendChild(msgDiv);
+    }
+    msgDiv.innerText = "Forms cannot be submitted from local files (file://). This will work perfectly once uploaded to chronotomi.com!";
+    msgDiv.style.display = "block";
+    return;
+  }
+
   submitBtn.innerText = "Sending...";
   submitBtn.disabled = true;
   
