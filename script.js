@@ -146,20 +146,24 @@ if (copyButton) {
 // ═══════════════════════════════════════
 // EMAIL FORM SUBMISSION LOGIC
 // ═══════════════════════════════════════
-async function submitToWeb3Forms(form, subject, message, successText) {
+async function submitToWeb3Forms(form, subject, name, email, message, successText) {
   const submitBtn = form.querySelector('button[type="submit"]');
   if (!submitBtn) return;
   const originalBtnText = submitBtn.innerText;
   
-  // Web3Forms AJAX is blocked by Cloudflare when running directly from a file:// URL.
-  if (window.location.protocol === 'file:') {
+  // Web3Forms AJAX is blocked by Cloudflare when running locally (file://, localhost, 127.0.0.1).
+  const isLocal = window.location.protocol === 'file:' || 
+                  window.location.hostname === 'localhost' || 
+                  window.location.hostname === '127.0.0.1';
+
+  if (isLocal) {
     let msgDiv = form.querySelector('.form-status-msg');
     if (!msgDiv) {
       msgDiv = document.createElement('div');
       msgDiv.className = 'form-status-msg error';
       form.appendChild(msgDiv);
     }
-    msgDiv.innerText = "Forms cannot be submitted from local files (file://). This will work perfectly once uploaded to chronotomi.com!";
+    msgDiv.innerText = "Forms cannot be submitted from a local environment. This will work perfectly once uploaded to chronotomi.com!";
     msgDiv.style.display = "block";
     return;
   }
@@ -177,6 +181,8 @@ async function submitToWeb3Forms(form, subject, message, successText) {
       body: JSON.stringify({
         access_key: WEB3FORMS_ACCESS_KEY,
         subject: subject,
+        name: name,
+        email: email,
         message: message,
         from_name: "Chronotomi Wealth Site",
       }),
@@ -233,9 +239,9 @@ if (contactForm) {
     const message = document.querySelector("#client-message").value;
 
     const subject = activeWatch ? `Inquiry: ${activeWatch.brand} ${activeWatch.model}` : "General Inquiry from Chronotomi Wealth";
-    const body = `Name: ${name}\nEmail: ${email}\n\nMessage:\n${message}`;
+    const body = `Message:\n${message}`;
 
-    submitToWeb3Forms(contactForm, subject, body, "Thank you for your inquiry. A concierge will be in touch shortly.");
+    submitToWeb3Forms(contactForm, subject, name, email, body, "Thank you for your inquiry. A concierge will be in touch shortly.");
   });
 }
 
@@ -265,9 +271,9 @@ if (advisoryContactForm) {
     const message = document.querySelector("#client-message").value;
 
     const subject = activeService ? `Advisory Inquiry: ${activeService}` : "Advisory Consultation Inquiry";
-    const body = `Name: ${name}\nEmail: ${email}\n\nExecutive Summary:\n${message}`;
+    const body = `Executive Summary:\n${message}`;
 
-    submitToWeb3Forms(advisoryContactForm, subject, body, "Thank you. We will contact you to schedule a consultation.");
+    submitToWeb3Forms(advisoryContactForm, subject, name, email, body, "Thank you. We will contact you to schedule a consultation.");
   });
 }
 
@@ -290,17 +296,13 @@ if (sourceForm) {
 Brand: ${brand}
 Reference: ${ref}
 
-Client Information:
--------------------------
-Name: ${name}
-Email: ${email}
-Phone: ${countryCode} ${phone}
+Client Phone: ${countryCode} ${phone}
 
 Additional Details:
 -------------------------
 ${details || "None provided."}`;
 
-    submitToWeb3Forms(sourceForm, subject, body, "Thank you. Our sourcing team will contact you privately.");
+    submitToWeb3Forms(sourceForm, subject, name, email, body, "Thank you. Our sourcing team will contact you privately.");
   });
 }
 
