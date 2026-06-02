@@ -738,27 +738,6 @@ h1 {
   border-bottom-color: var(--text);
 }
 
-.form-status-msg {
-  display: none;
-  margin-top: 1rem;
-  padding: 1rem;
-  border: 1px solid var(--line);
-  font-size: 0.9rem;
-  text-align: center;
-}
-
-.form-status-msg.success {
-  border-color: #4ade80;
-  color: #4ade80;
-  background: rgba(74, 222, 128, 0.05);
-}
-
-.form-status-msg.error {
-  border-color: #f87171;
-  color: #f87171;
-  background: rgba(248, 113, 113, 0.05);
-}
-
 .form-group input::placeholder, .form-group textarea::placeholder {
   color: #444;
 }
