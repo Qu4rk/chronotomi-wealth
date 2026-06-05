@@ -155,7 +155,7 @@ if (contactForm) {
     const subject = activeWatch ? `Inquiry: ${activeWatch.brand} ${activeWatch.model}` : "General Inquiry from Chronotomi Wealth";
     const body = `Name: ${name}\nEmail: ${email}\n\nMessage:\n${message}`;
 
-    window.location.href = `mailto:sales@chronotomi.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.location.href = `mailto:info@chronotomi.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   });
 }
 
@@ -186,7 +186,7 @@ if (advisoryContactForm) {
     const subject = activeService ? `Advisory Inquiry: ${activeService}` : "Advisory Consultation Inquiry";
     const body = `Name: ${name}\nEmail: ${email}\n\nExecutive Summary:\n${message}`;
 
-    window.location.href = `mailto:sales@chronotomi.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.location.href = `mailto:info@chronotomi.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   });
 }
 
