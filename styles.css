@@ -782,6 +782,27 @@ h1 {
   z-index: 0;
 }
 
+.footer-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1rem;
+}
+
+.footer-socials {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+}
+
+.footer-copyright {
+  text-align: right;
+  color: rgba(255,255,255,0.4);
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  line-height: 1.6;
+}
+
 /* REVEAL ANIMATIONS */
 .reveal {
   opacity: 0;
@@ -975,6 +996,14 @@ span.text-mask {
     gap: 2.5rem;
     text-align: center;
     padding: 4rem 1.5rem;
+  }
+
+  .footer-right {
+    align-items: center;
+  }
+
+  .footer-copyright {
+    text-align: center;
   }
 
   .footer-watermark {
