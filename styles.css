@@ -89,6 +89,9 @@ button {
   mix-blend-mode: difference;
   -webkit-transform: translate3d(0, 0, 0);
   transform: translate3d(0, 0, 0);
+  -webkit-backdrop-filter: blur(0px);
+  backdrop-filter: blur(0px);
+  will-change: background, backdrop-filter, padding;
   transition: padding 0.3s ease, background 0.3s ease, backdrop-filter 0.3s ease, -webkit-backdrop-filter 0.3s ease, border 0.3s ease;
 }
 
