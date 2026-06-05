@@ -253,40 +253,7 @@
           container.appendChild(row);
         }
 
-        // GSAP Animation Logic
-        gsap.ticker.lagSmoothing(0);
-        let mouseX = window.innerWidth / 2;
-
-        window.addEventListener('mousemove', (e) => {
-          mouseX = e.clientX;
-        });
-
-        window.addEventListener('touchmove', (e) => {
-          if (e.touches && e.touches.length > 0) {
-            mouseX = e.touches[0].clientX;
-          }
-        }, { passive: true });
-
-        const rows = container.querySelectorAll('.row');
-        const maxMoveAmount = 300;
-        const baseDuration = 0.8;
-        const inertiaFactors = [0.6, 0.4, 0.3, 0.2];
-
-        const updateMotion = () => {
-          rows.forEach((row, index) => {
-            const direction = index % 2 === 0 ? 1 : -1;
-            const moveAmount = ((mouseX / window.innerWidth) * maxMoveAmount - maxMoveAmount / 2) * direction;
-
-            gsap.to(row, {
-              x: moveAmount,
-              duration: baseDuration + inertiaFactors[index % inertiaFactors.length],
-              ease: 'power3.out',
-              overwrite: 'auto'
-            });
-          });
-        };
-
-        gsap.ticker.add(updateMotion);
+        // Background is intentionally kept static for this page.
       });
     </script>
   </body>
