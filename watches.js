@@ -15,11 +15,11 @@
 let watches = [
   {
     brand: "Rolex",
-    model: "Daytona 126500LN",
-    reference: "126500LN",
+    model: "Submariner Date Oyster",
+    reference: "126613LB",
     set: "Full Set",
-    caseSize: "40mm",
-    image: "assets/gen_rolex_1_1776373698477.png",
+    caseSize: "41mm",
+    image: "assets/Submariner-Date-Blue-Ceramic-Oyster-41mm-Oystersteel-And-Yellow-Gold.png",
   },
   {
     brand: "Patek Philippe",
