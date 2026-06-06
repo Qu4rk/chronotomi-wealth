@@ -61,4 +61,12 @@ let watches = [
     caseSize: "40.8mm",
     image: "assets/gen_patek_2_1776373744165.png",
   },
+  {
+    brand: "Rolex",
+    model: "Yacht-Master II",
+    reference: "126680",
+    set: "Full Set",
+    caseSize: "44mm",
+    image: "assets/yacht-master-II-Oyster-44mm-Oystersteel-Reference-126680.png",
+  },
 ];
