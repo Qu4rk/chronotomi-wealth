@@ -67,6 +67,6 @@ let watches = [
     reference: "126680",
     set: "Full Set",
     caseSize: "44mm",
-    image: "assets/yacht-master-II-Oyster-44mm-Oystersteel-Reference-126680.png",
+    image: "assets/yacht-master-II-Oyster-44mm-Oystersteel-Reference-126680.png?v=2",
   },
 ];
