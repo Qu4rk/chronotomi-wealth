@@ -33,7 +33,7 @@ let watches = [
     set: "Box + Papers",
     caseSize: "40mm",
     status: "In Stock",
-    image: "assets/gen_patek_1_1776373728459.png",
+    image: "assets/patek.png",
   },
   {
     brand: "Audemars Piguet",
