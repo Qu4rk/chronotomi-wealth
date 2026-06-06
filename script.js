@@ -56,12 +56,9 @@ function renderInventory(filter = "All") {
             <div class="inventory-copy">
               <span class="eyebrow text-mask" style="margin-bottom: 0.5rem; letter-spacing: 0.1em; color: var(--text);"><span class="text-mask-inner delay-1">${watch.reference}</span></span>
               <h3><span class="text-mask"><span class="text-mask-inner delay-2">${watch.model}</span></span></h3>
-              <p class="text-mask" style="font-size: 0.7rem; color: var(--muted); text-transform: uppercase;"><span class="text-mask-inner delay-3">${watch.status}</span></p>
             </div>
 
             <div class="inventory-specs" style="margin-bottom: 3rem;">
-              <span>${watch.year}</span>
-              <span>${watch.condition}</span>
               <span>${watch.caseSize}</span>
             </div>
 
