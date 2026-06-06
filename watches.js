@@ -31,7 +31,7 @@ let watches = [
     year: "2023",
     condition: "Excellent",
     set: "Box + Papers",
-    caseSize: "40mm",
+    caseSize: "41mm",
     status: "In Stock",
     image: "assets/gen_patek_1_1776373728459.png",
   },
