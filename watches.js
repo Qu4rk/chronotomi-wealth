@@ -26,8 +26,8 @@ let watches = [
   },
   {
     brand: "Patek Philippe",
-    model: "Nautilus 5712/1A",
-    reference: "5712/1A-001",
+    model: "Nautilus",
+    reference: "5811/1G-001",
     year: "2023",
     condition: "Excellent",
     set: "Box + Papers",
