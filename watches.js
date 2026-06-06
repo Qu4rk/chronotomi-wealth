@@ -69,4 +69,12 @@ let watches = [
     caseSize: "44mm",
     image: "assets/yacht-master-II-Oyster-44mm-Oystersteel-Reference-126680.png?v=2",
   },
+  {
+    brand: "Patek Philippe",
+    model: "Calatrava",
+    reference: "6119R-001",
+    set: "Full Set",
+    caseSize: "39mm",
+    image: "assets/patek-phillipe-calatrava-6119R-001.png",
+  },
 ];
