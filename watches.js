@@ -47,11 +47,11 @@ let watches = [
   },
   {
     brand: "Rolex",
-    model: "GMT-Master II Sprite",
-    reference: "126720VTNR",
+    model: "GMT-Master II Oyster",
+    reference: "126710GRNR",
     set: "Full Set",
     caseSize: "40mm",
-    image: "assets/gen_rolex_2_1776373712151.png",
+    image: "assets/GMT-Master-II-oystersteel-40mm-126710GRNR.jpeg",
   },
   {
     brand: "Patek Philippe",
