@@ -49,7 +49,11 @@ function renderInventory(filter = "All") {
       (watch) => `
         <article class="inventory-card reveal" style="position: relative; overflow: hidden;">
           <div class="inventory-image" style="position: relative; z-index: 1;">
-            <img src="${watch.image}" alt="${watch.brand} ${watch.model}" loading="lazy" />
+            <picture>
+              <source type="image/avif" srcset="${watch.image.replace(/\.(png|jpe?g)$/i, '.avif')}" />
+              <source type="image/webp" srcset="${watch.image.replace(/\.(png|jpe?g)$/i, '.webp')}" />
+              <img src="${watch.image}" alt="${watch.brand} ${watch.model}" loading="lazy" decoding="async" />
+            </picture>
           </div>
           <div style="padding: 0 2rem 3rem;">
             <span class="inventory-brand text-mask"><span class="text-mask-inner">${watch.brand}</span></span>

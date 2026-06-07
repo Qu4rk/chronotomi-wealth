@@ -1,0 +1,49 @@
+# ----------------------------------------------------------------------
+# Chronotomi Wealth Performance Optimizations
+# ----------------------------------------------------------------------
+
+<IfModule mod_mime.c>
+  # Ensure correct MIME types for modern media
+  AddType image/avif                      avif
+  AddType image/webp                      webp
+  AddType video/webm                      webm
+</IfModule>
+
+<IfModule mod_deflate.c>
+  # Compress text assets
+  AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript application/json
+</IfModule>
+
+<IfModule mod_expires.c>
+  # Enable expirations
+  ExpiresActive On
+  
+  # Default directive
+  ExpiresDefault "access plus 1 month"
+  
+  # Media: images, video, audio
+  ExpiresByType image/gif "access plus 1 year"
+  ExpiresByType image/png "access plus 1 year"
+  ExpiresByType image/jpeg "access plus 1 year"
+  ExpiresByType image/webp "access plus 1 year"
+  ExpiresByType image/avif "access plus 1 year"
+  ExpiresByType video/mp4 "access plus 1 year"
+  ExpiresByType video/webm "access plus 1 year"
+  
+  # Webfonts
+  ExpiresByType font/woff2 "access plus 1 year"
+  
+  # CSS and JavaScript
+  ExpiresByType text/css "access plus 1 year"
+  ExpiresByType application/javascript "access plus 1 year"
+</IfModule>
+
+<IfModule mod_headers.c>
+  # Add Cache-Control headers explicitly
+  <FilesMatch "\.(ico|jpe?g|png|gif|swf|svg|avif|webp|mp4|webm)$">
+    Header set Cache-Control "max-age=31536000, public"
+  </FilesMatch>
+  <FilesMatch "\.(css|js)$">
+    Header set Cache-Control "max-age=31536000, public"
+  </FilesMatch>
+</IfModule>

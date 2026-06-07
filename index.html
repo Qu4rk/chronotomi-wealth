@@ -13,13 +13,20 @@
     href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&display=swap"
     rel="stylesheet" />
   <link rel="stylesheet" href="styles.css?v=59" />
-  <link rel="icon" type="image/png" href="assets/favicon-actual.png?v=4" />
+  <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon.ico" />
+  <link rel="preload" as="image" href="assets/video1_poster.jpg" fetchpriority="high" />
 </head>
 
 <body>
   <header class="site-header" id="site-header">
     <a class="brand" href="#top" aria-label="Chronotomi Wealth home">
-      <img class="brand-mark" src="assets/logo_transparent.png" alt="Chronotomi Wealth" />
+      <picture>
+        <source type="image/avif" srcset="assets/logo_transparent.avif" />
+        <source type="image/webp" srcset="assets/logo_transparent.webp" />
+        <img class="brand-mark" src="assets/logo_transparent.png" alt="Chronotomi Wealth" fetchpriority="high" />
+      </picture>
       <span class="brand-copy">
         <strong>Chronotomi Wealth</strong>
         <small>Your Time, Defined.</small>
@@ -68,7 +75,11 @@
 
     <section class="editorial-split section" id="experience">
       <div class="editorial-image">
-        <img src="assets/patek.jpeg" alt="Patek Philippe luxury watch" loading="lazy" />
+        <picture>
+          <source type="image/avif" srcset="assets/patek.avif" />
+          <source type="image/webp" srcset="assets/patek.webp" />
+          <img src="assets/patek.jpeg" alt="Patek Philippe luxury watch" loading="lazy" decoding="async" />
+        </picture>
       </div>
       <div class="editorial-text reveal">
         <span class="eyebrow text-mask"><span class="text-mask-inner">The Standard</span></span>
@@ -96,7 +107,11 @@
 
     <section class="editorial-split reverse section">
       <div class="editorial-image">
-        <img src="assets/watch_on_wrist_1776372212476.png" alt="Elegant luxury watch on wrist" loading="lazy" />
+        <picture>
+          <source type="image/avif" srcset="assets/watch_on_wrist_1776372212476-400.avif 400w, assets/watch_on_wrist_1776372212476-800.avif 800w, assets/watch_on_wrist_1776372212476.avif 1200w" sizes="(max-width: 900px) 100vw, 50vw" />
+          <source type="image/webp" srcset="assets/watch_on_wrist_1776372212476-400.webp 400w, assets/watch_on_wrist_1776372212476-800.webp 800w, assets/watch_on_wrist_1776372212476.webp 1200w" sizes="(max-width: 900px) 100vw, 50vw" />
+          <img src="assets/watch_on_wrist_1776372212476.png" alt="Elegant luxury watch on wrist" loading="lazy" decoding="async" />
+        </picture>
       </div>
       <div class="editorial-text reveal">
         <span class="eyebrow text-mask"><span class="text-mask-inner">The Experience</span></span>
@@ -318,8 +333,8 @@
     </div>
   </footer>
 
-  <script src="watches.js?v=57"></script>
-  <script src="script.js?v=54"></script>
+  <script src="watches.js?v=57" defer></script>
+  <script src="script.js?v=54" defer></script>
   <script>
     // Header scroll logic
     const header = document.getElementById('site-header');
