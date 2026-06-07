@@ -30,6 +30,11 @@
       </div>
     </div>
   </div>
+  <script>
+    if (sessionStorage.getItem('chronotomi-preloader-shown')) {
+      document.getElementById('preloader').style.display = 'none';
+    }
+  </script>
   <header class="site-header" id="site-header">
     <a class="brand" href="#top" aria-label="Chronotomi Wealth home">
       <picture>
