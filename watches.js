@@ -103,7 +103,7 @@ let watches = [
   },
   {
     brand: "Rolex",
-    model: "GMT-Master II Bruce Wayne",
+    model: "GMT-Master II",
     reference: "126710GRNR",
     set: "Full Set",
     caseSize: "40mm",
