@@ -134,5 +134,45 @@
     "set": "Full Set",
     "caseSize": "40mm",
     "image": "assets/seedream-5.0-lite_a_Make_the_background_.jpeg"
+  },
+  {
+    "brand": "Rolex",
+    "model": "Datejust 36",
+    "reference": "126234",
+    "set": "Full Set",
+    "caseSize": "36mm",
+    "image": "assets/datejust-36-oyster-36mm-oystersteel-and-white-gold-126234.jpeg"
+  },
+  {
+    "brand": "Rolex",
+    "model": "GMT-Master II",
+    "reference": "126710BLNR",
+    "set": "Full Set",
+    "caseSize": "40mm",
+    "image": "assets/gmt-master-II-oyster-40mm-oystersteel-126710BLNR.png"
+  },
+  {
+    "brand": "Rolex",
+    "model": "GMT-Master II",
+    "reference": "126718GRNR",
+    "set": "Full Set",
+    "caseSize": "40mm",
+    "image": "assets/gmt-master-ll-oyster-40mm-yellow-gold-126718GRNR.png"
+  },
+  {
+    "brand": "Rolex",
+    "model": "Oyster Perpetual 41",
+    "reference": "134300",
+    "set": "Full Set",
+    "caseSize": "41mm",
+    "image": "assets/oyster-perpetual-41-oyster-41mm-oystersteel-134300.jpeg"
+  },
+  {
+    "brand": "Cartier",
+    "model": "Santos de Cartier",
+    "reference": "WSSA0018",
+    "set": "Full Set",
+    "caseSize": "Large",
+    "image": "assets/santos-de-cartier-large-WSSA0018.jpeg"
   }
 ]
