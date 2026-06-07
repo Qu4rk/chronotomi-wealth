@@ -1,272 +1,319 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Learn more about Chronotomi Wealth, our vision, and the standard of excellence we bring to luxury timepieces and wealth advisory." />
-    <title>Chronotomi Wealth - About Us</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css?v=59" />
-    <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
-    <link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
-    <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon.ico" />
-    <!-- GSAP for GridMotion -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 
-    <style>
-      .text-center-layout {
-        max-width: 800px;
-        margin: 0 auto;
-        text-align: center;
-        padding: var(--section-padding);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-      }
-      .text-center-layout h2 {
-        font-size: clamp(2rem, 4vw, 3rem);
-        margin-bottom: 1.5rem;
-      }
-      .text-center-layout p {
-        color: rgba(255, 255, 255, 0.7);
-        font-size: 1.1rem;
-        line-height: 1.8;
-        max-width: 650px;
-        margin: 2rem auto;
-      }
-      .hero-content-center {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-        z-index: 10;
-        width: 100%;
-        max-width: 800px;
-      }
-      .hero-content-center h1 {
-        font-size: clamp(3rem, 6vw, 5rem);
-        line-height: 1.1;
-        margin-bottom: 1.5rem;
-      }
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description"
+    content="Learn more about Chronotomi Wealth, our vision, and the standard of excellence we bring to luxury timepieces and wealth advisory." />
+  <title>Chronotomi Wealth - About Us</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css?v=59" />
+  <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon.ico" />
+  <!-- GSAP for GridMotion -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 
-      /* Global GridMotion CSS */
-      .gridMotion-container {
-        gap: 1.5rem;
-        flex: none;
-        position: fixed;
-        width: 150vw;
-        height: 150vh;
-        display: grid;
-        grid-template-rows: repeat(4, 1fr);
-        grid-template-columns: 100%;
-        transform: rotate(-15deg);
-        transform-origin: center center;
-        z-index: 0;
-        top: -25vh;
-        left: -25vw;
-      }
+  <style>
+    .text-center-layout {
+      max-width: 800px;
+      margin: 0 auto;
+      text-align: center;
+      padding: var(--section-padding);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
 
-      .row {
-        display: grid;
-        gap: 1.5rem;
-        grid-template-columns: repeat(7, 1fr);
-        will-change: transform, filter;
-      }
+    .text-center-layout h2 {
+      font-size: clamp(2rem, 4vw, 3rem);
+      margin-bottom: 1.5rem;
+    }
 
-      .row__item {
-        position: relative;
-      }
+    .text-center-layout p {
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 1.1rem;
+      line-height: 1.8;
+      max-width: 650px;
+      margin: 2rem auto;
+    }
 
-      .row__item-inner {
-        position: relative;
-        width: 100%;
-        height: 100%;
-        overflow: hidden;
-        border-radius: 12px;
-        background-color: transparent;
-        border: none;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
+    .hero-content-center {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      z-index: 10;
+      width: 100%;
+      max-width: 800px;
+    }
 
-      .row__item-inner:hover .row__item-img {
-        opacity: 0.25;
-      }
+    .hero-content-center h1 {
+      font-size: clamp(3rem, 6vw, 5rem);
+      line-height: 1.1;
+      margin-bottom: 1.5rem;
+    }
 
+    /* Global GridMotion CSS */
+    .gridMotion-container {
+      gap: 1.5rem;
+      flex: none;
+      position: fixed;
+      width: 150vw;
+      height: 150vh;
+      display: grid;
+      grid-template-rows: repeat(4, 1fr);
+      grid-template-columns: 100%;
+      transform: rotate(-15deg);
+      transform-origin: center center;
+      z-index: 0;
+      top: -25vh;
+      left: -25vw;
+    }
+
+    .row {
+      display: grid;
+      gap: 1.5rem;
+      grid-template-columns: repeat(7, 1fr);
+      will-change: transform, filter;
+    }
+
+    .row__item {
+      position: relative;
+    }
+
+    .row__item-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      border-radius: 12px;
+      background-color: transparent;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .row__item-inner:hover .row__item-img {
+      opacity: 0.25;
+    }
+
+    .row__item-img {
+      width: 100%;
+      height: 100%;
+      background-size: contain;
+      background-position: center;
+      background-repeat: no-repeat;
+      opacity: 0.25;
+      filter: grayscale(100%) brightness(0) invert(1);
+    }
+
+    @media (max-width: 900px) {
       .row__item-img {
-        width: 100%;
-        height: 100%;
-        background-size: contain;
-        background-position: center;
-        background-repeat: no-repeat;
-        opacity: 0.25; 
-        filter: grayscale(100%) brightness(0) invert(1);
+        opacity: 0.35;
       }
 
-      @media (max-width: 900px) {
-        .row__item-img {
-          opacity: 0.35;
-        }
-        .confidential-text {
-          text-align: center;
-          display: block;
-        }
+      .confidential-text {
+        text-align: center;
+        display: block;
       }
-    </style>
-  </head>
-  <body>
-    <header class="site-header" id="site-header">
-      <a class="brand" href="index.html" aria-label="Chronotomi Wealth home">
-        <img class="brand-mark" src="assets/logo_transparent.png" alt="Chronotomi Wealth" />
-        <span class="brand-copy">
-          <strong>Chronotomi Wealth</strong>
-          <small>Your Time, Defined.</small>
-        </span>
-      </a>
+    }
+  </style>
+</head>
 
-      <nav class="site-nav" aria-label="Primary">
-        <button class="nav-toggle" id="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
-          <span class="hamburger"></span>
-        </button>
-        <div class="nav-links">
-          <a href="#vision">The Vision</a>
-          <a href="#history">Our History</a>
-          <a href="#inquire">Inquire</a>
-          <a href="about.html" class="role-active">About Us</a>
-          <div class="role-switch">
-            <div class="role-slider"></div>
-            <a href="index.html">Timepieces</a>
-            <a href="advisory.html">Advisory</a>
-          </div>
+<body>
+  <header class="site-header" id="site-header">
+    <a class="brand" href="index.html" aria-label="Chronotomi Wealth home">
+      <img class="brand-mark" src="assets/logo_transparent.png" alt="Chronotomi Wealth" />
+      <span class="brand-copy">
+        <strong>Chronotomi Wealth</strong>
+        <small>Your Time, Defined.</small>
+      </span>
+    </a>
+
+    <nav class="site-nav" aria-label="Primary">
+      <button class="nav-toggle" id="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
+        <span class="hamburger"></span>
+      </button>
+      <div class="nav-links">
+        <a href="#vision">The Vision</a>
+        <a href="#history">Our History</a>
+        <a href="#inquire">Inquire</a>
+        <a href="about.html" class="role-active">About Us</a>
+        <div class="role-switch">
+          <div class="role-slider"></div>
+          <a href="index.html">Timepieces</a>
+          <a href="advisory.html">Advisory</a>
         </div>
-      </nav>
-    </header>
+      </div>
+    </nav>
+  </header>
 
-    <!-- Global GridMotion Background -->
-    <div class="gridMotion-container" id="gridMotionContainer">
-      <!-- Grid generated by JS -->
+  <!-- Global GridMotion Background -->
+  <div class="gridMotion-container" id="gridMotionContainer">
+    <!-- Grid generated by JS -->
+  </div>
+
+  <!-- Fixed gradient overlay to improve text readability over the grid -->
+  <div
+    style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: radial-gradient(circle, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.85) 100%); z-index: 1; pointer-events: none;">
+  </div>
+
+  <main id="top" style="position: relative; z-index: 2;">
+    <!-- Hero Section -->
+    <section class="hero"
+      style="min-height: 100vh; display: flex; align-items: center; justify-content: center; position: relative; background: transparent;">
+      <div class="hero-content reveal" style="display: flex; flex-direction: column; align-items: center; gap: 1.5rem;">
+        <span class="eyebrow" style="margin: 0;"><span class="text-mask"><span class="text-mask-inner">Our
+              Story</span></span></span>
+        <h1 style="margin: 0;">
+          <span class="text-mask"><span class="text-mask-inner delay-1">Beyond Time,</span></span><br />
+          <span class="text-mask"><span class="text-mask-inner delay-2">Beyond Wealth.</span></span>
+        </h1>
+        <p class="hero-text"
+          style="max-width: 600px; margin: 0; color: rgba(255,255,255,0.9); font-size: 1.1rem; line-height: 1.6;">
+          <span class="text-mask"><span class="text-mask-inner delay-3">Discover the legacy of Chronotomi Wealth—a
+              commitment to excellence, discretion, and the curation of exceptional value.</span></span>
+        </p>
+        <a class="btn-primary" href="#vision" style="margin-top: 0.5rem;">Discover More</a>
+      </div>
+    </section>
+
+    <section class="section text-center-layout" id="vision">
+      <div class="reveal" style="display: flex; flex-direction: column; align-items: center;">
+        <span class="eyebrow text-mask"><span class="text-mask-inner">Our Vision</span></span>
+        <h2>
+          <span class="text-mask"><span class="text-mask-inner delay-1">Precision, value, and</span></span><br />
+          <span class="text-mask"><span class="text-mask-inner delay-2">long-term vision.</span></span>
+        </h2>
+        <p class="text-mask">
+          <span class="text-mask-inner delay-3">Chronotomi Wealth was founded on a shared passion for precision, value,
+            and long-term vision. We are a team of qualified Accountants, Bankers, Software Engineers, and Portfolio
+            Managers united by a common belief that wealth should be built intelligently, preserved carefully, and
+            guided by expertise.</span>
+        </p>
+        <p class="text-mask" style="margin-top: 1rem;">
+          <span class="text-mask-inner delay-3">Our focus extends beyond traditional advisory. We bring together
+            experience in investments, real estate, luxury assets, and iconic timepieces to offer a perspective that is
+            both strategic and refined. In a world where value is increasingly defined by expertise and access, we help
+            our clients identify opportunities with clarity and confidence.</span>
+        </p>
+      </div>
+    </section>
+
+    <section class="section text-center-layout" id="history">
+      <div class="reveal" style="display: flex; flex-direction: column; align-items: center;">
+        <span class="eyebrow text-mask"><span class="text-mask-inner">Our Approach</span></span>
+        <h2>
+          <span class="text-mask"><span class="text-mask-inner delay-1">Wealth not only as
+              accumulation,</span></span><br />
+          <span class="text-mask"><span class="text-mask-inner delay-2">but as legacy.</span></span>
+        </h2>
+        <p class="text-mask">
+          <span class="text-mask-inner delay-3">At Chronotomi Wealth, we understand that exceptional assets require
+            exceptional judgment. Whether it is a property opportunity, a carefully selected timepiece, or a broader
+            wealth strategy, we approach every decision with discretion, discipline, and attention to detail. Our goal
+            is to create lasting value for clients who appreciate quality, authenticity, and thoughtful
+            investment.</span>
+        </p>
+        <p class="text-mask" style="margin-top: 1rem;">
+          <span class="text-mask-inner delay-3">We are more than an advisory group — we are partners in building a
+            future shaped by insight, trust, and ambition. Chronotomi Wealth exists for those who see wealth not only as
+            accumulation, but as legacy.</span>
+        </p>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer"
+    style="position: relative; overflow: hidden; background: #000; border-top: 1px solid rgba(255,255,255,0.05); z-index: 5;">
+    <img src="assets/logo_transparent.png" class="footer-watermark" aria-hidden="true" alt="" />
+    <div class="footer-left" style="position: relative; z-index: 2;">
+      <strong>Chronotomi Wealth</strong><br />
+      <span>Your Time, Defined.</span>
+      <div class="footer-links" style="display: flex; flex-direction: column; gap: 0.3rem; margin-top: 1rem;">
+        <a href="privacy.html"
+          style="color: rgba(255,255,255,0.6); text-decoration: none; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.05em;">Privacy
+          & Discretion Policy</a>
+        <a href="terms.html"
+          style="color: rgba(255,255,255,0.6); text-decoration: none; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.05em;">Terms
+          of Service</a>
+        <a href="logistics.html"
+          style="color: rgba(255,255,255,0.6); text-decoration: none; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.05em;">Acquisition
+          & Logistics Policy</a>
+      </div>
     </div>
-    
-    <!-- Fixed gradient overlay to improve text readability over the grid -->
-    <div style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: radial-gradient(circle, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.85) 100%); z-index: 1; pointer-events: none;"></div>
-
-    <main id="top" style="position: relative; z-index: 2;">
-      <!-- Hero Section -->
-      <section class="hero" style="min-height: 100vh; display: flex; align-items: center; justify-content: center; position: relative; background: transparent;">
-        <div class="hero-content reveal" style="display: flex; flex-direction: column; align-items: center; gap: 1.5rem;">
-          <span class="eyebrow" style="margin: 0;"><span class="text-mask"><span class="text-mask-inner">Our Story</span></span></span>
-          <h1 style="margin: 0;">
-            <span class="text-mask"><span class="text-mask-inner delay-1">Beyond Time,</span></span><br/>
-            <span class="text-mask"><span class="text-mask-inner delay-2">Beyond Wealth.</span></span>
-          </h1>
-          <p class="hero-text" style="max-width: 600px; margin: 0; color: rgba(255,255,255,0.9); font-size: 1.1rem; line-height: 1.6;">
-            <span class="text-mask"><span class="text-mask-inner delay-3">Discover the legacy of Chronotomi Wealth—a commitment to excellence, discretion, and the curation of exceptional value.</span></span>
-          </p>
-          <a class="btn-primary" href="#vision" style="margin-top: 0.5rem;">Discover More</a>
-        </div>
-      </section>
-
-      <section class="section text-center-layout" id="vision">
-        <div class="reveal" style="display: flex; flex-direction: column; align-items: center;">
-          <span class="eyebrow text-mask"><span class="text-mask-inner">Our Vision</span></span>
-          <h2>
-            <span class="text-mask"><span class="text-mask-inner delay-1">Precision, value, and</span></span><br/>
-            <span class="text-mask"><span class="text-mask-inner delay-2">long-term vision.</span></span>
-          </h2>
-          <p class="text-mask">
-            <span class="text-mask-inner delay-3">Chronotomi Wealth was founded on a shared passion for precision, value, and long-term vision. We are a team of qualified Accountants, Bankers, Software Engineers, and Portfolio Managers united by a common belief that wealth should be built intelligently, preserved carefully, and guided by expertise.</span>
-          </p>
-          <p class="text-mask" style="margin-top: 1rem;">
-            <span class="text-mask-inner delay-3">Our focus extends beyond traditional advisory. We bring together experience in investments, real estate, luxury assets, and fine timepieces to offer a perspective that is both strategic and refined. In a world where value is increasingly defined by expertise and access, we help our clients identify opportunities with clarity and confidence.</span>
-          </p>
-        </div>
-      </section>
-
-      <section class="section text-center-layout" id="history">
-        <div class="reveal" style="display: flex; flex-direction: column; align-items: center;">
-          <span class="eyebrow text-mask"><span class="text-mask-inner">Our Approach</span></span>
-          <h2>
-            <span class="text-mask"><span class="text-mask-inner delay-1">Wealth not only as accumulation,</span></span><br/>
-            <span class="text-mask"><span class="text-mask-inner delay-2">but as legacy.</span></span>
-          </h2>
-          <p class="text-mask">
-            <span class="text-mask-inner delay-3">At Chronotomi Wealth, we understand that exceptional assets require exceptional judgment. Whether it is a property opportunity, a carefully selected timepiece, or a broader wealth strategy, we approach every decision with discretion, discipline, and attention to detail. Our goal is to create lasting value for clients who appreciate quality, authenticity, and thoughtful investment.</span>
-          </p>
-          <p class="text-mask" style="margin-top: 1rem;">
-            <span class="text-mask-inner delay-3">We are more than an advisory group — we are partners in building a future shaped by insight, trust, and ambition. Chronotomi Wealth exists for those who see wealth not only as accumulation, but as legacy.</span>
-          </p>
-        </div>
-      </section>
-
-    </main>
-
-    <footer class="site-footer" style="position: relative; overflow: hidden; background: #000; border-top: 1px solid rgba(255,255,255,0.05); z-index: 5;">
-      <img src="assets/logo_transparent.png" class="footer-watermark" aria-hidden="true" alt="" />
-      <div class="footer-left" style="position: relative; z-index: 2;">
-        <strong>Chronotomi Wealth</strong><br/>
-        <span>Your Time, Defined.</span>
-        <div class="footer-links" style="display: flex; flex-direction: column; gap: 0.3rem; margin-top: 1rem;">
-          <a href="privacy.html" style="color: rgba(255,255,255,0.6); text-decoration: none; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.05em;">Privacy & Discretion Policy</a>
-          <a href="terms.html" style="color: rgba(255,255,255,0.6); text-decoration: none; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.05em;">Terms of Service</a>
-          <a href="logistics.html" style="color: rgba(255,255,255,0.6); text-decoration: none; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.05em;">Acquisition & Logistics Policy</a>
-        </div>
+    <div class="footer-right" style="position: relative; z-index: 2;">
+      <div class="footer-socials">
+        <a href="https://www.instagram.com/chronotomi.wealth?utm_source=ig_web_button_share_sheet&amp;igsh=ZDNlZDc0MzIxNw=="
+          target="_blank" rel="noreferrer" class="social-icon" aria-label="Instagram">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+            <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+            <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+          </svg>
+        </a>
+        <a href="https://www.facebook.com/share/1Ba8A5m4Wp/" target="_blank" rel="noreferrer" class="social-icon"
+          aria-label="Facebook">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3.81l.39-4h-4V7a1 1 0 0 1 1-1h3z"></path>
+          </svg>
+        </a>
       </div>
-      <div class="footer-right" style="position: relative; z-index: 2;">
-        <div class="footer-socials">
-          <a href="https://www.instagram.com/chronotomi.wealth?utm_source=ig_web_button_share_sheet&amp;igsh=ZDNlZDc0MzIxNw==" target="_blank" rel="noreferrer" class="social-icon" aria-label="Instagram">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
-          </a>
-          <a href="https://www.facebook.com/share/1Ba8A5m4Wp/" target="_blank" rel="noreferrer" class="social-icon" aria-label="Facebook">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3.81l.39-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>
-          </a>
-        </div>
-        <div class="footer-copyright">
-          &copy; 2026 Chronotomi Wealth LTD<br>
-          Brought to life by Quark.
-        </div>
+      <div class="footer-copyright">
+        &copy; 2026 Chronotomi Wealth LTD<br>
+        Brought to life by Quark.
       </div>
-    </footer>
+    </div>
+  </footer>
 
-    <script src="watches.js" defer></script>
-    <script src="script.js?v=54" defer></script>
-    <script>
-      // Header scroll logic
-      const header = document.getElementById('site-header');
-      window.addEventListener('scroll', () => {
-        if (window.scrollY > 50) {
-          header.classList.add('is-scrolled');
-        } else {
-          header.classList.remove('is-scrolled');
-        }
-      });
+  <script src="watches.js" defer></script>
+  <script src="script.js?v=54" defer></script>
+  <script>
+    // Header scroll logic
+    const header = document.getElementById('site-header');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 50) {
+        header.classList.add('is-scrolled');
+      } else {
+        header.classList.remove('is-scrolled');
+      }
+    });
 
-      // GridMotion Vanilla JS Implementation (Global Background)
-      document.addEventListener('DOMContentLoaded', () => {
-        const container = document.getElementById('gridMotionContainer');
-        if (!container || typeof gsap === 'undefined') return;
+    // GridMotion Vanilla JS Implementation (Global Background)
+    document.addEventListener('DOMContentLoaded', () => {
+      const container = document.getElementById('gridMotionContainer');
+      if (!container || typeof gsap === 'undefined') return;
 
-        // Generate Grid Items - Reverted to 4x7 for larger boxes
-        for (let r = 0; r < 4; r++) {
-          const row = document.createElement('div');
-          row.className = 'row';
-          for (let c = 0; c < 7; c++) {
-            const item = document.createElement('div');
-            item.className = 'row__item';
-            item.innerHTML = `
+      // Generate Grid Items - Reverted to 4x7 for larger boxes
+      for (let r = 0; r < 4; r++) {
+        const row = document.createElement('div');
+        row.className = 'row';
+        for (let c = 0; c < 7; c++) {
+          const item = document.createElement('div');
+          item.className = 'row__item';
+          item.innerHTML = `
               <div class="row__item-inner">
                 <div class="row__item-img" style="background-image: url('assets/logo_transparent.png');"></div>
               </div>
             `;
-            row.appendChild(item);
-          }
-          container.appendChild(row);
+          row.appendChild(item);
         }
+        container.appendChild(row);
+      }
 
-        // Background is intentionally kept static for this page.
-      });
-    </script>
-  </body>
+      // Background is intentionally kept static for this page.
+    });
+  </script>
+</body>
+
 </html>
