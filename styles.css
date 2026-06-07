@@ -86,10 +86,7 @@ button {
   justify-content: space-between;
   padding: var(--header-padding);
   background: transparent;
-  mix-blend-mode: difference;
-  transform: translate3d(0, 0, 0);
-  -webkit-transform: translate3d(0, 0, 0);
-  will-change: transform;
+  /* mix-blend-mode removed — it breaks iOS fixed positioning on fast scroll */
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
   -webkit-backdrop-filter: blur(0px);
@@ -107,7 +104,6 @@ button {
 }
 
 body.nav-open .site-header {
-  mix-blend-mode: normal !important;
   background: var(--bg) !important;
   backdrop-filter: none !important;
 }
@@ -319,7 +315,8 @@ img.brand-mark {
 /* HERO */
 .hero {
   position: relative;
-  height: 100vh;
+  /* Use JS-driven --vh to get the real inner height on iOS Safari */
+  height: calc(var(--vh, 1vh) * 100);
   width: 100%;
   display: flex;
   align-items: center;

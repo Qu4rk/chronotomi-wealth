@@ -12,7 +12,7 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&display=swap"
     rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=59" />
+  <link rel="stylesheet" href="styles.css?v=60" />
   <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
   <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon.ico" />
@@ -334,8 +334,18 @@
   </footer>
 
   <script src="watches.js?v=57" defer></script>
-  <script src="script.js?v=54" defer></script>
+  <script src="script.js?v=55" defer></script>
   <script>
+    // --vh fix: iOS Safari reports 100vh including the address bar,
+    // causing a gap when the bar auto-hides. We set a CSS variable
+    // equal to 1% of the real visual viewport height instead.
+    function setVh() {
+      var vh = window.innerHeight * 0.01;
+      document.documentElement.style.setProperty('--vh', vh + 'px');
+    }
+    setVh();
+    window.addEventListener('resize', setVh);
+
     // Header scroll logic
     const header = document.getElementById('site-header');
     window.addEventListener('scroll', () => {
