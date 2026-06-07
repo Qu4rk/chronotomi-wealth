@@ -15,7 +15,7 @@
 let watches = [
   {
     brand: "Rolex",
-    model: "Submariner Date Oyster",
+    model: "Submariner Date",
     reference: "126613LB",
     set: "Full Set",
     caseSize: "41mm",
@@ -47,7 +47,7 @@ let watches = [
   },
   {
     brand: "Rolex",
-    model: "GMT-Master II Oyster",
+    model: "GMT-Master II",
     reference: "126710GRNR",
     set: "Full Set",
     caseSize: "40mm",
@@ -167,7 +167,7 @@ let watches = [
   },
   {
     brand: "Rolex",
-    model: "Oyster Perpetual 41",
+    model: "Perpetual 41",
     reference: "134300",
     set: "Full Set",
     caseSize: "41mm",
