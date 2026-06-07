@@ -110,14 +110,6 @@ let watches = [
     image: "assets/gmt-master-II-bruce-wayne-oyster-40mm-oystersteel-126710GRNR.png",
   },
   {
-    brand: "Rolex",
-    model: "Land-Dweller",
-    reference: "127334",
-    set: "Full Set",
-    caseSize: "40mm",
-    image: "assets/land-dweller-40-oyster-40mm-oystersteel-and-white-gold-127334.png",
-  },
-  {
     brand: "Patek Philippe",
     model: "Grand Complications",
     reference: "5270P-017",
@@ -147,6 +139,7 @@ let watches = [
     reference: "127334",
     set: "Full Set",
     caseSize: "40mm",
+    image: "assets/land-dweller-40-oyster-40mm-oystersteel-and-white-gold-127334.png",
   },
   {
     brand: "Rolex",
