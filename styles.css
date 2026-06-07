@@ -1114,3 +1114,62 @@ span.text-mask {
 @media (max-height: 750px) {
   .scroll-indicator { display: none; }
 }
+
+/* PRELOADER */
+.preloader {
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.8s ease, visibility 0.8s ease;
+}
+
+.preloader.is-hidden {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.preloader-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+}
+
+.preloader-logo {
+  width: 80px;
+  height: auto;
+  filter: grayscale(100%) brightness(0) invert(1);
+  animation: tickRotate 2s steps(60) infinite;
+}
+
+@keyframes tickRotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.preloader-text-wrapper {
+  position: relative;
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  letter-spacing: 0.3em;
+  color: transparent;
+}
+
+.preloader-text-outline {
+  -webkit-text-stroke: 1px rgba(255, 255, 255, 0.2);
+}
+
+.preloader-text-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  width: 0%;
+  transition: width 0.1s ease-out;
+}

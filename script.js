@@ -1,3 +1,21 @@
+// Preloader Logic
+let preloaderProgress = 0;
+const preloaderFillEl = document.querySelector('.preloader-text-fill');
+const preloaderEl = document.getElementById('preloader');
+
+const preloaderInterval = setInterval(() => {
+  preloaderProgress += Math.random() * 15;
+  if (preloaderProgress > 90) preloaderProgress = 90;
+  if (preloaderFillEl) preloaderFillEl.style.width = `${preloaderProgress}%`;
+}, 150);
+
+window.addEventListener('load', () => {
+  clearInterval(preloaderInterval);
+  if (preloaderFillEl) preloaderFillEl.style.width = '100%';
+  setTimeout(() => {
+    if (preloaderEl) preloaderEl.classList.add('is-hidden');
+  }, 400); // slight delay to show 100% full text
+});
 
 const INSTAGRAM_URL =
   "https://www.instagram.com/chronotomi.wealth?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==";
