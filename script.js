@@ -21,9 +21,9 @@ const revealObserver = new IntersectionObserver(
       }
     });
   },
-  { 
-    threshold: 0.05, 
-    rootMargin: "0px 0px -10% 0px" 
+  {
+    threshold: 0.05,
+    rootMargin: "0px 0px -10% 0px"
   }
 );
 
@@ -93,17 +93,17 @@ function renderInventory(filter = "All") {
       selectedMessage.textContent =
         "Reference loaded. Reach out via Instagram or send a direct email.";
       copyFeedback.textContent = "Ready to discuss privately.";
-      
+
       const clientMessageInput = document.querySelector("#client-message");
       if (clientMessageInput) {
         clientMessageInput.value = `I am inquiring about the ${watchName} (Ref. ${reference}). `;
       }
-      
+
       instagramLink.textContent = "Discuss Selected Watch";
       instagramLink.classList.remove("btn-outline");
       instagramLink.classList.add("btn-primary");
       instagramLink.setAttribute("aria-label", `Discuss ${watchName} on Instagram`);
-      
+
       document.querySelector("#inquire").scrollIntoView({ behavior: "smooth" });
     });
   });
@@ -145,49 +145,102 @@ if (copyButton) {
   });
 }
 
-const contactForm = document.querySelector("#contact-form");
-if (contactForm) {
-  contactForm.addEventListener("submit", (e) => {
-    e.preventDefault();
-    const name = document.querySelector("#client-name").value;
-    const email = document.querySelector("#client-email").value;
-    const message = document.querySelector("#client-message").value;
+let activeService = null;
 
-    const subject = activeWatch ? `Inquiry: ${activeWatch.brand} ${activeWatch.model}` : "General Inquiry from Chronotomi Wealth";
-    const body = `Name: ${name}\nEmail: ${email}\n\nMessage:\n${message}`;
+document.querySelectorAll(".js-select-service").forEach((button) => {
+  button.addEventListener("click", () => {
+    activeService = button.dataset.service;
+    document.querySelector("#selected-service").textContent = activeService;
 
-    window.location.href = `mailto:info@chronotomi.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    const clientMessageInput = document.querySelector("#client-message");
+    if (clientMessageInput) {
+      clientMessageInput.value = `I am interested in scheduling a consultation regarding ${activeService}. `;
+    }
+
+    document.querySelector("#inquire").scrollIntoView({ behavior: "smooth" });
+  });
+});
+
+// --- Email Form Handlers (Automatic Background Sending) ---
+function sendEmailData(data, formElement) {
+  const button = formElement.querySelector('button[type="submit"]');
+  const originalText = button.textContent;
+  button.textContent = "Sending...";
+  button.disabled = true;
+
+  fetch("https://formsubmit.co/ajax/info@chronotomi.com", {
+    method: "POST",
+    headers: { 
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+    },
+    body: JSON.stringify(data)
+  })
+  .then(response => response.json())
+  .then(result => {
+    if(result.success) {
+      button.textContent = "Sent Successfully";
+      formElement.reset();
+    } else {
+      button.textContent = "Error Sending";
+    }
+    setTimeout(() => {
+      button.textContent = originalText;
+      button.disabled = false;
+    }, 4000);
+  })
+  .catch(error => {
+    console.error("Email send error:", error);
+    button.textContent = "Error Sending";
+    setTimeout(() => {
+      button.textContent = originalText;
+      button.disabled = false;
+    }, 4000);
   });
 }
 
-const advisoryContactForm = document.querySelector("#advisory-contact-form");
-if (advisoryContactForm) {
-  let activeService = null;
-  
-  document.querySelectorAll(".js-select-service").forEach((button) => {
-    button.addEventListener("click", () => {
-      activeService = button.dataset.service;
-      document.querySelector("#selected-service").textContent = activeService;
-      
-      const clientMessageInput = document.querySelector("#client-message");
-      if (clientMessageInput) {
-        clientMessageInput.value = `I am interested in scheduling a consultation regarding ${activeService}. `;
-      }
-      
-      document.querySelector("#inquire").scrollIntoView({ behavior: "smooth" });
-    });
-  });
-
-  advisoryContactForm.addEventListener("submit", (e) => {
+const sourceForm = document.getElementById('source-form');
+if (sourceForm) {
+  sourceForm.addEventListener('submit', function(e) {
     e.preventDefault();
-    const name = document.querySelector("#client-name").value;
-    const email = document.querySelector("#client-email").value;
-    const message = document.querySelector("#client-message").value;
+    const data = {
+      _subject: "New Sourcing Request from Website",
+      Brand: document.getElementById('source-brand').value,
+      Reference: document.getElementById('source-ref').value,
+      Name: document.getElementById('source-name').value,
+      Email: document.getElementById('source-email').value,
+      Phone: document.getElementById('source-country-code').value + " " + document.getElementById('source-phone').value,
+      Details: document.getElementById('source-details').value || 'None provided'
+    };
+    sendEmailData(data, sourceForm);
+  });
+}
 
-    const subject = activeService ? `Advisory Inquiry: ${activeService}` : "Advisory Consultation Inquiry";
-    const body = `Name: ${name}\nEmail: ${email}\n\nExecutive Summary:\n${message}`;
+const contactForm = document.getElementById('contact-form');
+if (contactForm) {
+  contactForm.addEventListener('submit', function(e) {
+    e.preventDefault();
+    const data = {
+      _subject: activeWatch ? `Inquiry: ${activeWatch.brand} ${activeWatch.model}` : "General Inquiry from Chronotomi Wealth",
+      Name: document.getElementById('client-name').value,
+      Email: document.getElementById('client-email').value,
+      Message: document.getElementById('client-message').value
+    };
+    sendEmailData(data, contactForm);
+  });
+}
 
-    window.location.href = `mailto:info@chronotomi.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+const advisoryContactForm = document.getElementById('advisory-contact-form');
+if (advisoryContactForm) {
+  advisoryContactForm.addEventListener('submit', function(e) {
+    e.preventDefault();
+    const data = {
+      _subject: activeService ? `Advisory Inquiry: ${activeService}` : "Advisory Consultation Inquiry",
+      Name: document.getElementById('client-name').value,
+      Email: document.getElementById('client-email').value,
+      Executive_Summary: document.getElementById('client-message').value
+    };
+    sendEmailData(data, advisoryContactForm);
   });
 }
 
@@ -206,7 +259,6 @@ document.addEventListener("DOMContentLoaded", () => {
       const isOpen = body.classList.toggle("nav-open");
       navToggle.setAttribute("aria-expanded", isOpen);
       if (isOpen) {
-        // Trigger resize event to recalculate role-switch slider position
         window.dispatchEvent(new Event('resize'));
       }
     });
@@ -225,22 +277,21 @@ document.addEventListener("DOMContentLoaded", () => {
 renderInventory();
 
 // Fetch latest inventory from GitHub to ensure data is current
-// (critical when hosted on GoDaddy or any non-GitHub-Pages host)
 (async function fetchLatestInventory() {
-    try {
-        const res = await fetch(
-            'https://raw.githubusercontent.com/Qu4rk/chronotomi-wealth/main/watches.json?t=' + Date.now()
-        );
-        if (res.ok) {
-            const data = await res.json();
-            if (Array.isArray(data) && data.length > 0) {
-                watches = data;
-                renderInventory();
-            }
-        }
-    } catch (e) {
-        // Fallback to local watches.js — already rendered above
+  try {
+    const res = await fetch(
+      'https://raw.githubusercontent.com/Qu4rk/chronotomi-wealth/main/watches.json?t=' + Date.now()
+    );
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data) && data.length > 0) {
+        watches = data;
+        renderInventory();
+      }
     }
+  } catch (e) {
+    // Fallback to local watches.js — already rendered above
+  }
 })();
 
 // Role Switch Sliding Animation Logic
@@ -250,7 +301,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (!switchBox || !slider) return;
 
   const activeLink = switchBox.querySelector(".role-active");
-  
+
   function updateSlider(link, instant = false) {
     if (!link) return;
     if (instant) {
@@ -272,7 +323,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Fallback in case fonts load quickly or are cached
   const currentActiveFallback = switchBox.querySelector(".role-active");
   if (currentActiveFallback) {
     updateSlider(currentActiveFallback, true);
@@ -282,7 +332,7 @@ document.addEventListener("DOMContentLoaded", () => {
   switchBox.querySelectorAll("a").forEach(link => {
     link.addEventListener("click", (e) => {
       if (link.classList.contains("role-active")) return;
-      
+
       e.preventDefault();
       updateSlider(link, false);
       switchBox.querySelectorAll("a").forEach(l => l.classList.remove("role-active"));
@@ -295,80 +345,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
       setTimeout(() => {
         window.location.href = targetHref;
-      }, 550); 
+      }, 550);
     });
   });
-  
+
   window.addEventListener("resize", () => {
     const currentActive = switchBox.querySelector(".role-active");
     updateSlider(currentActive, true);
   });
-
-  // --- Email Form Handlers ---
-  
-  const sourceForm = document.getElementById('source-form');
-  if (sourceForm) {
-    sourceForm.addEventListener('submit', function(e) {
-      e.preventDefault();
-      const brand = document.getElementById('source-brand').value;
-      const ref = document.getElementById('source-ref').value;
-      const name = document.getElementById('source-name').value;
-      const email = document.getElementById('source-email').value;
-      const code = document.getElementById('source-country-code').value;
-      const phone = document.getElementById('source-phone').value;
-      const details = document.getElementById('source-details').value;
-
-      const subject = encodeURIComponent(`Sourcing Request: ${brand} ${ref}`);
-      const body = encodeURIComponent(`Name: ${name}
-Email: ${email}
-Phone: ${code} ${phone}
-
-Requested Timepiece:
-Brand: ${brand}
-Reference: ${ref}
-
-Additional Details:
-${details || 'None provided'}`);
-
-      window.location.href = `mailto:info@chronotomi.com?subject=${subject}&body=${body}`;
-    });
-  }
-
-  const contactForm = document.getElementById('contact-form');
-  if (contactForm) {
-    contactForm.addEventListener('submit', function(e) {
-      e.preventDefault();
-      const name = document.getElementById('client-name').value;
-      const email = document.getElementById('client-email').value;
-      const message = document.getElementById('client-message').value;
-
-      const subject = encodeURIComponent(`Inquiry from ${name}`);
-      const body = encodeURIComponent(`Name: ${name}
-Email: ${email}
-
-Message:
-${message}`);
-
-      window.location.href = `mailto:info@chronotomi.com?subject=${subject}&body=${body}`;
-    });
-  }
-
-  const advisoryContactForm = document.getElementById('advisory-contact-form');
-  if (advisoryContactForm) {
-    advisoryContactForm.addEventListener('submit', function(e) {
-      e.preventDefault();
-      const name = document.getElementById('client-name').value;
-      const email = document.getElementById('client-email').value;
-      const message = document.getElementById('client-message').value;
-
-      const subject = encodeURIComponent(`Advisory Inquiry from ${name}`);
-      const body = encodeURIComponent(`Name: ${name}
-Email: ${email}
-
-Executive Summary:
-${message}`);
-
-      window.location.href = `mailto:info@chronotomi.com?subject=${subject}&body=${body}`;
-    });
-  }
 });
