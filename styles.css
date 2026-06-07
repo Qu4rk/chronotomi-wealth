@@ -569,23 +569,13 @@ h1 {
 
 .inventory-image {
   aspect-ratio: 1 / 1.1;
-  background: transparent;
 }
 
-.service-image img {
+.service-image img, .inventory-image img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   transition: transform var(--transition-slow);
-}
-
-.inventory-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  transition: transform var(--transition-slow);
-  padding: 1.5rem;
-  box-sizing: border-box;
 }
 
 .service-logo-watermark {
