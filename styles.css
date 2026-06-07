@@ -853,7 +853,7 @@ span.text-mask {
 .delay-3 { transition-delay: 0.3s; }
 
 /* RESPONSIVE — TABLET */
-@media (max-width: 1100px) {
+@media (max-width: 1366px) {
   :root {
     --header-padding: 1.25rem 2rem;
   }
