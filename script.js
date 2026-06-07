@@ -303,4 +303,72 @@ document.addEventListener("DOMContentLoaded", () => {
     const currentActive = switchBox.querySelector(".role-active");
     updateSlider(currentActive, true);
   });
+
+  // --- Email Form Handlers ---
+  
+  const sourceForm = document.getElementById('source-form');
+  if (sourceForm) {
+    sourceForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const brand = document.getElementById('source-brand').value;
+      const ref = document.getElementById('source-ref').value;
+      const name = document.getElementById('source-name').value;
+      const email = document.getElementById('source-email').value;
+      const code = document.getElementById('source-country-code').value;
+      const phone = document.getElementById('source-phone').value;
+      const details = document.getElementById('source-details').value;
+
+      const subject = encodeURIComponent(`Sourcing Request: ${brand} ${ref}`);
+      const body = encodeURIComponent(`Name: ${name}
+Email: ${email}
+Phone: ${code} ${phone}
+
+Requested Timepiece:
+Brand: ${brand}
+Reference: ${ref}
+
+Additional Details:
+${details || 'None provided'}`);
+
+      window.location.href = `mailto:info@chronotomi.com?subject=${subject}&body=${body}`;
+    });
+  }
+
+  const contactForm = document.getElementById('contact-form');
+  if (contactForm) {
+    contactForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const name = document.getElementById('client-name').value;
+      const email = document.getElementById('client-email').value;
+      const message = document.getElementById('client-message').value;
+
+      const subject = encodeURIComponent(`Inquiry from ${name}`);
+      const body = encodeURIComponent(`Name: ${name}
+Email: ${email}
+
+Message:
+${message}`);
+
+      window.location.href = `mailto:info@chronotomi.com?subject=${subject}&body=${body}`;
+    });
+  }
+
+  const advisoryContactForm = document.getElementById('advisory-contact-form');
+  if (advisoryContactForm) {
+    advisoryContactForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const name = document.getElementById('client-name').value;
+      const email = document.getElementById('client-email').value;
+      const message = document.getElementById('client-message').value;
+
+      const subject = encodeURIComponent(`Advisory Inquiry from ${name}`);
+      const body = encodeURIComponent(`Name: ${name}
+Email: ${email}
+
+Executive Summary:
+${message}`);
+
+      window.location.href = `mailto:info@chronotomi.com?subject=${subject}&body=${body}`;
+    });
+  }
 });
