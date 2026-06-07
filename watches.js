@@ -43,7 +43,7 @@ let watches = [
     reference: "WSSA0030",
     set: "Full Set",
     caseSize: "Large",
-    image: "assets/gen_cartier_1776373771506.png",
+    image: "assets/santos-de-cartier-large-WSSA0030.png",
   },
   {
     brand: "Rolex",
