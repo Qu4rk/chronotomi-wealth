@@ -180,5 +180,37 @@ let watches = [
     set: "Full Set",
     caseSize: "Large",
     image: "assets/santos-de-cartier-large-WSSA0018.jpeg",
+  },
+  {
+    brand: "Rolex",
+    model: "Land-Dweller",
+    reference: "127334",
+    set: "Full Set",
+    caseSize: "40mm",
+    image: "assets/rolex-land-dweller-40-40mm-127334.jpeg",
+  },
+  {
+    brand: "Rolex",
+    model: "Sky-Dweller",
+    reference: "336934",
+    set: "Full Set",
+    caseSize: "42mm",
+    image: "assets/rolex-sky-dweller-42mm-336934.webp",
+  },
+  {
+    brand: "Cartier",
+    model: "Santos de Cartier",
+    reference: "WSSA0062",
+    set: "Full Set",
+    caseSize: "Large",
+    image: "assets/santos-de-cartier-large-WSSA0062.png",
+  },
+  {
+    brand: "Cartier",
+    model: "Santos de Cartier",
+    reference: "WSSA0096",
+    set: "Full Set",
+    caseSize: "Large",
+    image: "assets/santos-de-cartier-large-WSSA0096.png",
   }
 ];

@@ -121,10 +121,10 @@ function renderInventory(filter = "All") {
         clientMessageInput.value = `I am inquiring about the ${watchName} (Ref. ${reference}). `;
       }
 
-      instagramLink.textContent = "Discuss Selected Watch";
-      instagramLink.classList.remove("btn-outline");
-      instagramLink.classList.add("btn-primary");
-      instagramLink.setAttribute("aria-label", `Discuss ${watchName} on Instagram`);
+      const whatsappLink = document.querySelector("#whatsapp-inquire");
+      if (whatsappLink) {
+        whatsappLink.href = `https://wa.me/35799426514?text=${encodeURIComponent(`Hello, I would like to inquire about the ${watchName} (Ref. ${reference}).`)}`;
+      }
 
       document.querySelector("#inquire").scrollIntoView({ behavior: "smooth" });
     });
@@ -167,6 +167,30 @@ if (copyButton) {
   });
 }
 
+const advisoryInstagram = document.querySelector("#advisory-instagram");
+if (advisoryInstagram) {
+  advisoryInstagram.href = INSTAGRAM_URL;
+}
+
+const advisoryCopyButton = document.querySelector("#advisory-copy");
+const advisoryCopyFeedback = document.querySelector("#copy-feedback");
+if (advisoryCopyButton) {
+  advisoryCopyButton.addEventListener("click", async () => {
+    if (!activeService) {
+      advisoryCopyFeedback.textContent = "Please select a service first.";
+      return;
+    }
+    const details = `${activeService} Service`;
+
+    try {
+      await navigator.clipboard.writeText(details);
+      advisoryCopyFeedback.textContent = "Service copied.";
+    } catch (error) {
+      advisoryCopyFeedback.textContent = "Copy is not available here. Mention the service manually.";
+    }
+  });
+}
+
 let activeService = null;
 
 document.querySelectorAll(".js-select-service").forEach((button) => {
@@ -177,6 +201,15 @@ document.querySelectorAll(".js-select-service").forEach((button) => {
     const clientMessageInput = document.querySelector("#client-message");
     if (clientMessageInput) {
       clientMessageInput.value = `I am interested in scheduling a consultation regarding ${activeService}. `;
+    }
+
+    const whatsappLink = document.querySelector("#advisory-whatsapp");
+    if (whatsappLink) {
+      whatsappLink.href = `https://wa.me/35799426514?text=${encodeURIComponent(`Hello, I would like to discuss the ${activeService} service.`)}`;
+    }
+    
+    if (copyFeedback) {
+      copyFeedback.textContent = "Ready to discuss securely.";
     }
 
     document.querySelector("#inquire").scrollIntoView({ behavior: "smooth" });
@@ -246,6 +279,7 @@ if (contactForm) {
       _subject: activeWatch ? `Inquiry: ${activeWatch.brand} ${activeWatch.model}` : "General Inquiry from Chronotomi Wealth",
       Name: document.getElementById('client-name').value,
       Email: document.getElementById('client-email').value,
+      Phone: document.getElementById('client-country-code').value + ' ' + document.getElementById('client-phone').value,
       Message: document.getElementById('client-message').value
     };
     sendEmailData(data, contactForm);
@@ -260,6 +294,7 @@ if (advisoryContactForm) {
       _subject: activeService ? `Advisory Inquiry: ${activeService}` : "Advisory Consultation Inquiry",
       Name: document.getElementById('client-name').value,
       Email: document.getElementById('client-email').value,
+      Phone: document.getElementById('client-country-code').value + ' ' + document.getElementById('client-phone').value,
       Executive_Summary: document.getElementById('client-message').value
     };
     sendEmailData(data, advisoryContactForm);
@@ -302,7 +337,7 @@ renderInventory();
 (async function fetchLatestInventory() {
   try {
     const res = await fetch(
-      'https://raw.githubusercontent.com/Qu4rk/chronotomi-wealth/main/watches.json?t=' + Date.now()
+      'watches.json?t=' + Date.now()
     );
     if (res.ok) {
       const data = await res.json();

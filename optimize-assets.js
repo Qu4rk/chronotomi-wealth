@@ -16,7 +16,7 @@ async function processImages() {
   }
 
   for (const file of files) {
-    if (!file.match(/\.(png|jpe?g)$/i)) continue;
+    if (!file.match(/\.(png|jpe?g|webp)$/i)) continue;
     if (file.includes('-400') || file.includes('-800') || file === 'favicon-actual.png' || file === 'favicon.ico' || file === 'apple-touch-icon.png') continue;
 
     const inputPath = path.join(assetsDir, file);
