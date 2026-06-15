@@ -40,10 +40,10 @@ let watches = [
   {
     brand: "Cartier",
     model: "Santos de Cartier",
-    reference: "WSSA0030",
+    reference: "WSSA0071",
     set: "Full Set",
     caseSize: "Large",
-    image: "assets/santos-de-cartier-large-WSSA0030.png",
+    image: "assets/santos-de-cartier-large-WSSA0071.png",
   },
   {
     brand: "Rolex",
