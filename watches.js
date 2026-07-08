@@ -51,7 +51,7 @@ let watches = [
     reference: "126710GRNR",
     set: "Full Set",
     caseSize: "40mm",
-    image: "assets/GMT-Master-II-oystersteel-40mm-126710GRNR.jpeg",
+    image: "assets/GMT-Master-II-126710GRNR.png",
   },
   {
     brand: "Patek Philippe",
