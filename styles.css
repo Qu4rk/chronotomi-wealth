@@ -87,6 +87,7 @@ button {
   height: 52px;
   overflow: hidden;
   transition: opacity 0.3s ease;
+  box-sizing: border-box;
 }
 
 body.nav-open .top-trust-bar {
@@ -94,12 +95,77 @@ body.nav-open .top-trust-bar {
   pointer-events: none;
 }
 
+.top-trust-bar-inner {
+  width: 100%;
+  padding: 0 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.top-trust-side-text {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.7);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  white-space: nowrap;
+  text-decoration: none;
+  transition: color 0.2s ease;
+  flex: 1;
+}
+
+.top-trust-side-text:hover {
+  color: #ffffff;
+}
+
+.top-trust-side-text.left {
+  justify-content: flex-start;
+}
+
+.top-trust-side-text.right {
+  justify-content: flex-end;
+}
+
+.top-trust-side-text .star-accent {
+  color: #00b67a;
+  font-size: 0.85rem;
+  transition: transform 0.2s ease;
+}
+
+.top-trust-side-text:hover .star-accent {
+  transform: scale(1.2);
+}
+
 .top-trust-bar .trustpilot-widget {
+  flex-shrink: 0;
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 100%;
-  max-width: var(--content-max);
+  width: 240px;
+  max-width: 240px;
+}
+
+.top-trust-bar .trustpilot-widget iframe {
+  width: 240px !important;
+  max-width: 240px !important;
+  height: 52px !important;
+}
+
+@media (max-width: 900px) {
+  .top-trust-side-text {
+    display: none;
+  }
+  .top-trust-bar-inner {
+    justify-content: center;
+    padding: 0 1rem;
+  }
 }
 
 /* HEADER */
