@@ -74,6 +74,34 @@ button {
   cursor: pointer;
 }
 
+/* TOP TRUST BAR */
+.top-trust-bar {
+  width: 100%;
+  background: var(--bg);
+  border-bottom: 1px solid var(--line);
+  position: relative;
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 52px;
+  overflow: hidden;
+  transition: opacity 0.3s ease;
+}
+
+body.nav-open .top-trust-bar {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.top-trust-bar .trustpilot-widget {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  max-width: var(--content-max);
+}
+
 /* HEADER */
 .site-header {
   position: fixed;
@@ -91,10 +119,16 @@ button {
   backface-visibility: hidden;
   -webkit-backdrop-filter: blur(0px);
   backdrop-filter: blur(0px);
-  transition: padding 0.3s ease, background 0.3s ease, backdrop-filter 0.3s ease, -webkit-backdrop-filter 0.3s ease, border 0.3s ease;
+  transition: top 0.3s ease, padding 0.3s ease, background 0.3s ease, backdrop-filter 0.3s ease, -webkit-backdrop-filter 0.3s ease, border 0.3s ease;
 }
 
-.site-header.is-scrolled {
+body:has(.top-trust-bar) .site-header {
+  top: 52px;
+}
+
+.site-header.is-scrolled,
+body:has(.top-trust-bar) .site-header.is-scrolled {
+  top: 0;
   padding: 1rem 3rem;
   background: rgba(0,0,0,0.85);
   -webkit-backdrop-filter: blur(10px);
