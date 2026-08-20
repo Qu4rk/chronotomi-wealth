@@ -144,22 +144,30 @@ body.nav-open .top-trust-bar {
   transform: scale(1.2);
 }
 
-.top-trust-bar .trustpilot-widget {
-  flex-shrink: 0;
+.top-trust-center-link {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.85);
+  text-decoration: none;
   display: flex;
-  justify-content: center;
   align-items: center;
-  width: 240px;
-  max-width: 240px;
-  height: 28px;
+  gap: 0.4rem;
+  white-space: nowrap;
+  transition: color 0.2s ease;
+  line-height: 1;
+  flex-shrink: 0;
 }
 
-.top-trust-bar .trustpilot-widget iframe {
-  width: 240px !important;
-  max-width: 240px !important;
-  height: 28px !important;
-  display: block !important;
-  border: none !important;
+.top-trust-center-link:hover {
+  color: #00b67a;
+}
+
+.top-trust-center-link .tp-star {
+  color: #00b67a;
+  font-size: 0.75rem;
 }
 
 @media (max-width: 900px) {
