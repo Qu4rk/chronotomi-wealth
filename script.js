@@ -412,40 +412,292 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
-// Testimonials Carousel
-document.addEventListener("DOMContentLoaded", () => {
-  const carouselEl = document.getElementById("testimonials-carousel");
-  if (!carouselEl) return;
+// React Bits DepthCarousel Controller
+function initDepthCarousel() {
+  const root = document.getElementById('testimonials-depth-carousel');
+  if (!root) return;
 
-  const slides = Array.from(carouselEl.querySelectorAll(".testimonial-slide"));
-  const dots = Array.from(carouselEl.querySelectorAll(".testimonial-dot"));
-  if (slides.length <= 1) return;
+  const cardEls = Array.from(root.querySelectorAll('.depth-carousel__card'));
+  const overlayEls = Array.from(root.querySelectorAll('.depth-carousel__tint'));
+  const dotEls = Array.from(root.querySelectorAll('.depth-carousel__dot'));
+  const prevBtn = root.querySelector('.depth-carousel__arrow--prev');
+  const nextBtn = root.querySelector('.depth-carousel__arrow--next');
 
-  let currentIndex = 0;
+  const count = cardEls.length;
+  if (!count) return;
+
+  // Configuration matching React Bits DepthCarousel specs
+  const cfg = {
+    count: count,
+    cardWidth: 480,
+    cardHeight: 360,
+    radius: 18,
+    tint: '#000000',
+    depth: 210,
+    spread: 95,
+    tilt: 20,
+    tiltDirection: 'right',
+    perspective: 1400,
+    visibleCards: 3,
+    falloff: 0.22,
+    blur: 4,
+    duration: 700,
+    ease: 'power3.out',
+    autoplay: true,
+    autoplayDelay: 4200,
+    loop: true
+  };
+
+  const clamp = (v, min, max) => Math.min(Math.max(v, min), max);
+
+  let pos = 0;
+  let focusIdx = 0;
+  let scale = 1;
+  let tween = null;
   let autoTimer = null;
-  const ROTATE_INTERVAL = 6500;
+  let wheelTimer = null;
+  let isHovered = false;
+  let isFocused = false;
+  const reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  function showSlide(index) {
-    currentIndex = (index + slides.length) % slides.length;
+  // Apply card dimensions
+  cardEls.forEach(card => {
+    card.style.width = `${cfg.cardWidth}px`;
+    card.style.height = `${cfg.cardHeight}px`;
+    card.style.borderRadius = `${cfg.radius}px`;
+  });
 
-    slides.forEach((slide, idx) => {
-      const isActive = idx === currentIndex;
-      slide.classList.toggle("is-active", isActive);
-      slide.setAttribute("aria-hidden", !isActive);
+  // Exact 3D Layout calculation from React Bits
+  function layout(p) {
+    const n = cfg.count;
+    if (!n) return;
+    const dir = cfg.tiltDirection === 'left' ? -1 : 1;
+    const sc = scale;
+
+    for (let i = 0; i < n; i++) {
+      const el = cardEls[i];
+      if (!el) continue;
+
+      let d = i - p;
+      if (cfg.loop && n > 1) {
+        d = ((d % n) + n) % n;
+        if (d > n / 2) d -= n;
+      }
+
+      const back = Math.max(0, d);
+      const az = Math.abs(d);
+      const shown = az <= cfg.visibleCards + 0.5;
+
+      const tz = -cfg.depth * d;
+      const tx = dir * cfg.spread * d;
+      const ry = dir * cfg.tilt * clamp(d, 0, 1);
+
+      let opacity = d < 0 ? Math.max(0, 1 + d) : 1;
+      if (!shown) opacity = 0;
+
+      const brightness = Math.max(0.15, 1 - back * cfg.falloff);
+      const blurPx = cfg.blur > 0 ? Math.min(cfg.blur, (back / Math.max(1, cfg.visibleCards)) * cfg.blur) : 0;
+      const zi = Math.round(2000 - d * 20);
+
+      el.style.transform = `translate(-50%, -50%) scale(${sc}) translateX(${tx.toFixed(2)}px) translateZ(${tz.toFixed(2)}px) rotateY(${ry.toFixed(3)}deg)`;
+      el.style.opacity = opacity.toFixed(3);
+      el.style.filter = `brightness(${brightness.toFixed(3)}) blur(${blurPx.toFixed(2)}px)`;
+      el.style.zIndex = String(zi);
+      el.style.pointerEvents = shown && opacity > 0.05 ? 'auto' : 'none';
+
+      const ov = overlayEls[i];
+      if (ov) ov.style.opacity = clamp(back * cfg.falloff * 1.25, 0, 0.86).toFixed(3);
+    }
+  }
+
+  function updateActiveUI(idx) {
+    dotEls.forEach((dot, i) => {
+      const isActive = i === idx;
+      dot.classList.toggle('is-active', isActive);
+      dot.setAttribute('aria-selected', isActive);
     });
 
-    dots.forEach((dot, idx) => {
-      const isActive = idx === currentIndex;
-      dot.classList.toggle("is-active", isActive);
-      dot.setAttribute("aria-selected", isActive);
+    cardEls.forEach((card, i) => {
+      card.setAttribute('aria-hidden', i !== idx);
     });
   }
 
+  function tweenTo(target, animate = true) {
+    if (tween) tween.kill();
+    const dur = animate && !reducedMotion ? cfg.duration / 1000 : 0;
+    const proxy = { p: pos };
+
+    if (window.gsap && dur > 0) {
+      tween = gsap.to(proxy, {
+        p: target,
+        duration: dur,
+        ease: cfg.ease,
+        onUpdate: () => {
+          pos = proxy.p;
+          layout(proxy.p);
+        },
+        onComplete: () => {
+          const n = cfg.count;
+          if (n > 0) pos = ((pos % n) + n) % n;
+          layout(pos);
+        }
+      });
+    } else {
+      pos = target;
+      const n = cfg.count;
+      if (n > 0) pos = ((pos % n) + n) % n;
+      layout(pos);
+    }
+  }
+
+  function setFocus(rawIndex, animate = true) {
+    const n = cfg.count;
+    if (!n) return;
+    const idx = cfg.loop ? ((rawIndex % n) + n) % n : clamp(rawIndex, 0, n - 1);
+    let delta = idx - pos;
+    if (cfg.loop && n > 1) {
+      delta = ((delta % n) + n) % n;
+      if (delta > n / 2) delta -= n;
+    }
+    tweenTo(pos + delta, animate);
+    if (idx !== focusIdx) {
+      focusIdx = idx;
+      updateActiveUI(idx);
+    }
+  }
+
+  function navigateBy(step) {
+    setFocus(focusIdx + step, true);
+  }
+
+  // Responsive scale observer
+  const ro = new ResizeObserver(entries => {
+    const w = entries[0].contentRect.width;
+    const needed = cfg.cardWidth + Math.abs(cfg.spread) * 1.5 + 40;
+    scale = clamp(w / needed, 0.65, 1);
+    layout(pos);
+  });
+  ro.observe(root);
+
+  // Wheel handling
+  root.addEventListener('wheel', e => {
+    if (cfg.count < 2) return;
+    e.preventDefault();
+    if (tween) tween.kill();
+    const raw = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+    const delta = e.deltaMode === 1 ? raw * 24 : raw;
+    const step = clamp(delta / (cfg.cardWidth * 0.9), -0.6, 0.6);
+    pos += step;
+    layout(pos);
+    if (wheelTimer) clearTimeout(wheelTimer);
+    wheelTimer = setTimeout(() => setFocus(Math.round(pos), true), 130);
+  }, { passive: false });
+
+  // Pointer drag / swipe handling
+  let drag = null;
+
+  root.addEventListener('pointerdown', e => {
+    if (cfg.count < 2) return;
+    if (tween) tween.kill();
+    drag = {
+      x: e.clientX,
+      startPos: pos,
+      lastX: e.clientX,
+      lastT: performance.now(),
+      v: 0,
+      moved: false,
+      id: e.pointerId
+    };
+  });
+
+  root.addEventListener('pointermove', e => {
+    if (!drag) return;
+    const stepPx = Math.max(cfg.cardWidth * 0.55 * scale, 40);
+    const dx = e.clientX - drag.x;
+    if (!drag.moved && Math.abs(dx) > 4) {
+      drag.moved = true;
+      try { root.setPointerCapture(drag.id); } catch (_) {}
+    }
+    if (!drag.moved) return;
+    const now = performance.now();
+    const dt = Math.max(now - drag.lastT, 1);
+    drag.v = (e.clientX - drag.lastX) / dt;
+    drag.lastX = e.clientX;
+    drag.lastT = now;
+    pos = drag.startPos - dx / stepPx;
+    layout(pos);
+  });
+
+  const onPointerEnd = () => {
+    if (!drag) return;
+    const wasMoved = drag.moved;
+    const dragV = drag.v;
+    drag = null;
+    if (!wasMoved) return;
+    const stepPx = Math.max(cfg.cardWidth * 0.55 * scale, 40);
+    const projected = pos - (dragV * 180) / stepPx;
+    setFocus(Math.round(projected), true);
+  };
+
+  root.addEventListener('pointerup', onPointerEnd);
+  root.addEventListener('pointercancel', onPointerEnd);
+
+  // Card click to focus
+  cardEls.forEach((card, i) => {
+    card.addEventListener('click', () => {
+      if (drag && drag.moved) return;
+      setFocus(i, true);
+      resetAuto();
+    });
+  });
+
+  // Arrow buttons
+  if (prevBtn) {
+    prevBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      navigateBy(-1);
+      resetAuto();
+    });
+  }
+  if (nextBtn) {
+    nextBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      navigateBy(1);
+      resetAuto();
+    });
+  }
+
+  // Dots
+  dotEls.forEach((dot, i) => {
+    dot.addEventListener('click', (e) => {
+      e.stopPropagation();
+      setFocus(i, true);
+      resetAuto();
+    });
+  });
+
+  // Keyboard navigation
+  root.addEventListener('keydown', e => {
+    if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      navigateBy(-1);
+      resetAuto();
+    } else if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      navigateBy(1);
+      resetAuto();
+    }
+  });
+
+  // Autoplay
   function startAuto() {
     stopAuto();
+    if (!cfg.autoplay || reducedMotion || count < 2) return;
     autoTimer = setInterval(() => {
-      showSlide(currentIndex + 1);
-    }, ROTATE_INTERVAL);
+      if (!isHovered && !isFocused) {
+        navigateBy(1);
+      }
+    }, Math.max(cfg.autoplayDelay, 1000));
   }
 
   function stopAuto() {
@@ -455,67 +707,37 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Dot clicks
-  dots.forEach((dot, idx) => {
-    dot.addEventListener("click", () => {
-      showSlide(idx);
-      startAuto();
-    });
-  });
-
-  // Pause on hover & focus
-  carouselEl.addEventListener("mouseenter", stopAuto);
-  carouselEl.addEventListener("mouseleave", startAuto);
-  carouselEl.addEventListener("focusin", stopAuto);
-  carouselEl.addEventListener("focusout", startAuto);
-
-  // Keyboard navigation
-  carouselEl.addEventListener("keydown", (e) => {
-    if (e.key === "ArrowLeft") {
-      showSlide(currentIndex - 1);
-      startAuto();
-    } else if (e.key === "ArrowRight") {
-      showSlide(currentIndex + 1);
-      startAuto();
-    }
-  });
-
-  // Touch swipe support
-  let touchStartX = 0;
-  let touchEndX = 0;
-
-  carouselEl.addEventListener("touchstart", (e) => {
-    touchStartX = e.changedTouches[0].screenX;
-  }, { passive: true });
-
-  carouselEl.addEventListener("touchend", (e) => {
-    touchEndX = e.changedTouches[0].screenX;
-    handleSwipe();
-  }, { passive: true });
-
-  function handleSwipe() {
-    const diff = touchEndX - touchStartX;
-    if (Math.abs(diff) > 40) {
-      if (diff < 0) {
-        showSlide(currentIndex + 1); // Swipe left -> next
-      } else {
-        showSlide(currentIndex - 1); // Swipe right -> prev
-      }
-      startAuto();
-    }
+  function resetAuto() {
+    stopAuto();
+    startAuto();
   }
 
-  // Only auto-rotate when section is visible
-  const carouselObserver = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
+  root.addEventListener('mouseenter', () => { isHovered = true; });
+  root.addEventListener('mouseleave', () => { isHovered = false; });
+  root.addEventListener('focusin', () => { isFocused = true; });
+  root.addEventListener('focusout', () => { isFocused = false; });
+
+  // Intersection observer for viewport visibility
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
       if (entry.isIntersecting) {
         startAuto();
       } else {
         stopAuto();
       }
     });
-  }, { threshold: 0.2 });
+  }, { threshold: 0.15 });
+  observer.observe(root);
 
-  carouselObserver.observe(carouselEl);
-});
+  // Initial render
+  layout(0);
+  updateActiveUI(0);
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initDepthCarousel);
+} else {
+  initDepthCarousel();
+}
+
 
