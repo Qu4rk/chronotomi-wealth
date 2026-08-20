@@ -411,3 +411,111 @@ document.addEventListener("DOMContentLoaded", () => {
     updateSlider(currentActive, true);
   });
 });
+
+// Testimonials Carousel
+document.addEventListener("DOMContentLoaded", () => {
+  const carouselEl = document.getElementById("testimonials-carousel");
+  if (!carouselEl) return;
+
+  const slides = Array.from(carouselEl.querySelectorAll(".testimonial-slide"));
+  const dots = Array.from(carouselEl.querySelectorAll(".testimonial-dot"));
+  if (slides.length <= 1) return;
+
+  let currentIndex = 0;
+  let autoTimer = null;
+  const ROTATE_INTERVAL = 6500;
+
+  function showSlide(index) {
+    currentIndex = (index + slides.length) % slides.length;
+
+    slides.forEach((slide, idx) => {
+      const isActive = idx === currentIndex;
+      slide.classList.toggle("is-active", isActive);
+      slide.setAttribute("aria-hidden", !isActive);
+    });
+
+    dots.forEach((dot, idx) => {
+      const isActive = idx === currentIndex;
+      dot.classList.toggle("is-active", isActive);
+      dot.setAttribute("aria-selected", isActive);
+    });
+  }
+
+  function startAuto() {
+    stopAuto();
+    autoTimer = setInterval(() => {
+      showSlide(currentIndex + 1);
+    }, ROTATE_INTERVAL);
+  }
+
+  function stopAuto() {
+    if (autoTimer) {
+      clearInterval(autoTimer);
+      autoTimer = null;
+    }
+  }
+
+  // Dot clicks
+  dots.forEach((dot, idx) => {
+    dot.addEventListener("click", () => {
+      showSlide(idx);
+      startAuto();
+    });
+  });
+
+  // Pause on hover & focus
+  carouselEl.addEventListener("mouseenter", stopAuto);
+  carouselEl.addEventListener("mouseleave", startAuto);
+  carouselEl.addEventListener("focusin", stopAuto);
+  carouselEl.addEventListener("focusout", startAuto);
+
+  // Keyboard navigation
+  carouselEl.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowLeft") {
+      showSlide(currentIndex - 1);
+      startAuto();
+    } else if (e.key === "ArrowRight") {
+      showSlide(currentIndex + 1);
+      startAuto();
+    }
+  });
+
+  // Touch swipe support
+  let touchStartX = 0;
+  let touchEndX = 0;
+
+  carouselEl.addEventListener("touchstart", (e) => {
+    touchStartX = e.changedTouches[0].screenX;
+  }, { passive: true });
+
+  carouselEl.addEventListener("touchend", (e) => {
+    touchEndX = e.changedTouches[0].screenX;
+    handleSwipe();
+  }, { passive: true });
+
+  function handleSwipe() {
+    const diff = touchEndX - touchStartX;
+    if (Math.abs(diff) > 40) {
+      if (diff < 0) {
+        showSlide(currentIndex + 1); // Swipe left -> next
+      } else {
+        showSlide(currentIndex - 1); // Swipe right -> prev
+      }
+      startAuto();
+    }
+  }
+
+  // Only auto-rotate when section is visible
+  const carouselObserver = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        startAuto();
+      } else {
+        stopAuto();
+      }
+    });
+  }, { threshold: 0.2 });
+
+  carouselObserver.observe(carouselEl);
+});
+

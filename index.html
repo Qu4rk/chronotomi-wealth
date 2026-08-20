@@ -12,7 +12,7 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&display=swap"
     rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=66" />
+  <link rel="stylesheet" href="styles.css?v=67" />
     <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32x32.png?v=2" />
   <link rel="icon" type="image/png" sizes="512x512" href="assets/favicon.png?v=2" />
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=2" />
@@ -104,6 +104,48 @@
             timepieces, verified stock, and discreet one-to-one pricing conversations.</span>
         </p>
         <a class="btn-primary" href="#collection">View Collection</a>
+      </div>
+    </section>
+
+    <!-- Testimonials Showcase -->
+    <section class="testimonials-section" aria-label="Client Reviews">
+      <div class="testimonials-container">
+        <div class="testimonials-carousel" id="testimonials-carousel">
+          <div class="testimonial-slides">
+            <article class="testimonial-slide is-active" data-index="0" aria-hidden="false">
+              <blockquote class="testimonial-quote">
+                &ldquo;For this sort of service, trustworthiness and evidence-based information is essential. Chronotomi offered both. From the first contact, throughout completing the transaction, professionalism was evident; inspired trust and all information requested was readily available. Highly recommended and definitely will collaborate again.&rdquo;
+              </blockquote>
+              <cite class="testimonial-author">PMAM</cite>
+            </article>
+
+            <article class="testimonial-slide" data-index="1" aria-hidden="true">
+              <blockquote class="testimonial-quote">
+                &ldquo;Fantastic selection, delivery in time, knowledge of the market, great support. All was perfect.&rdquo;
+              </blockquote>
+              <cite class="testimonial-author">Nicolas</cite>
+            </article>
+
+            <article class="testimonial-slide" data-index="2" aria-hidden="true">
+              <blockquote class="testimonial-quote">
+                &ldquo;Top class professional, honest and reliable. Fast delivery... Overall amazing job, highly recommend.&rdquo;
+              </blockquote>
+              <cite class="testimonial-author">George Pashias</cite>
+            </article>
+          </div>
+
+          <div class="testimonial-dots" role="tablist" aria-label="Testimonial Navigation">
+            <button class="testimonial-dot is-active" role="tab" aria-selected="true" aria-label="Review 1 by PMAM" data-index="0">
+              <span class="dot-inner"></span>
+            </button>
+            <button class="testimonial-dot" role="tab" aria-selected="false" aria-label="Review 2 by Nicolas" data-index="1">
+              <span class="dot-inner"></span>
+            </button>
+            <button class="testimonial-dot" role="tab" aria-selected="false" aria-label="Review 3 by George Pashias" data-index="2">
+              <span class="dot-inner"></span>
+            </button>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -411,7 +453,7 @@
   </footer>
 
   <script src="watches.js?v=59" defer></script>
-  <script src="script.js?v=58" defer></script>
+  <script src="script.js?v=59" defer></script>
   <script>
     // --vh fix: iOS Safari reports 100vh including the address bar,
     // causing a gap when the bar auto-hides. We set a CSS variable
