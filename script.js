@@ -429,13 +429,13 @@ function initDepthCarousel() {
   // Configuration matching React Bits DepthCarousel specs
   const cfg = {
     count: count,
-    cardWidth: 480,
-    cardHeight: 360,
-    radius: 18,
+    cardWidth: 450,
+    cardHeight: 310,
+    radius: 16,
     tint: '#000000',
-    depth: 210,
-    spread: 95,
-    tilt: 20,
+    depth: 170,
+    spread: 80,
+    tilt: 18,
     tiltDirection: 'right',
     perspective: 1400,
     visibleCards: 3,
@@ -444,7 +444,7 @@ function initDepthCarousel() {
     duration: 700,
     ease: 'power3.out',
     autoplay: true,
-    autoplayDelay: 4200,
+    autoplayDelay: 4000,
     loop: true
   };
 
@@ -455,7 +455,6 @@ function initDepthCarousel() {
   let scale = 1;
   let tween = null;
   let autoTimer = null;
-  let wheelTimer = null;
   let isHovered = false;
   let isFocused = false;
   const reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -578,20 +577,6 @@ function initDepthCarousel() {
     layout(pos);
   });
   ro.observe(root);
-
-  // Wheel handling
-  root.addEventListener('wheel', e => {
-    if (cfg.count < 2) return;
-    e.preventDefault();
-    if (tween) tween.kill();
-    const raw = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
-    const delta = e.deltaMode === 1 ? raw * 24 : raw;
-    const step = clamp(delta / (cfg.cardWidth * 0.9), -0.6, 0.6);
-    pos += step;
-    layout(pos);
-    if (wheelTimer) clearTimeout(wheelTimer);
-    wheelTimer = setTimeout(() => setFocus(Math.round(pos), true), 130);
-  }, { passive: false });
 
   // Pointer drag / swipe handling
   let drag = null;
