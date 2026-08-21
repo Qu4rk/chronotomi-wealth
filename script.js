@@ -429,12 +429,12 @@ function initDepthCarousel() {
   // Configuration matching React Bits DepthCarousel specs
   const cfg = {
     count: count,
-    cardWidth: 450,
-    cardHeight: 310,
-    radius: 16,
+    cardWidth: 550,
+    cardHeight: 410,
+    radius: 20,
     tint: '#000000',
-    depth: 170,
-    spread: 80,
+    depth: 230,
+    spread: 100,
     tilt: 18,
     tiltDirection: 'right',
     perspective: 1400,
@@ -444,7 +444,7 @@ function initDepthCarousel() {
     duration: 700,
     ease: 'power3.out',
     autoplay: true,
-    autoplayDelay: 4000,
+    autoplayDelay: 4200,
     loop: true
   };
 
@@ -572,8 +572,8 @@ function initDepthCarousel() {
   // Responsive scale observer
   const ro = new ResizeObserver(entries => {
     const w = entries[0].contentRect.width;
-    const needed = cfg.cardWidth + Math.abs(cfg.spread) * 1.5 + 40;
-    scale = clamp(w / needed, 0.65, 1);
+    const needed = cfg.cardWidth + Math.abs(cfg.spread) * 1.6 + 60;
+    scale = clamp(w / needed, 0.6, 1);
     layout(pos);
   });
   ro.observe(root);
