@@ -430,7 +430,7 @@ function initDepthCarousel() {
   const cfg = {
     count: count,
     cardWidth: 920,
-    cardHeight: 280,
+    cardHeight: 250,
     radius: 0,
     tint: '#000000',
     depth: 120,
@@ -441,10 +441,10 @@ function initDepthCarousel() {
     visibleCards: 3,
     falloff: 0.22,
     blur: 4,
-    duration: 700,
+    duration: 850,
     ease: 'power3.out',
     autoplay: true,
-    autoplayDelay: 4200,
+    autoplayDelay: 6500,
     loop: true
   };
 
