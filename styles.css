@@ -531,9 +531,9 @@ h1 {
 /* TESTIMONIALS SECTION (React Bits DepthCarousel) */
 .testimonials-section {
   position: relative;
-  background: #000000;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--bg);
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
   padding: 4.5rem 1.5rem 4rem;
   overflow: hidden;
   display: flex;
@@ -597,8 +597,9 @@ h1 {
 }
 
 .testimonial-card {
-  background: linear-gradient(165deg, #121724 0%, #070a10 100%);
+  background: linear-gradient(165deg, #111111 0%, #060606 100%);
   border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
   border-radius: 18px;
   padding: 2.25rem 2.25rem 1.85rem;
   display: flex;
@@ -606,9 +607,11 @@ h1 {
   justify-content: space-between;
   text-align: left;
   user-select: none;
+  transition: border-color 0.3s ease, background 0.3s ease;
 }
 
 .testimonial-card:hover {
+  background: linear-gradient(165deg, #161616 0%, #0a0a0a 100%);
   border-color: rgba(255, 255, 255, 0.25);
 }
 
@@ -636,18 +639,18 @@ h1 {
   text-transform: uppercase;
   letter-spacing: 0.12em;
   color: #00b67a;
-  background: rgba(0, 182, 122, 0.1);
+  background: rgba(0, 182, 122, 0.08);
   padding: 0.28rem 0.65rem;
   border-radius: 999px;
-  border: 1px solid rgba(0, 182, 122, 0.25);
-  font-weight: 500;
+  border: 1px solid rgba(0, 182, 122, 0.3);
+  font-weight: 600;
 }
 
 .testimonial-card .testimonial-quote {
   font-family: var(--font-display);
   font-size: 1.08rem;
   line-height: 1.74;
-  color: #f1f5f9;
+  color: var(--text);
   font-weight: 400;
   margin: 0 0 1.25rem;
   flex-grow: 1;
@@ -661,7 +664,7 @@ h1 {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid var(--line);
   padding-top: 1rem;
   margin-top: auto;
 }
@@ -670,16 +673,16 @@ h1 {
   font-family: var(--font-body);
   font-size: 0.96rem;
   font-weight: 600;
-  color: #ffffff;
-  letter-spacing: 0.02em;
+  color: var(--text);
+  letter-spacing: 0.04em;
   margin: 0;
   font-style: normal;
 }
 
 .testimonial-subtext {
   font-size: 0.72rem;
-  color: rgba(255, 255, 255, 0.45);
-  letter-spacing: 0.05em;
+  color: var(--muted);
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
@@ -703,11 +706,12 @@ h1 {
   height: 44px;
   display: grid;
   place-items: center;
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 999px;
-  background: rgba(18, 20, 26, 0.65);
+  background: rgba(16, 16, 16, 0.8);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
   color: #fff;
   cursor: pointer;
   transition:
@@ -717,8 +721,8 @@ h1 {
 }
 
 .depth-carousel__arrow:hover {
-  background: rgba(35, 40, 52, 0.9);
-  border-color: rgba(255, 255, 255, 0.4);
+  background: #222222;
+  border-color: rgba(255, 255, 255, 0.35);
 }
 
 .depth-carousel__arrow:active {
@@ -743,10 +747,10 @@ h1 {
   gap: 8px;
   padding: 6px 12px;
   border-radius: 999px;
-  background: rgba(14, 16, 22, 0.6);
+  background: rgba(12, 12, 12, 0.75);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .depth-carousel__dot {
@@ -755,7 +759,7 @@ h1 {
   padding: 0;
   border: none;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.32);
+  background: rgba(255, 255, 255, 0.25);
   cursor: pointer;
   transition:
     width 0.25s ease,
