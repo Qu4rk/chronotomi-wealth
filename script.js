@@ -429,13 +429,13 @@ function initDepthCarousel() {
   // Configuration matching React Bits DepthCarousel specs
   const cfg = {
     count: count,
-    cardWidth: 550,
-    cardHeight: 380,
-    radius: 18,
+    cardWidth: 920,
+    cardHeight: 280,
+    radius: 0,
     tint: '#000000',
-    depth: 220,
-    spread: 95,
-    tilt: 18,
+    depth: 120,
+    spread: 40,
+    tilt: 6,
     tiltDirection: 'right',
     perspective: 1400,
     visibleCards: 3,
@@ -486,23 +486,20 @@ function initDepthCarousel() {
       const back = Math.max(0, d);
       const az = Math.abs(d);
       const shown = az <= cfg.visibleCards + 0.5;
-
       const tz = -cfg.depth * d;
       const tx = dir * cfg.spread * d;
-      const ry = dir * cfg.tilt * clamp(d, 0, 1);
+      const ry = dir * cfg.tilt * clamp(d, -1, 1);
 
-      let opacity = d < 0 ? Math.max(0, 1 + d) : 1;
+      let opacity = Math.max(0, 1 - Math.abs(d) * 1.5);
       if (!shown) opacity = 0;
 
-      const brightness = Math.max(0.15, 1 - back * cfg.falloff);
-      const blurPx = cfg.blur > 0 ? Math.min(cfg.blur, (back / Math.max(1, cfg.visibleCards)) * cfg.blur) : 0;
-      const zi = Math.round(2000 - d * 20);
+      const zi = Math.round(2000 - Math.abs(d) * 20);
 
       el.style.transform = `translate(-50%, -50%) scale(${sc}) translateX(${tx.toFixed(2)}px) translateZ(${tz.toFixed(2)}px) rotateY(${ry.toFixed(3)}deg)`;
       el.style.opacity = opacity.toFixed(3);
-      el.style.filter = `brightness(${brightness.toFixed(3)}) blur(${blurPx.toFixed(2)}px)`;
+      el.style.filter = 'none';
       el.style.zIndex = String(zi);
-      el.style.pointerEvents = shown && opacity > 0.05 ? 'auto' : 'none';
+      el.style.pointerEvents = shown && opacity > 0.4 ? 'auto' : 'none';
 
       const ov = overlayEls[i];
       if (ov) ov.style.opacity = clamp(back * cfg.falloff * 1.25, 0, 0.86).toFixed(3);
@@ -572,8 +569,15 @@ function initDepthCarousel() {
   // Responsive scale observer
   const ro = new ResizeObserver(entries => {
     const w = entries[0].contentRect.width;
-    const needed = cfg.cardWidth + Math.abs(cfg.spread) * 1.6 + 60;
-    scale = clamp(w / needed, 0.6, 1);
+    const isMobile = w < 768;
+    const effectiveCardWidth = isMobile ? Math.min(w - 24, 480) : cfg.cardWidth;
+    const effectiveCardHeight = isMobile ? 380 : cfg.cardHeight;
+    cardEls.forEach(card => {
+      card.style.width = `${effectiveCardWidth}px`;
+      card.style.height = `${effectiveCardHeight}px`;
+    });
+    const needed = effectiveCardWidth + (isMobile ? 10 : 40);
+    scale = clamp(w / needed, 0.9, 1);
     layout(pos);
   });
   ro.observe(root);
