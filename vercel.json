@@ -1,13 +1,25 @@
 {
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
   "cleanUrls": true,
   "trailingSlash": false,
-  "rewrites": [
-    { "source": "/timepieces", "destination": "/index.html" }
-  ],
   "redirects": [
-    { "source": "/index", "destination": "/", "permanent": true }
+    { "source": "/index", "destination": "/", "permanent": true },
+    { "source": "/index.html", "destination": "/", "permanent": true },
+    { "source": "/timepieces", "destination": "/watches", "permanent": true },
+    { "source": "/advisory.html", "destination": "/advisory", "permanent": true },
+    { "source": "/about.html", "destination": "/about", "permanent": true },
+    { "source": "/logistics.html", "destination": "/logistics", "permanent": true },
+    { "source": "/privacy.html", "destination": "/privacy", "permanent": true },
+    { "source": "/terms.html", "destination": "/terms", "permanent": true }
   ],
   "headers": [
+    {
+      "source": "/manage",
+      "headers": [
+        { "key": "X-Robots-Tag", "value": "noindex,nofollow,noarchive" }
+      ]
+    },
     {
       "source": "/(.*)",
       "headers": [

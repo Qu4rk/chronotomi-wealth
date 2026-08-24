@@ -1,0 +1,63 @@
+{
+  "title": "Chronotomi generated-site SEO contract review",
+  "scope": {
+    "ownedFiles": ["tests/seo-check.mjs", "tests/seo-review.json"],
+    "productionFilesModified": false,
+    "dependencies": "Node built-ins only"
+  },
+  "contract": {
+    "canonicalOrigin": "https://www.chronotomi.com",
+    "routePolicy": "extensionless, no trailing slash except root",
+    "requiredStaticRoutes": ["/", "/advisory", "/about", "/logistics", "/privacy", "/terms"],
+    "requiredGeneratedRoutes": ["/watches", "/sourcing", "/authenticity"],
+    "requiredBrandRouteCount": 4,
+    "requiredPageSignals": ["title", "meta description", "canonical", "one H1", "OG/Twitter metadata", "parseable JSON-LD"],
+    "forbiddenJsonLd": ["Offer", "aggregateRating", "Review", "price", "availability", "LocalBusiness"],
+    "sitemapPolicy": "every intended canonical page exactly once; exclude manage, assets, and redirect-source paths"
+  },
+  "currentTreeRisks": [
+    {
+      "code": "PRE_BUILD",
+      "finding": "The current tree has no dist/ directory. package.json declares npm run build, but its scripts/build-site.mjs entry file is absent in the current checkout.",
+      "impact": "Generated route, robots, and sitemap checks cannot run until the approved build entry exists and produces dist/."
+    },
+    {
+      "code": "CATALOG_SHAPE",
+      "finding": "Current watches.json now exposes id, slug, summary, brandSlug, and structured images entries.",
+      "impact": "The catalog identity contract is covered; the verifier continues to check every structured image src and every canonical watch route."
+    },
+    {
+      "code": "CATALOG_DUPLICATE",
+      "finding": "The baseline catalog repeated the Rolex / 126710GRNR brand-reference pair; the current projected catalog no longer reports that duplicate.",
+      "impact": "The verifier retains the uniqueness check so future inventory edits cannot silently create competing canonical watch pages."
+    },
+    {
+      "code": "JS_ONLY_COLLECTION",
+      "finding": "Current homepage contains brand/filter links but no serialized watch IDs/references or per-watch crawlable links in its initial HTML; watch cards remain created by script.js.",
+      "impact": "The homepage initial-HTML crawlability checks fail, as intended."
+    },
+    {
+      "code": "LEGACY_LINKS",
+      "finding": "Current pages contain internal href values such as index.html, about.html, privacy.html, terms.html, and logistics.html.",
+      "impact": "The clean internal-link contract fails until generated/source navigation uses extensionless routes."
+    },
+    {
+      "code": "SOURCE_HEAD_COVERAGE",
+      "finding": "Current required static source pages expose the required canonical, OG/Twitter, H1, and parseable JSON-LD signals.",
+      "impact": "The same assertions will run against every generated route once dist/ exists, preventing build-time metadata regressions."
+    },
+    {
+      "code": "IMAGE_SOURCE",
+      "finding": "At least one current catalog image source, assets/santos-de-cartier-wssa0018.jpeg, does not exist locally.",
+      "impact": "The build must replace or correct the source before a generated watch page can satisfy the local-image contract."
+    }
+  ],
+  "integrationNotes": [
+    "Run node tests/seo-check.mjs after npm run build; the verifier exits 0 only when the full generated route inventory and source homepage contract pass.",
+    "Use node tests/seo-check.mjs --json for CI artifacts and machine-readable failure codes.",
+    "The route resolver accepts dist/<route>, dist/<route>/index.html, and dist/<route>.html while requiring canonical URLs to remain extensionless.",
+    "Watch route derivation prefers explicit canonicalPath/path/route/canonicalUrl, then /watches/<slug>; a deterministic fallback keeps pre-contract failures actionable but does not waive missing id/slug errors.",
+    "The harness checks serialized HTML only and intentionally does not run JavaScript, so homepage watch links must be present in initial HTML.",
+    "No production, package, catalog, config, script, template, or asset files are owned by this review."
+  ]
+}

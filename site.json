@@ -1,0 +1,62 @@
+{
+  "name": "Chronotomi Wealth",
+  "legalName": "Chronotomi Wealth LTD",
+  "email": "info@chronotomi.com",
+  "phone": "+35799426514",
+  "location": "Limassol CY",
+  "address": {
+    "addressLocality": "Limassol",
+    "addressCountry": "CY"
+  },
+  "areaServed": ["Cyprus", "European Union"],
+  "companyNumber": "HE 492185",
+  "vatNumber": "60359894D",
+  "socialProfiles": {
+    "trustpilot": "https://www.trustpilot.com/review/chronotomi.com",
+    "instagram": "https://www.instagram.com/chronotomi.wealth?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==",
+    "facebook": "https://www.facebook.com/share/1Ba8A5m4Wp/"
+  },
+  "socialDefaults": {
+    "image": "/assets/logo_transparent.png",
+    "imageAlt": "Chronotomi Wealth"
+  },
+  "pages": {
+    "/": {
+      "title": "Luxury Watches & Private Sourcing in Cyprus | Chronotomi Wealth",
+      "description": "Discover curated luxury watches and discreet private sourcing from Chronotomi Wealth in Limassol, Cyprus, serving collectors across Cyprus and the EU."
+    },
+    "/watches": {
+      "title": "Luxury Watches | Chronotomi Wealth",
+      "description": "Browse the curated Chronotomi Wealth selection of luxury timepieces by brand and reference."
+    },
+    "/sourcing": {
+      "title": "Private Watch Sourcing | Chronotomi Wealth",
+      "description": "Private sourcing conversations for specific luxury timepiece references through Chronotomi Wealth."
+    },
+    "/authenticity": {
+      "title": "Authenticity Conversations | Chronotomi Wealth",
+      "description": "Learn how to begin a private authenticity conversation with Chronotomi Wealth."
+    },
+    "/logistics": {
+      "title": "Timepiece Acquisition & Logistics | Chronotomi Wealth",
+      "description": "Review Chronotomi Wealth's acquisition, delivery, inspection, and cross-border logistics guidance for curated timepieces."
+    },
+    "/advisory": {
+      "title": "Bespoke Wealth Advisory | Chronotomi Wealth",
+      "description": "Explore Chronotomi Wealth's bespoke advisory approach across portfolio management, alternative assets, and strategic planning."
+    },
+    "/about": {
+      "title": "About Chronotomi Wealth",
+      "description": "Discover Chronotomi Wealth's vision, standards, and approach to luxury timepieces and discreet advisory."
+    },
+    "/privacy": {
+      "title": "Privacy & Discretion Policy | Chronotomi Wealth",
+      "description": "Read Chronotomi Wealth's Privacy & Discretion Policy, including data collection, protection, and GDPR rights."
+    },
+    "/terms": {
+      "title": "Terms of Service | Chronotomi Wealth",
+      "description": "Review Chronotomi Wealth's Terms of Service for website use, luxury asset inquiries, and advisory engagements."
+    }
+  },
+  "origin": "https://www.chronotomi.com"
+}

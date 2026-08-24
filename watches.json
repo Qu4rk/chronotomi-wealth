@@ -1,202 +1,512 @@
 [
   {
+    "id": "rolex-submariner-date-126613lb",
+    "slug": "submariner-date-126613lb",
     "brand": "Rolex",
+    "brandSlug": "rolex",
     "model": "Submariner Date",
     "reference": "126613LB",
-    "set": "Full Set",
     "caseSize": "41mm",
-    "image": "assets/Submariner-Date-Blue-Ceramic-Oyster-41mm-Oystersteel-And-Yellow-Gold.png"
+    "set": "Full Set",
+    "summary": "Rolex Submariner Date, reference 126613LB, with a 41mm case and Full Set presentation.",
+    "images": [
+      {
+        "src": "assets/Submariner-Date-Blue-Ceramic-Oyster-41mm-Oystersteel-And-Yellow-Gold.png",
+        "alt": "Rolex Submariner Date, reference 126613LB",
+        "width": 1024,
+        "height": 1024
+      }
+    ],
+    "dateModified": "2026-08-24",
+    "indexable": true
   },
   {
+    "id": "patek-philippe-nautilus-5811-1g-001",
+    "slug": "nautilus-5811-1g-001",
     "brand": "Patek Philippe",
+    "brandSlug": "patek-philippe",
     "model": "Nautilus",
     "reference": "5811/1G-001",
-    "set": "Box + Papers",
     "caseSize": "41mm",
-    "image": "assets/gen_patek_1_1776373728459.png"
+    "set": "Box + Papers",
+    "summary": "Patek Philippe Nautilus, reference 5811/1G-001, with a 41mm case and Box + Papers presentation.",
+    "images": [
+      {
+        "src": "assets/gen_patek_1_1776373728459.png",
+        "alt": "Patek Philippe Nautilus, reference 5811/1G-001",
+        "width": 1024,
+        "height": 1024
+      }
+    ],
+    "dateModified": "2026-08-24",
+    "indexable": true
   },
   {
+    "id": "audemars-piguet-royal-oak-15510st-oo-1320st-06",
+    "slug": "royal-oak-15510st-oo-1320st-06",
     "brand": "Audemars Piguet",
+    "brandSlug": "audemars-piguet",
     "model": "Royal Oak",
     "reference": "15510ST.OO.1320ST.06",
-    "set": "Full Set",
     "caseSize": "41mm",
-    "image": "assets/royal-oak-41mm-15510ST.OO.1320ST.06.png"
+    "set": "Full Set",
+    "summary": "Audemars Piguet Royal Oak, reference 15510ST.OO.1320ST.06, with a 41mm case and Full Set presentation.",
+    "images": [
+      {
+        "src": "assets/royal-oak-41mm-15510ST.OO.1320ST.06.png",
+        "alt": "Audemars Piguet Royal Oak, reference 15510ST.OO.1320ST.06",
+        "width": 1000,
+        "height": 1100
+      }
+    ],
+    "dateModified": "2026-08-24",
+    "indexable": true
   },
   {
+    "id": "cartier-santos-de-cartier-wssa0071",
+    "slug": "santos-de-cartier-wssa0071",
     "brand": "Cartier",
+    "brandSlug": "cartier",
     "model": "Santos de Cartier",
     "reference": "WSSA0071",
-    "set": "Full Set",
     "caseSize": "Large",
-    "image": "assets/santos-de-cartier-large-WSSA0071.png"
+    "set": "Full Set",
+    "summary": "Cartier Santos de Cartier, reference WSSA0071, with a Large case and Full Set presentation.",
+    "images": [
+      {
+        "src": "assets/santos-de-cartier-large-WSSA0071.png",
+        "alt": "Cartier Santos de Cartier, reference WSSA0071",
+        "width": 2048,
+        "height": 2048
+      }
+    ],
+    "dateModified": "2026-08-24",
+    "indexable": true
   },
   {
+    "id": "rolex-gmt-master-ii-126710grnr",
+    "slug": "gmt-master-ii-126710grnr",
     "brand": "Rolex",
+    "brandSlug": "rolex",
     "model": "GMT-Master II",
     "reference": "126710GRNR",
-    "set": "Full Set",
     "caseSize": "40mm",
-    "image": "assets/GMT-Master-II-126710GRNR.png"
+    "set": "Full Set",
+    "summary": "Rolex GMT-Master II, reference 126710GRNR, with a 40mm case and Full Set presentation.",
+    "images": [
+      {
+        "src": "assets/GMT-Master-II-126710GRNR.png",
+        "alt": "Rolex GMT-Master II, reference 126710GRNR",
+        "width": 832,
+        "height": 1248
+      },
+      {
+        "src": "assets/gmt-master-II-bruce-wayne-oyster-40mm-oystersteel-126710GRNR.png",
+        "alt": "Rolex GMT-Master II, reference 126710GRNR alternate view",
+        "width": 1024,
+        "height": 1024
+      }
+    ],
+    "dateModified": "2026-08-24",
+    "indexable": true
   },
   {
+    "id": "patek-philippe-aquanaut-5167a-001",
+    "slug": "aquanaut-5167a-001",
     "brand": "Patek Philippe",
+    "brandSlug": "patek-philippe",
     "model": "Aquanaut",
     "reference": "5167A-001",
-    "set": "Box + Papers",
     "caseSize": "40.8mm",
-    "image": "assets/patek-phillipe-aquanaut-5167A-001.png"
+    "set": "Box + Papers",
+    "summary": "Patek Philippe Aquanaut, reference 5167A-001, with a 40.8mm case and Box + Papers presentation.",
+    "images": [
+      {
+        "src": "assets/patek-phillipe-aquanaut-5167A-001.png",
+        "alt": "Patek Philippe Aquanaut, reference 5167A-001",
+        "width": 864,
+        "height": 1200
+      }
+    ],
+    "dateModified": "2026-08-24",
+    "indexable": true
   },
   {
+    "id": "rolex-yacht-master-ii-126680",
+    "slug": "yacht-master-ii-126680",
     "brand": "Rolex",
+    "brandSlug": "rolex",
     "model": "Yacht-Master II",
     "reference": "126680",
-    "set": "Full Set",
     "caseSize": "44mm",
-    "image": "assets/yacht-master-II-Oyster-44mm-Oystersteel-Reference-126680.png?v=2"
+    "set": "Full Set",
+    "summary": "Rolex Yacht-Master II, reference 126680, with a 44mm case and Full Set presentation.",
+    "images": [
+      {
+        "src": "assets/yacht-master-II-Oyster-44mm-Oystersteel-Reference-126680.png",
+        "alt": "Rolex Yacht-Master II, reference 126680",
+        "width": 1254,
+        "height": 1254
+      }
+    ],
+    "dateModified": "2026-08-24",
+    "indexable": true
   },
   {
+    "id": "patek-philippe-calatrava-6119r-001",
+    "slug": "calatrava-6119r-001",
     "brand": "Patek Philippe",
+    "brandSlug": "patek-philippe",
     "model": "Calatrava",
     "reference": "6119R-001",
-    "set": "Full Set",
     "caseSize": "39mm",
-    "image": "assets/patek-phillipe-calatrava-6119R-001.png"
+    "set": "Full Set",
+    "summary": "Patek Philippe Calatrava, reference 6119R-001, with a 39mm case and Full Set presentation.",
+    "images": [
+      {
+        "src": "assets/patek-phillipe-calatrava-6119R-001.png",
+        "alt": "Patek Philippe Calatrava, reference 6119R-001",
+        "width": 1536,
+        "height": 1024
+      }
+    ],
+    "dateModified": "2026-08-24",
+    "indexable": true
   },
   {
+    "id": "rolex-cosmograph-daytona-126519ln",
+    "slug": "cosmograph-daytona-126519ln",
     "brand": "Rolex",
+    "brandSlug": "rolex",
     "model": "Cosmograph Daytona",
     "reference": "126519LN",
-    "set": "Full Set",
     "caseSize": "40mm",
-    "image": "assets/cosmograph-daytona-oyster-40mm-white-gold-126519LN.jpeg"
+    "set": "Full Set",
+    "summary": "Rolex Cosmograph Daytona, reference 126519LN, with a 40mm case and Full Set presentation.",
+    "images": [
+      {
+        "src": "assets/cosmograph-daytona-oyster-40mm-white-gold-126519LN.jpeg",
+        "alt": "Rolex Cosmograph Daytona, reference 126519LN",
+        "width": 2000,
+        "height": 2000
+      }
+    ],
+    "dateModified": "2026-08-24",
+    "indexable": true
   },
   {
+    "id": "rolex-datejust-41-126334",
+    "slug": "datejust-41-126334",
     "brand": "Rolex",
+    "brandSlug": "rolex",
     "model": "Datejust 41",
     "reference": "126334",
-    "set": "Full Set",
     "caseSize": "41mm",
-    "image": "assets/datejust-41-oyster-41mm-oystersteel-and-white-gold-126334.jpeg"
+    "set": "Full Set",
+    "summary": "Rolex Datejust 41, reference 126334, with a 41mm case and Full Set presentation.",
+    "images": [
+      {
+        "src": "assets/datejust-41-oyster-41mm-oystersteel-and-white-gold-126334.jpeg",
+        "alt": "Rolex Datejust 41, reference 126334",
+        "width": 680,
+        "height": 1094
+      }
+    ],
+    "dateModified": "2026-08-24",
+    "indexable": true
   },
   {
+    "id": "rolex-day-date-40-228235",
+    "slug": "day-date-40-228235",
     "brand": "Rolex",
+    "brandSlug": "rolex",
     "model": "Day-Date 40",
     "reference": "228235",
-    "set": "Full Set",
     "caseSize": "40mm",
-    "image": "assets/day-date-40-oyster-40mm-everose-gold-228235.jpeg"
+    "set": "Full Set",
+    "summary": "Rolex Day-Date 40, reference 228235, with a 40mm case and Full Set presentation.",
+    "images": [
+      {
+        "src": "assets/day-date-40-oyster-40mm-everose-gold-228235.jpeg",
+        "alt": "Rolex Day-Date 40, reference 228235",
+        "width": 832,
+        "height": 1248
+      }
+    ],
+    "dateModified": "2026-08-24",
+    "indexable": true
   },
   {
-    "brand": "Rolex",
-    "model": "GMT-Master II",
-    "reference": "126710GRNR",
-    "set": "Full Set",
-    "caseSize": "40mm",
-    "image": "assets/gmt-master-II-bruce-wayne-oyster-40mm-oystersteel-126710GRNR.png"
-  },
-  {
+    "id": "patek-philippe-grand-complications-5270p-017",
+    "slug": "grand-complications-5270p-017",
     "brand": "Patek Philippe",
+    "brandSlug": "patek-philippe",
     "model": "Grand Complications",
     "reference": "5270P-017",
-    "set": "Full Set",
     "caseSize": "41mm",
-    "image": "assets/patek-phillipe-grand-complications-41mm-5270P-017.png"
+    "set": "Full Set",
+    "summary": "Patek Philippe Grand Complications, reference 5270P-017, with a 41mm case and Full Set presentation.",
+    "images": [
+      {
+        "src": "assets/patek-phillipe-grand-complications-41mm-5270P-017.png",
+        "alt": "Patek Philippe Grand Complications, reference 5270P-017",
+        "width": 1024,
+        "height": 1024
+      }
+    ],
+    "dateModified": "2026-08-24",
+    "indexable": true
   },
   {
+    "id": "audemars-piguet-royal-oak-chronograph-26240st-oo-1320st-05",
+    "slug": "royal-oak-chronograph-26240st-oo-1320st-05",
     "brand": "Audemars Piguet",
+    "brandSlug": "audemars-piguet",
     "model": "Royal Oak Chronograph",
     "reference": "26240ST.OO.1320ST.05",
-    "set": "Full Set",
     "caseSize": "41mm",
-    "image": "assets/royal-oak-chronograph-41mm-stainless-steel-26240ST.OO.1320ST.05.png"
+    "set": "Full Set",
+    "summary": "Audemars Piguet Royal Oak Chronograph, reference 26240ST.OO.1320ST.05, with a 41mm case and Full Set presentation.",
+    "images": [
+      {
+        "src": "assets/royal-oak-chronograph-41mm-stainless-steel-26240ST.OO.1320ST.05.png",
+        "alt": "Audemars Piguet Royal Oak Chronograph, reference 26240ST.OO.1320ST.05",
+        "width": 1248,
+        "height": 832
+      }
+    ],
+    "dateModified": "2026-08-24",
+    "indexable": true
   },
   {
+    "id": "rolex-yacht-master-42-226658",
+    "slug": "yacht-master-42-226658",
     "brand": "Rolex",
+    "brandSlug": "rolex",
     "model": "Yacht-Master 42",
     "reference": "226658",
-    "set": "Full Set",
     "caseSize": "42mm",
-    "image": "assets/yacht-master-42-oyster-42mm-yellow-gold-226658.jpeg"
+    "set": "Full Set",
+    "summary": "Rolex Yacht-Master 42, reference 226658, with a 42mm case and Full Set presentation.",
+    "images": [
+      {
+        "src": "assets/yacht-master-42-oyster-42mm-yellow-gold-226658.jpeg",
+        "alt": "Rolex Yacht-Master 42, reference 226658",
+        "width": 1024,
+        "height": 1024
+      }
+    ],
+    "dateModified": "2026-08-24",
+    "indexable": true
   },
   {
+    "id": "rolex-cosmograph-daytona-126500ln",
+    "slug": "cosmograph-daytona-126500ln",
     "brand": "Rolex",
+    "brandSlug": "rolex",
     "model": "Cosmograph Daytona",
     "reference": "126500LN",
-    "set": "Full Set",
     "caseSize": "40mm",
-    "image": "assets/cosmograph-daytona-40mm-oystersteel-126500LN.png"
+    "set": "Full Set",
+    "summary": "Rolex Cosmograph Daytona, reference 126500LN, with a 40mm case and Full Set presentation.",
+    "images": [
+      {
+        "src": "assets/cosmograph-daytona-40mm-oystersteel-126500LN.png",
+        "alt": "Rolex Cosmograph Daytona, reference 126500LN",
+        "width": 1024,
+        "height": 1024
+      }
+    ],
+    "dateModified": "2026-08-24",
+    "indexable": true
   },
   {
+    "id": "rolex-datejust-36-126234",
+    "slug": "datejust-36-126234",
     "brand": "Rolex",
+    "brandSlug": "rolex",
     "model": "Datejust 36",
     "reference": "126234",
-    "set": "Full Set",
     "caseSize": "36mm",
-    "image": "assets/datejust-36-oyster-36mm-oystersteel-and-white-gold-126234.jpeg"
+    "set": "Full Set",
+    "summary": "Rolex Datejust 36, reference 126234, with a 36mm case and Full Set presentation.",
+    "images": [
+      {
+        "src": "assets/datejust-36-oyster-36mm-oystersteel-and-white-gold-126234.jpeg",
+        "alt": "Rolex Datejust 36, reference 126234",
+        "width": 1024,
+        "height": 1024
+      }
+    ],
+    "dateModified": "2026-08-24",
+    "indexable": true
   },
   {
+    "id": "rolex-gmt-master-ii-126710blnr",
+    "slug": "gmt-master-ii-126710blnr",
     "brand": "Rolex",
+    "brandSlug": "rolex",
     "model": "GMT-Master II",
     "reference": "126710BLNR",
-    "set": "Full Set",
     "caseSize": "40mm",
-    "image": "assets/gmt-master-II-oyster-40mm-oystersteel-126710BLNR.png"
+    "set": "Full Set",
+    "summary": "Rolex GMT-Master II, reference 126710BLNR, with a 40mm case and Full Set presentation.",
+    "images": [
+      {
+        "src": "assets/gmt-master-II-oyster-40mm-oystersteel-126710BLNR.png",
+        "alt": "Rolex GMT-Master II, reference 126710BLNR",
+        "width": 2048,
+        "height": 2048
+      }
+    ],
+    "dateModified": "2026-08-24",
+    "indexable": true
   },
   {
+    "id": "rolex-gmt-master-ii-126718grnr",
+    "slug": "gmt-master-ii-126718grnr",
     "brand": "Rolex",
+    "brandSlug": "rolex",
     "model": "GMT-Master II",
     "reference": "126718GRNR",
-    "set": "Full Set",
     "caseSize": "40mm",
-    "image": "assets/gmt-master-ll-oyster-40mm-yellow-gold-126718GRNR.png"
+    "set": "Full Set",
+    "summary": "Rolex GMT-Master II, reference 126718GRNR, with a 40mm case and Full Set presentation.",
+    "images": [
+      {
+        "src": "assets/gmt-master-ll-oyster-40mm-yellow-gold-126718GRNR.png",
+        "alt": "Rolex GMT-Master II, reference 126718GRNR",
+        "width": 1024,
+        "height": 1024
+      }
+    ],
+    "dateModified": "2026-08-24",
+    "indexable": true
   },
   {
+    "id": "rolex-perpetual-41-134300",
+    "slug": "perpetual-41-134300",
     "brand": "Rolex",
+    "brandSlug": "rolex",
     "model": "Perpetual 41",
     "reference": "134300",
-    "set": "Full Set",
     "caseSize": "41mm",
-    "image": "assets/oyster-perpetual-41-oyster-41mm-oystersteel-134300.jpeg"
+    "set": "Full Set",
+    "summary": "Rolex Perpetual 41, reference 134300, with a 41mm case and Full Set presentation.",
+    "images": [
+      {
+        "src": "assets/oyster-perpetual-41-oyster-41mm-oystersteel-134300.jpeg",
+        "alt": "Rolex Perpetual 41, reference 134300",
+        "width": 1024,
+        "height": 1024
+      }
+    ],
+    "dateModified": "2026-08-24",
+    "indexable": true
   },
   {
+    "id": "cartier-santos-de-cartier-wssa0018",
+    "slug": "santos-de-cartier-wssa0018",
     "brand": "Cartier",
+    "brandSlug": "cartier",
     "model": "Santos de Cartier",
     "reference": "WSSA0018",
-    "set": "Full Set",
     "caseSize": "Large",
-    "image": "assets/santos-de-cartier-large-WSSA0018.jpeg"
+    "set": "Full Set",
+    "summary": "Cartier Santos de Cartier, reference WSSA0018, with a Large case and Full Set presentation.",
+    "images": [
+      {
+        "src": "assets/santos-de-cartier-large-WSSA0018.jpeg",
+        "alt": "Cartier Santos de Cartier, reference WSSA0018",
+        "width": 2048,
+        "height": 2048
+      }
+    ],
+    "dateModified": "2026-08-24",
+    "indexable": true
   },
   {
+    "id": "rolex-land-dweller-127334",
+    "slug": "land-dweller-127334",
     "brand": "Rolex",
+    "brandSlug": "rolex",
     "model": "Land-Dweller",
     "reference": "127334",
-    "set": "Full Set",
     "caseSize": "40mm",
-    "image": "assets/rolex-land-dweller-40-40mm-127334.jpeg"
+    "set": "Full Set",
+    "summary": "Rolex Land-Dweller, reference 127334, with a 40mm case and Full Set presentation.",
+    "images": [
+      {
+        "src": "assets/rolex-land-dweller-40-40mm-127334.jpeg",
+        "alt": "Rolex Land-Dweller, reference 127334",
+        "width": 2048,
+        "height": 2048
+      }
+    ],
+    "dateModified": "2026-08-24",
+    "indexable": true
   },
   {
+    "id": "rolex-sky-dweller-336934",
+    "slug": "sky-dweller-336934",
     "brand": "Rolex",
+    "brandSlug": "rolex",
     "model": "Sky-Dweller",
     "reference": "336934",
-    "set": "Full Set",
     "caseSize": "42mm",
-    "image": "assets/rolex-sky-dweller-42mm-336934.webp"
+    "set": "Full Set",
+    "summary": "Rolex Sky-Dweller, reference 336934, with a 42mm case and Full Set presentation.",
+    "images": [
+      {
+        "src": "assets/rolex-sky-dweller-42mm-336934.webp",
+        "alt": "Rolex Sky-Dweller, reference 336934",
+        "width": 1024,
+        "height": 1024
+      }
+    ],
+    "dateModified": "2026-08-24",
+    "indexable": true
   },
   {
+    "id": "cartier-santos-de-cartier-wssa0062",
+    "slug": "santos-de-cartier-wssa0062",
     "brand": "Cartier",
+    "brandSlug": "cartier",
     "model": "Santos de Cartier",
     "reference": "WSSA0062",
-    "set": "Full Set",
     "caseSize": "Large",
-    "image": "assets/santos-de-cartier-large-WSSA0062.png"
+    "set": "Full Set",
+    "summary": "Cartier Santos de Cartier, reference WSSA0062, with a Large case and Full Set presentation.",
+    "images": [
+      {
+      "src": "assets/santos-de-cartier-large-WSSA0062.png",
+        "alt": "Cartier Santos de Cartier, reference WSSA0062",
+        "width": 1024,
+        "height": 1024
+      }
+    ],
+    "dateModified": "2026-08-24",
+    "indexable": true
   },
   {
+    "id": "cartier-santos-de-cartier-wssa0096",
+    "slug": "santos-de-cartier-wssa0096",
     "brand": "Cartier",
+    "brandSlug": "cartier",
     "model": "Santos de Cartier",
     "reference": "WSSA0096",
-    "set": "Full Set",
     "caseSize": "Large",
-    "image": "assets/santos-de-cartier-large-WSSA0096.png"
+    "set": "Full Set",
+    "summary": "Cartier Santos de Cartier, reference WSSA0096, with a Large case and Full Set presentation.",
+    "images": [
+      {
+      "src": "assets/santos-de-cartier-large-WSSA0096.png",
+        "alt": "Cartier Santos de Cartier, reference WSSA0096",
+        "width": 1024,
+        "height": 1024
+      }
+    ],
+    "dateModified": "2026-08-24",
+    "indexable": true
   }
 ]

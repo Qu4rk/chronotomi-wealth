@@ -3,8 +3,9 @@
 // ═══════════════════════════════════════
 const GITHUB_OWNER = 'Qu4rk';
 const GITHUB_REPO = 'chronotomi-wealth';
-const GITHUB_BRANCH = 'main';
+const GITHUB_BRANCH = 'master';
 const GITHUB_API = 'https://api.github.com';
+const CATALOG_PATH = 'watches.json';
 
 // ═══════════════════════════════════════
 // STATE
@@ -14,37 +15,145 @@ let originalWatchesJSON = '';
 let pendingImages = new Map();
 let editingIndex = -1;
 
+function slugify(value) {
+    return String(value || '')
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '') || 'watch';
+}
+
+function normalizeImage(image) {
+    return {
+        src: String(image?.src || '').trim(),
+        alt: String(image?.alt || '').trim(),
+        width: Number(image?.width),
+        height: Number(image?.height)
+    };
+}
+
+function watchImages(watch) {
+    if (!Array.isArray(watch.images)) return [];
+    return watch.images.filter(image => image && typeof image === 'object').map(normalizeImage);
+}
+
+function normalizeWatch(record) {
+    const images = watchImages(record);
+    const watch = {
+        id: String(record.id || '').trim(),
+        slug: String(record.slug || '').trim(),
+        brand: String(record.brand || '').trim(),
+        brandSlug: String(record.brandSlug || '').trim(),
+        model: String(record.model || '').trim(),
+        reference: String(record.reference || '').trim(),
+        caseSize: String(record.caseSize || '').trim(),
+        set: String(record.set || '').trim(),
+        summary: String(record.summary || '').trim(),
+        images,
+        dateModified: String(record.dateModified || '').trim(),
+        indexable: record.indexable !== false
+    };
+    const year = String(record.year || '').trim();
+    const condition = String(record.condition || '').trim();
+    if (year) watch.year = year;
+    if (condition) watch.condition = condition;
+    return watch;
+}
+
+function normalizeCatalog(data) {
+    if (!Array.isArray(data)) throw new Error('Catalog must be an array.');
+    const usedIds = new Set();
+    const usedSlugs = new Set();
+    return data.map((record, index) => {
+        const watch = normalizeWatch(record);
+        if (!watch.id || !watch.slug) throw new Error(`Catalog record ${index + 1} is missing an id or slug.`);
+        if (usedIds.has(watch.id)) throw new Error(`Duplicate watch id: ${watch.id}`);
+        if (usedSlugs.has(watch.slug)) throw new Error(`Duplicate watch slug: ${watch.slug}`);
+        usedIds.add(watch.id);
+        usedSlugs.add(watch.slug);
+        return watch;
+    });
+}
+
+function createIdentity(watch) {
+    const baseSlug = slugify([watch.brand, watch.model, watch.reference].filter(Boolean).join('-'));
+    const usedIds = new Set(currentWatches.map(item => item.id));
+    const usedSlugs = new Set(currentWatches.map(item => item.slug));
+    let slug = baseSlug;
+    let suffix = 1;
+    while (usedSlugs.has(slug) || usedIds.has(`watch-${slug}`)) slug = `${baseSlug}-${++suffix}`;
+    return { id: `watch-${slug}`, slug };
+}
+
+function isoDate(date = new Date()) {
+    return date.toISOString().slice(0, 10);
+}
+
+function imageAlt(watch, index = 0) {
+    const primaryAlt = `${watch.brand} ${watch.model}, reference ${watch.reference}`;
+    if (index === 0) return primaryAlt;
+    return `${primaryAlt} alternate view${index === 1 ? '' : ` ${index}`}`;
+}
+
+function validImageMetadata(image) {
+    return Boolean(
+        image &&
+        typeof image.src === 'string' && image.src.trim() &&
+        typeof image.alt === 'string' && image.alt.trim() &&
+        Number.isInteger(image.width) && image.width > 0 &&
+        Number.isInteger(image.height) && image.height > 0
+    );
+}
+
+function validateWatch(watch) {
+    if (watch.indexable && !watch.summary) return 'Indexable watches require a summary.';
+    if (!watch.images.length) return 'Every watch requires at least one image.';
+    if (!watch.images.every(validImageMetadata)) {
+        return 'Every image requires a source, alt text, width, and height.';
+    }
+    return '';
+}
+
+function imagesForSave(existingWatch, pendingImage, draft) {
+    const existingImages = existingWatch ? watchImages(existingWatch) : [];
+    const images = pendingImage
+        ? [normalizeImage(pendingImage.image), ...existingImages.slice(1)]
+        : existingImages;
+    return images.map((image, index) => normalizeImage({
+        ...image,
+        alt: imageAlt(draft, index)
+    }));
+}
+
 // ═══════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════
 async function init() {
-    // Try to load the latest data from GitHub (critical for GoDaddy hosting
-    // where local files may be stale)
-    try {
-        const res = await fetch(
-            'https://raw.githubusercontent.com/Qu4rk/chronotomi-wealth/main/watches.json?t=' + Date.now()
-        );
-        if (res.ok) {
+    const sources = [
+        `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/${GITHUB_BRANCH}/${CATALOG_PATH}?t=${Date.now()}`,
+        `${CATALOG_PATH}?t=${Date.now()}`
+    ];
+    let loadError = null;
+
+    for (const source of sources) {
+        try {
+            const res = await fetch(source);
+            if (!res.ok) continue;
             const data = await res.json();
-            if (Array.isArray(data) && data.length > 0) {
-                currentWatches = data;
-                originalWatchesJSON = JSON.stringify(data);
-                renderWatchGrid();
-                updatePublishState();
-                return;
-            }
+            currentWatches = normalizeCatalog(data);
+            originalWatchesJSON = JSON.stringify(currentWatches);
+            loadError = null;
+            break;
+        } catch (e) {
+            loadError = e;
         }
-    } catch (e) {
-        console.log('Could not fetch from GitHub, using local data');
     }
 
-    // Fallback to local watches.js
-    if (typeof watches !== 'undefined') {
-        currentWatches = JSON.parse(JSON.stringify(watches));
-        originalWatchesJSON = JSON.stringify(watches);
-    }
     renderWatchGrid();
     updatePublishState();
+    if (loadError && currentWatches.length === 0) {
+        showToast(`Catalog could not be loaded: ${loadError.message}`, 'error');
+    }
 }
 
 // ═══════════════════════════════════════
@@ -141,24 +250,19 @@ function renderWatchGrid() {
     `;
 
     currentWatches.forEach((w, i) => {
-        const imgSrc = pendingImages.has(i) ? pendingImages.get(i).previewUrl : w.image;
-        const statusClass = w.status === 'In Stock' ? 'status-instock' : w.status === 'Reserved' ? 'status-reserved' : 'status-sold';
+        const primaryImage = watchImages(w)[0];
+        const pendingImage = pendingImages.get(i);
+        const imgSrc = pendingImage?.previewUrl || primaryImage?.src || 'assets/logo_transparent.png';
+        const imgAlt = primaryImage?.alt || `${w.brand} ${w.model}`;
         html += `
             <div class="watch-card">
                 <div class="card-image">
-                    <img src="${imgSrc}" alt="${w.brand} ${w.model}" onerror="this.src='assets/logo_transparent.png'">
+                    <img src="${imgSrc}" alt="${imgAlt}" onerror="this.src='assets/logo_transparent.png'">
                 </div>
                 <div class="card-body">
                     <div class="card-brand">${w.brand}</div>
                     <div class="card-model">${w.model}</div>
                     <div class="card-ref">Ref. ${w.reference}</div>
-                    <div class="card-status-row">
-                        <select class="status-select ${statusClass}" onchange="quickStatusChange(${i}, this.value)">
-                            <option value="In Stock" ${w.status === 'In Stock' ? 'selected' : ''}>In Stock</option>
-                            <option value="Reserved" ${w.status === 'Reserved' ? 'selected' : ''}>Reserved</option>
-                            <option value="Sold" ${w.status === 'Sold' ? 'selected' : ''}>Sold</option>
-                        </select>
-                    </div>
                     <div class="card-actions">
                         <button class="btn-edit" onclick="openEditModal(${i})">✎ Edit</button>
                         <button class="btn-remove" onclick="confirmDelete(${i})">✕ Remove</button>
@@ -172,12 +276,6 @@ function renderWatchGrid() {
     updatePublishState();
 }
 
-function quickStatusChange(index, newStatus) {
-    currentWatches[index].status = newStatus;
-    renderWatchGrid();
-    showToast(`Status changed to "${newStatus}"`, 'info');
-}
-
 // ═══════════════════════════════════════
 // WATCH CRUD
 // ═══════════════════════════════════════
@@ -186,7 +284,8 @@ function openAddModal() {
     document.getElementById('modal-title').textContent = 'Add New Watch';
     document.getElementById('watchForm').reset();
     document.getElementById('image-preview').innerHTML = '<span class="preview-placeholder">No image selected</span>';
-    document.getElementById('wImagePath').value = '';
+    document.getElementById('wSummary').value = '';
+    document.getElementById('wIndexable').checked = true;
     openModal('watch-modal');
 }
 
@@ -197,15 +296,19 @@ function openEditModal(index) {
     document.getElementById('wBrand').value = w.brand;
     document.getElementById('wModel').value = w.model;
     document.getElementById('wReference').value = w.reference;
-    document.getElementById('wYear').value = w.year;
-    document.getElementById('wCondition').value = w.condition;
+    document.getElementById('wYear').value = w.year || '';
+    document.getElementById('wCondition').value = w.condition || '';
     document.getElementById('wSet').value = w.set;
     document.getElementById('wCaseSize').value = w.caseSize;
-    document.getElementById('wStatus').value = w.status;
-    document.getElementById('wImagePath').value = w.image;
+    document.getElementById('wSummary').value = w.summary || '';
+    document.getElementById('wIndexable').checked = w.indexable !== false;
 
-    const imgSrc = pendingImages.has(index) ? pendingImages.get(index).previewUrl : w.image;
-    document.getElementById('image-preview').innerHTML = `<img src="${imgSrc}" alt="Preview" onerror="this.parentElement.innerHTML='<span class=\\'preview-placeholder\\'>Image not found</span>'">`;
+    const primaryImage = watchImages(w)[0];
+    const pendingImage = pendingImages.get(index);
+    const imgSrc = pendingImage?.previewUrl || primaryImage?.src;
+    document.getElementById('image-preview').innerHTML = imgSrc
+        ? `<img src="${imgSrc}" alt="${primaryImage?.alt || 'Watch image preview'}" onerror="this.parentElement.innerHTML='<span class=\\'preview-placeholder\\'>Image not found</span>'">`
+        : '<span class="preview-placeholder">No image selected</span>';
 
     openModal('watch-modal');
 }
@@ -215,30 +318,71 @@ function handleImageSelect(input) {
     const file = input.files[0];
     const reader = new FileReader();
     reader.onload = function(e) {
-        document.getElementById('image-preview').innerHTML = `<img src="${e.target.result}" alt="Preview">`;
-        const ext = file.name.split('.').pop();
-        const safeName = `watch_${Date.now()}.${ext}`;
-        document.getElementById('wImagePath').value = `assets/${safeName}`;
-        // Store file for later upload
-        const tempIndex = editingIndex >= 0 ? editingIndex : currentWatches.length;
-        pendingImages.set(tempIndex, { file: file, previewUrl: e.target.result, filename: safeName });
+        const previewUrl = e.target.result;
+        const probe = new Image();
+        probe.onload = function() {
+            const ext = (file.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '') || 'jpg';
+            const safeName = `watch_${Date.now()}.${ext}`;
+            const tempIndex = editingIndex >= 0 ? editingIndex : currentWatches.length;
+            pendingImages.set(tempIndex, {
+                file,
+                previewUrl,
+                filename: safeName,
+                image: {
+                    src: `assets/${safeName}`,
+                    width: probe.naturalWidth,
+                    height: probe.naturalHeight
+                }
+            });
+            document.getElementById('image-preview').innerHTML = `<img src="${previewUrl}" alt="Selected watch image preview">`;
+        };
+        probe.onerror = function() {
+            showToast('The selected image could not be read.', 'error');
+            input.value = '';
+        };
+        probe.src = previewUrl;
+    };
+    reader.onerror = function() {
+        showToast('The selected image could not be read.', 'error');
+        input.value = '';
     };
     reader.readAsDataURL(file);
 }
 
 function saveWatch(e) {
     e.preventDefault();
+    const existingWatch = editingIndex >= 0 ? currentWatches[editingIndex] : null;
+    const pendingIndex = editingIndex >= 0 ? editingIndex : currentWatches.length;
+    const pendingImage = pendingImages.get(pendingIndex);
+    const year = document.getElementById('wYear').value.trim();
+    const condition = document.getElementById('wCondition').value.trim();
+    const brand = document.getElementById('wBrand').value.trim();
+    const model = document.getElementById('wModel').value.trim();
+    const reference = document.getElementById('wReference').value.trim();
+    const identity = existingWatch ? { id: existingWatch.id, slug: existingWatch.slug } : createIdentity({ brand, model, reference });
+    const draft = { brand, model, reference };
     const watch = {
-        brand: document.getElementById('wBrand').value.trim(),
-        model: document.getElementById('wModel').value.trim(),
-        reference: document.getElementById('wReference').value.trim(),
-        year: document.getElementById('wYear').value.trim(),
-        condition: document.getElementById('wCondition').value.trim(),
-        set: document.getElementById('wSet').value.trim(),
+        id: identity.id,
+        slug: identity.slug,
+        brand,
+        brandSlug: slugify(brand),
+        model,
+        reference,
         caseSize: document.getElementById('wCaseSize').value.trim(),
-        status: document.getElementById('wStatus').value,
-        image: document.getElementById('wImagePath').value.trim() || 'assets/logo_transparent.png'
+        set: document.getElementById('wSet').value.trim(),
+        summary: document.getElementById('wSummary').value.trim(),
+        images: imagesForSave(existingWatch, pendingImage, draft),
+        dateModified: isoDate(),
+        indexable: document.getElementById('wIndexable').checked
     };
+    if (year) watch.year = year;
+    if (condition) watch.condition = condition;
+
+    const validationError = validateWatch(watch);
+    if (validationError) {
+        showToast(validationError, 'error');
+        return false;
+    }
 
     if (editingIndex >= 0) {
         currentWatches[editingIndex] = watch;
@@ -258,6 +402,7 @@ function saveWatch(e) {
 
     closeAllModals();
     renderWatchGrid();
+    return true;
 }
 
 function confirmDelete(index) {
@@ -342,25 +487,16 @@ async function executePublish() {
             }
         }
 
-        // Step 2: Update watches.js
+        // Publish the single canonical catalog file.
         status.textContent = 'Updating inventory file...';
-        const watchesContent = generateWatchesFileContent();
-        const base64 = utf8ToBase64(watchesContent);
-
-        // Get current SHA
-        const fileData = await githubGetFile(token, 'watches.js');
-        await githubUpdateFile(token, 'watches.js', base64, fileData.sha, 'Update watch inventory');
-
-        // Step 3: Also update watches.json (used by live site fetch)
-        status.textContent = 'Syncing live inventory data...';
         const jsonContent = JSON.stringify(currentWatches, null, 2);
         const jsonBase64 = utf8ToBase64(jsonContent);
         try {
-            const jsonFile = await githubGetFile(token, 'watches.json');
-            await githubUpdateFile(token, 'watches.json', jsonBase64, jsonFile.sha, 'Update watch inventory data');
+            const jsonFile = await githubGetFile(token, CATALOG_PATH);
+            await githubUpdateFile(token, CATALOG_PATH, jsonBase64, jsonFile.sha, 'Update watch inventory data');
         } catch (e) {
             // File might not exist yet, create it
-            await githubCreateFile(token, 'watches.json', jsonBase64, 'Create watch inventory data');
+            await githubCreateFile(token, CATALOG_PATH, jsonBase64, 'Create watch inventory data');
         }
 
         // Success
@@ -456,18 +592,6 @@ function utf8ToBase64(str) {
     let binary = '';
     bytes.forEach(b => binary += String.fromCharCode(b));
     return btoa(binary);
-}
-
-function generateWatchesFileContent() {
-    return `// ==========================================
-// CHRONOTOMI WEALTH - WATCH COLLECTION
-// ==========================================
-// Managed via the Chronotomi admin panel.
-// Do not edit this file manually.
-// ==========================================
-
-let watches = ${JSON.stringify(currentWatches, null, 2)};
-`;
 }
 
 // ═══════════════════════════════════════

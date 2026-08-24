@@ -4,7 +4,9 @@
   "description": "",
   "main": "manage.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "node scripts/build-site.mjs",
+    "test": "node tests/seo-check.mjs",
+    "check": "npm run build && npm test"
   },
   "repository": {
     "type": "git",

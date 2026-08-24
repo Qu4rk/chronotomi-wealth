@@ -34,8 +34,37 @@ const instagramLink = document.querySelector("#instagram-inquire");
 
 let activeWatch = null;
 
+const ANALYTICS_PROPERTIES = new Set(["landing_path", "channel", "watch_id"]);
+const ANALYTICS_EVENTS = new Set([
+  "sourcing_form_success",
+  "watch_form_success",
+  "whatsapp_click",
+  "instagram_click"
+]);
+
+function trackEvent(name, properties = {}) {
+  if (!ANALYTICS_EVENTS.has(name) || typeof window.va !== "function") return;
+
+  const safeProperties = Object.fromEntries(
+    Object.entries({ landing_path: window.location.pathname, ...properties })
+      .filter(([key, value]) => ANALYTICS_PROPERTIES.has(key) && value !== undefined && value !== "")
+  );
+
+  try {
+    window.va("event", { name, data: safeProperties });
+  } catch (error) {
+    // Analytics must never interfere with the inquiry experience.
+  }
+}
+
+function selectedWatchId() {
+  return activeWatch?.id || undefined;
+}
+
 // Intersection Observer for Reveal animations
-const revealObserver = new IntersectionObserver(
+const revealObserver = new (window.IntersectionObserver || class {
+  observe() {}
+})(
   (entries) => {
     entries.forEach((entry) => {
       if (entry.isIntersecting) {
@@ -49,103 +78,94 @@ const revealObserver = new IntersectionObserver(
   }
 );
 
-function renderInventory(filter = "All") {
+function filterInventory(filter = "All") {
   if (!inventoryGrid) return;
 
-  const filteredWatches =
-    filter === "All" ? watches : watches.filter((watch) => watch.brand === filter);
-
-  if (filteredWatches.length === 0) {
-    inventoryGrid.innerHTML = `
-      <div style="grid-column: 1/-1; text-align: center; padding: 4rem;">
-        <span class="eyebrow">No Matches</span>
-        <h3>No watches are listed in this category right now.</h3>
-        <p style="color: var(--muted); margin-top: 1rem;">Please check another brand or inquire directly.</p>
-      </div>
-    `;
-    return;
-  }
-
-  inventoryGrid.innerHTML = filteredWatches
-    .map(
-      (watch) => `
-        <article class="inventory-card reveal" style="position: relative; overflow: hidden;">
-          <div class="inventory-image" style="position: relative; z-index: 1;">
-            <picture>
-              <source type="image/avif" srcset="${watch.image.replace(/\.(png|jpe?g)$/i, '.avif')}" />
-              <source type="image/webp" srcset="${watch.image.replace(/\.(png|jpe?g)$/i, '.webp')}" />
-              <img src="${watch.image}" alt="${watch.brand} ${watch.model}" loading="lazy" decoding="async" />
-            </picture>
-          </div>
-          <div style="padding: 0 2rem 3rem;">
-            <span class="inventory-brand text-mask"><span class="text-mask-inner">${watch.brand}</span></span>
-            <div class="inventory-copy">
-              <span class="eyebrow text-mask" style="margin-bottom: 0.5rem; letter-spacing: 0.1em; color: var(--text);"><span class="text-mask-inner delay-1">${watch.reference}</span></span>
-              <h3><span class="text-mask"><span class="text-mask-inner delay-2">${watch.model}</span></span></h3>
-            </div>
-
-            <div class="inventory-specs" style="margin-bottom: 3rem;">
-              <span>${watch.caseSize}</span>
-            </div>
-
-            <div class="inventory-actions">
-              <button
-                class="btn-primary js-select-watch"
-                type="button"
-                data-watch="${watch.brand} ${watch.model}"
-                data-reference="${watch.reference}"
-                style="width: 100%;"
-              >
-                Inquire
-              </button>
-            </div>
-          </div>
-        </article>
-      `
-    )
-    .join("");
-
-  document.querySelectorAll(".js-select-watch").forEach((button) => {
-    button.addEventListener("click", () => {
-      const watchName = button.dataset.watch;
-      const reference = button.dataset.reference;
-
-      activeWatch = watches.find((watch) => watch.reference === reference) ?? activeWatch;
-      selectedWatch.textContent = watchName;
-      selectedMessage.textContent =
-        "Reference loaded. Reach out via Instagram or send a direct email.";
-      copyFeedback.textContent = "Ready to discuss privately.";
-
-      const clientMessageInput = document.querySelector("#client-message");
-      if (clientMessageInput) {
-        clientMessageInput.value = `I am inquiring about the ${watchName} (Ref. ${reference}). `;
-      }
-
-      const whatsappLink = document.querySelector("#whatsapp-inquire");
-      if (whatsappLink) {
-        whatsappLink.href = `https://wa.me/35799426514?text=${encodeURIComponent(`Hello, I would like to inquire about the ${watchName} (Ref. ${reference}).`)}`;
-      }
-
-      document.querySelector("#inquire").scrollIntoView({ behavior: "smooth" });
-    });
-  });
-
-  // Observe newly created cards
-  requestAnimationFrame(() => {
-    document.querySelectorAll(".inventory-card").forEach((card) => {
-      revealObserver.observe(card);
-    });
+  inventoryGrid.querySelectorAll(".inventory-card").forEach((card) => {
+    const isMatch = filter === "All" || card.dataset.brand === filter;
+    card.hidden = !isMatch;
+    card.setAttribute("aria-hidden", String(!isMatch));
   });
 }
 
+function selectWatch(button) {
+  const card = button?.closest(".inventory-card");
+  if (!card) return false;
+
+  const watchName = button.dataset.watch || "Selected watch";
+  const reference = button.dataset.reference || "";
+
+  activeWatch = {
+    id: button.dataset.id || card.dataset.id || "",
+    brand: card.dataset.brand || "",
+    model: watchName.replace(`${card.dataset.brand || ""} `, ""),
+    reference
+  };
+
+  if (selectedWatch) selectedWatch.textContent = watchName;
+  if (selectedMessage) {
+    selectedMessage.textContent =
+      "Reference loaded. Reach out via Instagram or send a direct email.";
+  }
+  if (copyFeedback) copyFeedback.textContent = "Ready to discuss privately.";
+
+  const clientMessageInput = document.querySelector("#client-message");
+  if (clientMessageInput) {
+    clientMessageInput.value = `I am inquiring about the ${watchName} (Ref. ${reference}). `;
+  }
+
+  const whatsappLink = document.querySelector("#whatsapp-inquire");
+  if (whatsappLink) {
+    whatsappLink.href = `https://wa.me/35799426514?text=${encodeURIComponent(`Hello, I would like to inquire about the ${watchName} (Ref. ${reference}).`)}`;
+  }
+
+  return true;
+}
+
+function bindInventoryInteractions() {
+  if (!inventoryGrid) return;
+
+  inventoryGrid.querySelectorAll(".js-select-watch").forEach((button) => {
+    if (button.dataset.bound === "true") return;
+    button.dataset.bound = "true";
+    button.addEventListener("click", () => {
+      if (selectWatch(button)) {
+        document.querySelector("#inquire")?.scrollIntoView({ behavior: "smooth" });
+      }
+    });
+  });
+
+  inventoryGrid.querySelectorAll(".inventory-card").forEach((card) => revealObserver.observe(card));
+}
+
+function initializeWatchFromUrl() {
+  if (!inventoryGrid) return;
+
+  const watchId = new URLSearchParams(window.location.search).get("watch");
+  if (!watchId) return;
+
+  const card = Array.from(inventoryGrid.querySelectorAll(".inventory-card[data-id]"))
+    .find((candidate) => candidate.dataset.id === watchId);
+  const button = card?.querySelector(".js-select-watch");
+  if (button) selectWatch(button);
+}
+
 filterButtons.forEach((button) => {
-  button.addEventListener("click", () => {
+  button.addEventListener("click", (event) => {
+    const isPlainAnchorClick = button.tagName !== "A" ||
+      (event.button === 0 && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey);
+    if (!isPlainAnchorClick) return;
+
+    event.preventDefault();
     filterButtons.forEach((chip) => chip.classList.remove("is-active"));
     button.classList.add("is-active");
-    renderInventory(button.dataset.filter);
+    filterInventory(button.dataset.filter || "All");
   });
 });
 
+bindInventoryInteractions();
+filterInventory(document.querySelector(".filter-chip.is-active")?.dataset.filter || "All");
+initializeWatchFromUrl();
 if (instagramLink) {
   instagramLink.href = INSTAGRAM_URL;
 }
@@ -171,6 +191,18 @@ const advisoryInstagram = document.querySelector("#advisory-instagram");
 if (advisoryInstagram) {
   advisoryInstagram.href = INSTAGRAM_URL;
 }
+
+document.querySelectorAll('a[href*="instagram.com"], a[href*="wa.me"]').forEach((link) => {
+  if (link.dataset.analyticsBound === "true") return;
+  link.dataset.analyticsBound = "true";
+  link.addEventListener("click", () => {
+    const isInstagram = link.href.includes("instagram.com");
+    trackEvent(isInstagram ? "instagram_click" : "whatsapp_click", {
+      channel: isInstagram ? "instagram" : "whatsapp",
+      watch_id: selectedWatchId()
+    });
+  });
+});
 
 const advisoryCopyButton = document.querySelector("#advisory-copy");
 const advisoryCopyFeedback = document.querySelector("#copy-feedback");
@@ -217,11 +249,13 @@ document.querySelectorAll(".js-select-service").forEach((button) => {
 });
 
 // --- Email Form Handlers (Automatic Background Sending) ---
-function sendEmailData(data, formElement) {
+function sendEmailData(data, formElement, onSuccess) {
   const button = formElement.querySelector('button[type="submit"]');
-  const originalText = button.textContent;
-  button.textContent = "Sending...";
-  button.disabled = true;
+  const originalText = button?.textContent || "Send Inquiry";
+  if (button) {
+    button.textContent = "Sending...";
+    button.disabled = true;
+  }
 
   fetch("https://formsubmit.co/ajax/info@chronotomi.com", {
     method: "POST",
@@ -234,24 +268,37 @@ function sendEmailData(data, formElement) {
   .then(response => response.json())
   .then(result => {
     if(result.success) {
-      button.textContent = "Sent Successfully";
+      if (button) button.textContent = "Sent Successfully";
       formElement.reset();
+      if (onSuccess) onSuccess();
     } else {
-      button.textContent = "Error Sending";
+      if (button) button.textContent = "Error Sending";
     }
     setTimeout(() => {
-      button.textContent = originalText;
-      button.disabled = false;
+      if (button) {
+        button.textContent = originalText;
+        button.disabled = false;
+      }
     }, 4000);
   })
   .catch(error => {
     console.error("Email send error:", error);
-    button.textContent = "Error Sending";
+    if (button) button.textContent = "Error Sending";
     setTimeout(() => {
-      button.textContent = originalText;
-      button.disabled = false;
+      if (button) {
+        button.textContent = originalText;
+        button.disabled = false;
+      }
     }, 4000);
   });
+}
+
+function formContext(watchId) {
+  return {
+    Landing_Page: window.location.pathname,
+    ...(watchId ? { Watch_ID: watchId } : {}),
+    Referrer: document.referrer || ""
+  };
 }
 
 const sourceForm = document.getElementById('source-form');
@@ -265,9 +312,12 @@ if (sourceForm) {
       Name: document.getElementById('source-name').value,
       Email: document.getElementById('source-email').value,
       Phone: document.getElementById('source-country-code').value + " " + document.getElementById('source-phone').value,
-      Details: document.getElementById('source-details').value || 'None provided'
+      Details: document.getElementById('source-details').value || 'None provided',
+      ...formContext()
     };
-    sendEmailData(data, sourceForm);
+    sendEmailData(data, sourceForm, () => {
+      trackEvent("sourcing_form_success", { channel: "email" });
+    });
   });
 }
 
@@ -280,9 +330,12 @@ if (contactForm) {
       Name: document.getElementById('client-name').value,
       Email: document.getElementById('client-email').value,
       Phone: document.getElementById('client-country-code').value + ' ' + document.getElementById('client-phone').value,
-      Message: document.getElementById('client-message').value
+      Message: document.getElementById('client-message').value,
+      ...formContext(selectedWatchId())
     };
-    sendEmailData(data, contactForm);
+    sendEmailData(data, contactForm, () => {
+      trackEvent("watch_form_success", { channel: "email", watch_id: selectedWatchId() });
+    });
   });
 }
 
@@ -295,7 +348,8 @@ if (advisoryContactForm) {
       Name: document.getElementById('client-name').value,
       Email: document.getElementById('client-email').value,
       Phone: document.getElementById('client-country-code').value + ' ' + document.getElementById('client-phone').value,
-      Executive_Summary: document.getElementById('client-message').value
+      Executive_Summary: document.getElementById('client-message').value,
+      ...formContext()
     };
     sendEmailData(data, advisoryContactForm);
   });
@@ -330,26 +384,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 });
-
-renderInventory();
-
-// Fetch latest inventory from GitHub to ensure data is current
-(async function fetchLatestInventory() {
-  try {
-    const res = await fetch(
-      'watches.json?t=' + Date.now()
-    );
-    if (res.ok) {
-      const data = await res.json();
-      if (Array.isArray(data) && data.length > 0) {
-        watches = data;
-        renderInventory();
-      }
-    }
-  } catch (e) {
-    // Fallback to local watches.js — already rendered above
-  }
-})();
 
 // Role Switch Sliding Animation Logic
 document.addEventListener("DOMContentLoaded", () => {
