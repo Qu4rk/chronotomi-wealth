@@ -485,6 +485,8 @@ function inspectQuarkShimmerStyles() {
   if (stylesheet === null) return;
   if (!stylesheet.includes("@keyframes quarkGlimmerSweep")) addFailure("QUARK_SHIMMER_KEYFRAMES", "styles.css must define the Quark glimmer sweep animation", { file: "styles.css" });
   if (!stylesheet.includes(".quark-shimmer::after")) addFailure("QUARK_SHIMMER_OVERLAY", "styles.css must clip the shimmer overlay to the Quark text", { file: "styles.css" });
+  if (!stylesheet.includes("background-repeat: no-repeat")) addFailure("QUARK_SHIMMER_SINGLE_PASS", "styles.css must prevent the Quark shimmer gradient from tiling into a second pass", { file: "styles.css" });
+  if (!/@keyframes quarkGlimmerSweep\s*\{[\s\S]*?0%\s*\{[\s\S]*?background-position:\s*150%\s+0;[\s\S]*?50%,\s*100%\s*\{[\s\S]*?background-position:\s*-150%\s+0;/.test(stylesheet)) addFailure("QUARK_SHIMMER_LUMINA_TIMING", "styles.css must match Lumina's one-pass 0–50% glimmer sweep and off-screen rest", { file: "styles.css" });
   if (!stylesheet.includes("prefers-reduced-motion: reduce")) addFailure("QUARK_SHIMMER_REDUCED_MOTION", "styles.css must disable the Quark shimmer for reduced-motion users", { file: "styles.css" });
 }
 

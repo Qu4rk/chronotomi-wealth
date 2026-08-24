@@ -1257,6 +1257,7 @@ h1 {
     transparent 100%
   );
   background-position: 150% 0;
+  background-repeat: no-repeat;
   background-size: 250% 100%;
   background-clip: text;
   -webkit-background-clip: text;
@@ -1265,10 +1266,10 @@ h1 {
 }
 
 @keyframes quarkGlimmerSweep {
-  from {
+  0% {
     background-position: 150% 0;
   }
-  to {
+  50%, 100% {
     background-position: -150% 0;
   }
 }
