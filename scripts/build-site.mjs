@@ -303,7 +303,7 @@ function footer(site, pathname) {
     '<footer class="site-footer" style="position:relative;overflow:hidden;background:#000;border-top:1px solid rgba(255,255,255,.05);">',
     '<img src="' + prefix + 'assets/logo_transparent.png" class="footer-watermark" aria-hidden="true" alt="" /><div class="footer-left"><strong>' + esc(site.name) + '</strong><br/><span>Your Wealth, Excelled.</span></div>',
     '<div class="footer-right"><div class="footer-socials"><a href="' + esc(site.socialProfiles.instagram) + '" rel="noreferrer" aria-label="Instagram">Instagram</a><a href="' + esc(site.socialProfiles.facebook) + '" rel="noreferrer" aria-label="Facebook">Facebook</a></div>',
-    '<div class="footer-copyright">&copy; 2026 ' + esc(site.legalName) + '<br>COMPANY NUMBER: ' + esc(site.companyNumber) + '<br>VAT NUMBER: ' + esc(site.vatNumber) + "</div></div></footer></body></html>"
+    '<div class="footer-copyright">&copy; 2026 ' + esc(site.legalName) + '<br>COMPANY NUMBER: ' + esc(site.companyNumber) + '<br>VAT NUMBER: ' + esc(site.vatNumber) + '<br><br>Brought to life by <span class="quark-shimmer" data-text="Quark">Quark</span>.</div></div></footer></body></html>'
   ].join("\n");
 }
 function collectionPage(title, description, canonical, site, catalog, pathname, brand, root) {

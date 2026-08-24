@@ -1236,6 +1236,49 @@ h1 {
   text-transform: uppercase;
 }
 
+.quark-shimmer {
+  position: relative;
+  display: inline-block;
+  color: inherit;
+}
+
+.quark-shimmer::after {
+  position: absolute;
+  inset: 0;
+  content: attr(data-text);
+  pointer-events: none;
+  color: transparent;
+  background: linear-gradient(
+    110deg,
+    transparent 0%,
+    transparent 40%,
+    rgba(255,255,255,0.95) 50%,
+    transparent 60%,
+    transparent 100%
+  );
+  background-position: 150% 0;
+  background-size: 250% 100%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: quarkGlimmerSweep 2.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@keyframes quarkGlimmerSweep {
+  from {
+    background-position: 150% 0;
+  }
+  to {
+    background-position: -150% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .quark-shimmer::after {
+    animation: none;
+  }
+}
+
 /* REVEAL ANIMATIONS */
 .reveal {
   opacity: 0;

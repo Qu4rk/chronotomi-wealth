@@ -397,6 +397,9 @@ function inspectVercelConfig(vercel) {
 }
 
 function inspectHtml(route, html, label, context = {}) {
+  if (!html.includes('class="quark-shimmer" data-text="Quark">Quark</span>')) {
+    addFailure("QUARK_SHIMMER_MARKUP", `${label} must mark the footer Quark credit for the shimmer effect`, { route, file: label });
+  }
   const title = findElements(html, "title").map((element) => stripTags(element.body)).filter(Boolean);
   if (title.length !== 1) addFailure("HTML_TITLE_COUNT", `${label} must contain exactly one nonempty <title>; found ${title.length}`, { route, file: label });
 
@@ -475,6 +478,14 @@ function inspectHtml(route, html, label, context = {}) {
   inspectResponsiveCatalogImages(route, html, label, context.catalogImageSources);
   inspectInquiryCtas(route, html, label, context.watchByRoute);
   inspectInternalLinks(html, route, label);
+}
+
+function inspectQuarkShimmerStyles() {
+  const stylesheet = readText(path.join(root, "styles.css"));
+  if (stylesheet === null) return;
+  if (!stylesheet.includes("@keyframes quarkGlimmerSweep")) addFailure("QUARK_SHIMMER_KEYFRAMES", "styles.css must define the Quark glimmer sweep animation", { file: "styles.css" });
+  if (!stylesheet.includes(".quark-shimmer::after")) addFailure("QUARK_SHIMMER_OVERLAY", "styles.css must clip the shimmer overlay to the Quark text", { file: "styles.css" });
+  if (!stylesheet.includes("prefers-reduced-motion: reduce")) addFailure("QUARK_SHIMMER_REDUCED_MOTION", "styles.css must disable the Quark shimmer for reduced-motion users", { file: "styles.css" });
 }
 
 function registerUniqueMetadata(registry, kind, value, route, label) {
@@ -757,6 +768,7 @@ function main() {
   };
   if (!options.sourceOnly) inspectHomepageSource(catalogInfo, hasDist);
   inspectRoutePages(expectedRoutes, hasDist, context);
+  inspectQuarkShimmerStyles();
   if (hasDist && !options.sourceOnly) inspectRobotsAndSitemap(expectedRoutes);
   else if (!options.sourceOnly) addFailure("GENERATED_CHECKS_SKIPPED", "robots.txt and sitemap.xml checks were skipped because dist/ is unavailable; run after npm run build", { expected: "dist/robots.txt and dist/sitemap.xml" });
 
