@@ -388,20 +388,20 @@
     "slug": "perpetual-41-134300",
     "brand": "Rolex",
     "brandSlug": "rolex",
-    "model": "Perpetual 41",
+    "model": "Oyster Perpetual 41",
     "reference": "134300",
     "caseSize": "41mm",
     "set": "Full Set",
-    "summary": "Rolex Perpetual 41, reference 134300, with a 41mm case and Full Set presentation.",
+    "summary": "Rolex Oyster Perpetual 41, reference 134300, with a 41mm case and Full Set presentation.",
     "images": [
       {
         "src": "assets/oyster-perpetual-41-oyster-41mm-oystersteel-134300.jpeg",
-        "alt": "Rolex Perpetual 41, reference 134300",
+        "alt": "Rolex Oyster Perpetual 41, reference 134300",
         "width": 1024,
         "height": 1024
       }
     ],
-    "dateModified": "2026-08-24",
+    "dateModified": "2026-08-28",
     "indexable": true
   },
   {
@@ -678,8 +678,8 @@
     "indexable": true
   },
   {
-    "id": "rolex-oyster-perpetual-41-134300",
-    "slug": "oyster-perpetual-41-134300",
+    "id": "rolex-oyster-perpetual-41-134300-variant",
+    "slug": "oyster-perpetual-41-134300-variant",
     "brand": "Rolex",
     "brandSlug": "rolex",
     "model": "Oyster Perpetual 41",
