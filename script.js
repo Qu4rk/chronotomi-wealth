@@ -85,6 +85,11 @@ function filterInventory(filter = "All") {
     const isMatch = filter === "All" || card.dataset.brand === filter;
     card.hidden = !isMatch;
     card.setAttribute("aria-hidden", String(!isMatch));
+    if (!isMatch) {
+      card.style.setProperty("display", "none", "important");
+    } else {
+      card.style.removeProperty("display");
+    }
   });
 }
 
