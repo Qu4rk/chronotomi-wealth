@@ -1237,19 +1237,19 @@ h1 {
 }
 
 .quark-link {
-  color: #ffffff;
-  font-weight: 600;
+  color: inherit;
+  font-weight: inherit;
   text-decoration: underline;
   text-underline-offset: 3px;
   text-decoration-color: rgba(255, 255, 255, 0.45);
   display: inline-block;
   cursor: pointer;
-  transition: color 0.2s ease, text-decoration-color 0.2s ease, opacity 0.2s ease;
+  transition: text-decoration-color 0.2s ease, opacity 0.2s ease;
 }
 
 .quark-link:hover,
 .quark-link:focus-visible {
-  color: #ffffff;
+  color: inherit;
   text-decoration-color: #ffffff;
   outline: none;
 }
