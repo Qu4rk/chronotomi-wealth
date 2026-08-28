@@ -286,8 +286,17 @@ function head(title, description, canonical, schema, site) {
     '<link rel="canonical" href="' + esc(canonical) + '" /><meta property="og:type" content="website" />',
     '<meta property="og:title" content="' + esc(title) + '" /><meta property="og:description" content="' + esc(description) + '" /><meta property="og:url" content="' + esc(canonical) + '" /><meta property="og:image" content="' + esc(socialImage) + '" /><meta property="og:image:alt" content="' + esc(site.socialDefaults.imageAlt) + '" />',
     '<meta name="twitter:card" content="summary_large_image" /><meta name="twitter:title" content="' + esc(title) + '" /><meta name="twitter:description" content="' + esc(description) + '" /><meta name="twitter:image" content="' + esc(socialImage) + '" /><meta name="twitter:image:alt" content="' + esc(site.socialDefaults.imageAlt) + '" />',
-    '<link rel="stylesheet" href="' + prefix + 'styles.css" /><link rel="icon" type="image/png" sizes="32x32" href="' + prefix + 'assets/favicon-32x32.png" />',
-    "<style>.seo-page{min-height:100vh;padding:8rem 5vw 6rem}.seo-page h1,.seo-page h2,.seo-page h3{font-family:'Playfair Display',serif}.seo-page .lede{max-width:760px;color:rgba(255,255,255,.72);line-height:1.8}.seo-links{display:flex;flex-wrap:wrap;gap:1.25rem;margin-top:2rem}.seo-links a{color:inherit;text-underline-offset:.25em}.seo-grid{margin-top:4rem}.seo-detail-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,.85fr);gap:clamp(2rem,6vw,6rem);align-items:start;max-width:1200px;margin:0 auto}.seo-detail-image{width:100%;background:var(--bg-soft);border:1px solid var(--line)}.seo-detail-image img{display:block;width:100%;height:auto}.facts{border-top:1px solid var(--line);margin:2rem 0}.fact{display:flex;justify-content:space-between;gap:2rem;padding:1rem 0;border-bottom:1px solid var(--line)}.fact dt{color:var(--muted)}.fact dd{margin:0;text-align:right}.gallery{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem;margin-top:1rem}.gallery picture{display:block}.gallery img{display:block;width:100%;height:auto;background:var(--bg-soft)}@media(max-width:800px){.seo-detail-grid{grid-template-columns:1fr}.seo-page{padding-top:7rem}}</style>",
+    '<link rel="preconnect" href="https://fonts.googleapis.com" />',
+    '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />',
+    '<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet" />',
+    '<link rel="stylesheet" href="' + prefix + 'styles.css?v=69" />',
+    '<link rel="icon" type="image/png" sizes="32x32" href="' + prefix + 'assets/favicon-32x32.png?v=4" />',
+    '<link rel="icon" type="image/png" sizes="48x48" href="' + prefix + 'assets/favicon-48x48.png?v=4" />',
+    '<link rel="icon" type="image/png" sizes="192x192" href="' + prefix + 'assets/favicon-192x192.png?v=4" />',
+    '<link rel="icon" type="image/png" sizes="512x512" href="' + prefix + 'assets/favicon.png?v=4" />',
+    '<link rel="apple-touch-icon" href="' + prefix + 'assets/apple-touch-icon.png?v=4" />',
+    '<script src="' + prefix + 'script.js?v=60" defer></script>',
+    "<style>.seo-page{min-height:100vh;padding:10rem 5vw 6rem;max-width:1400px;margin:0 auto}.seo-hero{max-width:820px;margin:0 auto 3rem;text-align:center;display:flex;flex-direction:column;align-items:center}.seo-hero h1{font-family:var(--font-display);font-size:clamp(2.5rem,5vw,4rem);font-weight:400;line-height:1.15;margin:0 0 1.5rem;color:var(--text)}.seo-hero .lede{color:var(--muted);font-size:1.1rem;line-height:1.8;max-width:680px;margin:0 auto 2rem}.seo-links{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:1rem}.seo-grid{margin-top:4rem}.seo-detail-grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:clamp(2.5rem,6vw,6rem);align-items:start;max-width:1200px;margin:0 auto}.seo-detail-image{width:100%;background:var(--bg-soft);border:1px solid var(--line);overflow:hidden;margin:0}.seo-detail-image img{display:block;width:100%;height:auto}.seo-detail-info{display:flex;flex-direction:column}.seo-detail-info h1{font-family:var(--font-display);font-size:clamp(2.2rem,4vw,3.5rem);font-weight:400;line-height:1.15;margin:0 0 1rem}.seo-detail-info .lede{color:var(--muted);font-size:1.05rem;line-height:1.7;margin:0 0 2rem}.facts{border-top:1px solid var(--line);margin:0 0 2rem;padding:0}.fact{display:flex;justify-content:space-between;align-items:center;gap:2rem;padding:1.1rem 0;border-bottom:1px solid var(--line)}.fact dt{color:var(--muted);font-size:.8rem;letter-spacing:.15em;text-transform:uppercase}.fact dd{margin:0;text-align:right;font-weight:500;color:var(--text)}.gallery{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem;margin-top:1rem}.gallery picture{display:block;border:1px solid var(--line);overflow:hidden;background:var(--bg-soft)}.gallery img{display:block;width:100%;height:auto}.policy-section{max-width:820px;margin:5rem auto 0;padding-top:3.5rem;border-top:1px solid var(--line);text-align:center}.policy-section h2{font-family:var(--font-display);font-size:clamp(1.6rem,3vw,2.2rem);font-weight:400;margin:0 0 1.25rem}.policy-section p{color:var(--muted);line-height:1.8;font-size:1.05rem;margin:0}@media(max-width:800px){.seo-detail-grid{grid-template-columns:1fr}.seo-page{padding-top:7.5rem}.seo-links{flex-direction:column;width:100%}.seo-links .btn-primary,.seo-links .btn-outline{width:100%}}</style>",
     '<script type="application/ld+json">' + jsonLd(schema) + "</script></head><body>",
     '<header class="site-header" id="site-header"><a class="brand" href="/" aria-label="Chronotomi Wealth home">',
     '<picture><source type="image/avif" srcset="' + prefix + 'assets/logo_transparent.avif" /><source type="image/webp" srcset="' + prefix + 'assets/logo_transparent.webp" /><img class="brand-mark" src="' + prefix + 'assets/logo_transparent.png" alt="Chronotomi Wealth" /></picture>',
@@ -311,7 +320,25 @@ function collectionPage(title, description, canonical, site, catalog, pathname, 
   const heading = brand ? brand.name + " watches" : "Curated timepiece collection";
   const intro = brand ? "A private selection of " + brand.name + " references represented in the Chronotomi Wealth sourcing catalog." : "Explore the curated Chronotomi Wealth catalog by brand, reference, case size, and set presentation.";
   const schema = { "@context": "https://schema.org", "@type": "CollectionPage", name: title, url: canonical, description: description, mainEntity: { "@type": "ItemList", numberOfItems: shown.length, itemListElement: shown.map(function(watch, index) { return { "@type": "ListItem", position: index + 1, url: site.origin + "/watches/" + watch.brandSlug + "/" + watch.slug, name: watch.brand + " " + watch.model + " " + watch.reference }; }) } };
-  return head(title, description, canonical, schema, site) + '<main class="seo-page"><span class="eyebrow">Chronotomi Wealth / Timepieces</span><h1>' + esc(heading) + '</h1><p class="lede">' + esc(intro) + '</p><div class="seo-links"><a href="/watches">View all references</a><a href="/sourcing">Request a private sourcing conversation</a></div><section class="seo-grid"><div class="inventory-grid" id="inventory-grid">' + cards(shown, pathname, brand && brand.slug, root) + "</div></section></main>" + footer(site, pathname);
+  return head(title, description, canonical, schema, site) +
+    '<main class="seo-page">' +
+    '<div class="seo-hero">' +
+    '<span class="eyebrow">Chronotomi Wealth / Timepieces</span>' +
+    '<h1>' + esc(heading) + '</h1>' +
+    '<p class="lede">' + esc(intro) + '</p>' +
+    '<div class="seo-links">' +
+    (brand ? '<a class="btn-outline" href="/watches">All Timepieces</a>' : '') +
+    '<a class="btn-primary" href="/sourcing">Private Sourcing</a>' +
+    '<a class="btn-outline" href="/authenticity">Authenticity</a>' +
+    '</div>' +
+    '</div>' +
+    '<section class="seo-grid">' +
+    '<div class="inventory-grid" id="inventory-grid">' +
+    cards(shown, pathname, brand && brand.slug, root) +
+    '</div>' +
+    '</section>' +
+    '</main>' +
+    footer(site, pathname);
 }
 function watchPage(watch, site, canonical, pathname, root) {
   const image = watch.images[0];
@@ -321,7 +348,35 @@ function watchPage(watch, site, canonical, pathname, root) {
   ]);
   const gallery = watch.images.slice(1).map(function(item) { return responsivePicture(root, item, pathname, GALLERY_IMAGE_SIZES, { loading: "lazy", decoding: "async" }); }).join("");
   const inquiryHref = "/?watch=" + encodeURIComponent(watch.id) + "#inquire";
-  return head(watch.brand + " " + watch.model + " " + watch.reference + " | Chronotomi Wealth", watch.summary, canonical, schema, site) + '<main class="seo-page"><div class="seo-detail-grid"><div><figure class="seo-detail-image">' + responsivePicture(root, image, pathname, DETAIL_IMAGE_SIZES, { fetchpriority: "high" }) + "</figure>" + (gallery ? '<div class="gallery">' + gallery + "</div>" : "") + '</div><article><span class="eyebrow">' + esc(watch.brand) + '</span><h1>' + esc(watch.model) + '</h1><p class="lede">' + esc(watch.summary) + '</p><dl class="facts"><div class="fact"><dt>Reference</dt><dd>' + esc(watch.reference) + '</dd></div><div class="fact"><dt>Case size</dt><dd>' + esc(watch.caseSize) + '</dd></div><div class="fact"><dt>Set</dt><dd>' + esc(watch.set) + '</dd></div></dl><p class="lede">Chronotomi Wealth handles timepiece conversations privately, with sourcing context and next steps discussed directly with each client.</p><div class="seo-links"><a class="btn-primary" href="' + esc(inquiryHref) + '">Inquire privately</a><a href="/sourcing">Sourcing context</a><a href="/authenticity">Authenticity</a><a href="/logistics">Logistics</a></div></article></div></main>' + footer(site, pathname);
+  return head(watch.brand + " " + watch.model + " " + watch.reference + " | Chronotomi Wealth", watch.summary, canonical, schema, site) +
+    '<main class="seo-page">' +
+    '<div class="seo-detail-grid">' +
+    '<div>' +
+    '<figure class="seo-detail-image">' +
+    responsivePicture(root, image, pathname, DETAIL_IMAGE_SIZES, { fetchpriority: "high" }) +
+    '</figure>' +
+    (gallery ? '<div class="gallery">' + gallery + '</div>' : '') +
+    '</div>' +
+    '<article class="seo-detail-info">' +
+    '<span class="eyebrow">' + esc(watch.brand) + '</span>' +
+    '<h1>' + esc(watch.model) + '</h1>' +
+    '<p class="lede">' + esc(watch.summary) + '</p>' +
+    '<dl class="facts">' +
+    '<div class="fact"><dt>Reference</dt><dd>' + esc(watch.reference) + '</dd></div>' +
+    '<div class="fact"><dt>Case size</dt><dd>' + esc(watch.caseSize) + '</dd></div>' +
+    '<div class="fact"><dt>Set</dt><dd>' + esc(watch.set) + '</dd></div>' +
+    '</dl>' +
+    '<p class="lede" style="font-size:0.95rem;color:var(--muted);margin-bottom:2rem;">Chronotomi Wealth handles timepiece conversations privately, with sourcing context and next steps discussed directly with each client.</p>' +
+    '<div class="seo-links" style="justify-content:flex-start;">' +
+    '<a class="btn-primary" href="' + esc(inquiryHref) + '">Inquire privately</a>' +
+    '<a class="btn-outline" href="/sourcing">Sourcing context</a>' +
+    '<a class="btn-outline" href="/authenticity">Authenticity</a>' +
+    '<a class="btn-outline" href="/logistics">Logistics</a>' +
+    '</div>' +
+    '</article>' +
+    '</div>' +
+    '</main>' +
+    footer(site, pathname);
 }
 function servicePage(kind, site, canonical, pathname) {
   const sourcing = kind === "sourcing";
@@ -332,7 +387,27 @@ function servicePage(kind, site, canonical, pathname) {
   const copy = sourcing ? "Share the reference, brand, or specification you have in mind and Chronotomi Wealth will outline the next conversation privately." : "Each timepiece conversation includes a direct discussion of the catalog facts, documentation, and next steps relevant to the reference.";
   const schema = serviceSchema(site, { canonical: canonical, name: heading, serviceType: sourcing ? "Private luxury timepiece sourcing" : "Luxury timepiece authenticity conversations", description: description, breadcrumbName: sourcing ? "Sourcing" : "Authenticity" });
   const primaryHref = sourcing ? "/#source" : "/#inquire";
-  return head(title, description, canonical, schema, site) + '<main class="seo-page"><section style="max-width:820px;margin:0 auto;"><span class="eyebrow">Chronotomi Wealth / ' + (sourcing ? "Sourcing" : "Authenticity") + '</span><h1>' + esc(heading) + '</h1><p class="lede">' + esc(copy) + '</p><div class="seo-links"><a class="btn-primary" href="' + primaryHref + '">Start an inquiry</a><a href="/watches">View the catalog</a><a href="/authenticity">' + (sourcing ? "Read about authenticity" : "Return to authenticity") + '</a><a href="/logistics">Logistics policy</a></div></section><section class="policy-layout" style="margin:6rem auto 0;"><h2>' + (sourcing ? "A discreet first step" : "A direct, reference-led conversation") + '</h2><p>' + (sourcing ? "Include the brand, model, reference, case size, and set details that matter to you. The current catalog provides the visible facts used to begin that conversation." : "The visible catalog records identify the brand, model, reference, case size, set presentation, and image sources for each indexable record. Further documentation and logistics questions are discussed directly.") + "</p></section></main>" + footer(site, pathname);
+  const subHeading = sourcing ? "A discreet first step" : "A direct, reference-led conversation";
+  const bodyCopy = sourcing ? "Include the brand, model, reference, case size, and set details that matter to you. The current catalog provides the visible facts used to begin that conversation." : "The visible catalog records identify the brand, model, reference, case size, set presentation, and image sources for each indexable record. Further documentation and logistics questions are discussed directly.";
+  return head(title, description, canonical, schema, site) +
+    '<main class="seo-page">' +
+    '<div class="seo-hero">' +
+    '<span class="eyebrow">Chronotomi Wealth / ' + (sourcing ? "Sourcing" : "Authenticity") + '</span>' +
+    '<h1>' + esc(heading) + '</h1>' +
+    '<p class="lede">' + esc(copy) + '</p>' +
+    '<div class="seo-links">' +
+    '<a class="btn-primary" href="' + primaryHref + '">' + (sourcing ? "Start an inquiry" : "Inquire privately") + '</a>' +
+    '<a class="btn-outline" href="/watches">View Collection</a>' +
+    '<a class="btn-outline" href="' + (sourcing ? "/authenticity" : "/sourcing") + '">' + (sourcing ? "Authenticity" : "Sourcing") + '</a>' +
+    '<a class="btn-outline" href="/logistics">Logistics</a>' +
+    '</div>' +
+    '</div>' +
+    '<section class="policy-section">' +
+    '<h2>' + esc(subHeading) + '</h2>' +
+    '<p>' + esc(bodyCopy) + '</p>' +
+    '</section>' +
+    '</main>' +
+    footer(site, pathname);
 }
 function injectHomepage(html, catalog, root) {
   const pattern = /(<div class="inventory-grid" id="inventory-grid" aria-live="polite">)[\s\S]*?(<\/div>)/;

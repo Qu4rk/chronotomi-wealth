@@ -383,6 +383,19 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   });
+
+  const header = document.getElementById("site-header");
+  if (header) {
+    const handleScroll = () => {
+      if (window.scrollY > 50) {
+        header.classList.add("is-scrolled");
+      } else {
+        header.classList.remove("is-scrolled");
+      }
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+  }
 });
 
 // Role Switch Sliding Animation Logic
