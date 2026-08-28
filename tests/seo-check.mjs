@@ -269,8 +269,18 @@ function inspectCatalog(catalog) {
     }
     if (typeof record.brand === "string" && typeof record.reference === "string" && record.brand.trim() && record.reference.trim()) {
       const key = `${record.brand.trim().toLowerCase()}\u0000${record.reference.trim().toLowerCase()}`;
-      if (brandReferences.has(key)) addFailure("CATALOG_DUPLICATE_BRAND_REFERENCE", `${location} duplicates brand + reference from record ${brandReferences.get(key)}`, { record: index, value: `${record.brand} / ${record.reference}` });
-      else brandReferences.set(key, index);
+      const recordId = typeof record.id === "string" ? record.id.trim() : "";
+      const recordSlug = typeof record.slug === "string" ? record.slug.trim() : "";
+      if (brandReferences.has(key)) {
+        const existing = brandReferences.get(key);
+        const match = existing.find((prev) => prev.id === recordId || prev.slug === recordSlug);
+        if (match) {
+          addFailure("CATALOG_DUPLICATE_BRAND_REFERENCE", `${location} duplicates brand + reference with conflicting id or slug from record ${match.index}`, { record: index, value: `${record.brand} / ${record.reference}` });
+        }
+        existing.push({ index, id: recordId, slug: recordSlug });
+      } else {
+        brandReferences.set(key, [{ index, id: recordId, slug: recordSlug }]);
+      }
     }
 
     const summary = [record.summary, record.description, record.shortDescription, record.excerpt]

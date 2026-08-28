@@ -78,7 +78,7 @@ function imagePath(root, src, label) {
 export function loadCatalog(root = ROOT) {
   const records = readJson(path.join(root, "watches.json"));
   if (!Array.isArray(records) || records.length === 0) fail("watches.json must contain a non-empty array");
-  const ids = new Set(), slugs = new Set(), refs = new Set(), summaries = new Set();
+  const ids = new Set(), slugs = new Set(), refs = new Map(), summaries = new Set();
   const forbidden = ["price", "offers", "offer", "availability", "review", "reviews", "aggregateRating", "rating"];
   records.forEach((watch, index) => {
     const label = "watches[" + index + "]";
@@ -89,8 +89,16 @@ export function loadCatalog(root = ROOT) {
     if (ids.has(watch.id)) fail("duplicate watch id: " + watch.id);
     if (slugs.has(watch.slug)) fail("duplicate watch slug: " + watch.slug);
     const refKey = watch.brandSlug + "::" + watch.reference.toLowerCase();
-    if (refs.has(refKey)) fail("unresolved duplicate brand+reference: " + watch.brand + " " + watch.reference);
-    ids.add(watch.id); slugs.add(watch.slug); refs.add(refKey);
+    if (refs.has(refKey)) {
+      const existing = refs.get(refKey);
+      if (existing.some((prev) => prev.id === watch.id || prev.slug === watch.slug)) {
+        fail("duplicate brand+reference with conflicting id or slug: " + watch.brand + " " + watch.reference);
+      }
+      existing.push({ id: watch.id, slug: watch.slug });
+    } else {
+      refs.set(refKey, [{ id: watch.id, slug: watch.slug }]);
+    }
+    ids.add(watch.id); slugs.add(watch.slug);
     if (!Array.isArray(watch.images) || !watch.images.length) fail(label + ".images must be non-empty");
     watch.images.forEach((image, imageIndex) => {
       const imageLabel = label + ".images[" + imageIndex + "]";
@@ -340,6 +348,15 @@ function collectionPage(title, description, canonical, site, catalog, pathname, 
     '</main>' +
     footer(site, pathname);
 }
+function watchTitle(watch) {
+  const baseSlug = slugify(watch.model + " " + watch.reference);
+  let suffix = "";
+  if (watch.slug.startsWith(baseSlug + "-")) {
+    const extra = watch.slug.slice(baseSlug.length + 1);
+    suffix = " " + extra.split("-").map(function(w) { return w.charAt(0).toUpperCase() + w.slice(1); }).join(" ");
+  }
+  return watch.brand + " " + watch.model + " " + watch.reference + suffix + " | Chronotomi Wealth";
+}
 function watchPage(watch, site, canonical, pathname, root) {
   const image = watch.images[0];
   const schema = schemaGraph([
@@ -348,7 +365,7 @@ function watchPage(watch, site, canonical, pathname, root) {
   ]);
   const gallery = watch.images.slice(1).map(function(item) { return responsivePicture(root, item, pathname, GALLERY_IMAGE_SIZES, { loading: "lazy", decoding: "async" }); }).join("");
   const inquiryHref = "/?watch=" + encodeURIComponent(watch.id) + "#inquire";
-  return head(watch.brand + " " + watch.model + " " + watch.reference + " | Chronotomi Wealth", watch.summary, canonical, schema, site) +
+  return head(watchTitle(watch), watch.summary, canonical, schema, site) +
     '<main class="seo-page">' +
     '<div class="seo-detail-grid">' +
     '<div>' +
