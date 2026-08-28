@@ -949,23 +949,52 @@ h1 {
 
 /* Rolex Sub-Filter Panel & Controls */
 .rolex-filter-panel {
-  margin: 0 auto 3.5rem;
-  max-width: 900px;
-  padding: 1.5rem 2rem;
-  background: var(--bg-soft);
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transform: translateY(-8px);
+  pointer-events: none;
+  visibility: hidden;
+  transition: grid-template-rows 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              margin 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              visibility 0.35s;
+  margin: 0 auto;
+  max-width: 680px;
+  width: 100%;
 }
 
-.subfilter-group {
+.rolex-filter-panel.is-open {
+  grid-template-rows: 1fr;
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+  visibility: visible;
+  margin: 0 auto 3rem;
+}
+
+.rolex-filter-inner {
+  overflow: hidden;
+  min-height: 0;
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: 1rem;
+  justify-content: center;
+  gap: 1.5rem;
+  background: var(--bg-soft);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 1.25rem 2rem;
   width: 100%;
+  box-sizing: border-box;
+}
+
+.filter-dropdown-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  flex: 1;
 }
 
 .subfilter-label {
@@ -978,44 +1007,52 @@ h1 {
   flex-shrink: 0;
 }
 
-.subfilter-row {
+.select-container {
+  position: relative;
+  width: 100%;
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.6rem;
   align-items: center;
-  justify-content: flex-start;
-  flex: 1;
 }
 
-.subfilter-chip {
-  background: transparent;
+.luxury-select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  width: 100%;
+  padding: 0.75rem 2.25rem 0.75rem 1rem;
+  background: var(--bg);
   border: 1px solid var(--line);
-  color: var(--muted);
-  font-size: 0.75rem;
-  padding: 0.4rem 0.85rem;
-  border-radius: 20px;
-  cursor: pointer;
-  transition: all 0.25s ease;
-  font-family: var(--font-body);
-  line-height: 1.2;
-}
-
-.subfilter-chip:hover {
+  border-radius: 4px;
   color: var(--text);
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  letter-spacing: 0.05em;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.3s, background 0.3s;
+}
+
+.luxury-select option {
+  background: #111;
+  color: var(--text);
+  padding: 0.5rem;
+}
+
+.luxury-select:hover,
+.luxury-select:focus-visible {
   border-color: rgba(255, 255, 255, 0.4);
-  background: rgba(255, 255, 255, 0.03);
 }
 
-.subfilter-chip.is-active {
-  color: #000;
-  background: var(--text);
-  border-color: var(--text);
-  font-weight: 500;
+.select-chevron {
+  position: absolute;
+  right: 1rem;
+  pointer-events: none;
+  color: var(--muted);
+  transition: color 0.3s, transform 0.3s;
 }
 
-.subfilter-chip:focus-visible {
-  outline: 1px solid var(--text);
-  outline-offset: 3px;
+.select-container:hover .select-chevron {
+  color: var(--text);
 }
 
 .inventory-empty {
@@ -1705,35 +1742,25 @@ span.text-mask {
     top: 50%;
     transform: translate(-50%, -50%);
   }
-  .rolex-filter-panel {
-    padding: 1.25rem 1rem;
-    margin-bottom: 2.5rem;
-    gap: 1rem;
-  }
-
-  .subfilter-group {
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    gap: 0.6rem;
-  }
-
-  .subfilter-label {
-    min-width: unset;
-  }
-
-  .subfilter-row {
-    justify-content: center;
-    gap: 0.5rem;
-  }
-
-  .subfilter-chip {
-    font-size: 0.7rem;
-    padding: 0.35rem 0.75rem;
-  }
-
   .inventory-empty {
     padding: 3.5rem 1rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .rolex-filter-inner {
+    flex-direction: column;
+    padding: 1.25rem 1rem;
+    gap: 1rem;
+  }
+  .filter-dropdown-wrapper {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.4rem;
+    width: 100%;
+  }
+  .luxury-select {
+    min-height: 44px;
   }
 }
 

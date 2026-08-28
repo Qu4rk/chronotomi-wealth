@@ -327,34 +327,47 @@
         <a class="filter-chip" data-filter="Cartier" href="/watches/cartier">Cartier</a>
       </div>
 
-      <div class="rolex-filter-panel" id="rolex-filter-panel" style="display: none;" aria-label="Rolex Model and Size Filters">
-        <div class="subfilter-group">
-          <span class="subfilter-label">Model</span>
-          <div class="subfilter-row" role="group" aria-label="Filter by Rolex model">
-            <button type="button" class="subfilter-chip is-active" data-rolex-model="All">All Models</button>
-            <button type="button" class="subfilter-chip" data-rolex-model="Air-King">Air-King</button>
-            <button type="button" class="subfilter-chip" data-rolex-model="Cosmograph Daytona">Cosmograph Daytona</button>
-            <button type="button" class="subfilter-chip" data-rolex-model="Datejust">Datejust</button>
-            <button type="button" class="subfilter-chip" data-rolex-model="Day-Date">Day-Date</button>
-            <button type="button" class="subfilter-chip" data-rolex-model="GMT-Master II">GMT-Master II</button>
-            <button type="button" class="subfilter-chip" data-rolex-model="Land-Dweller">Land-Dweller</button>
-            <button type="button" class="subfilter-chip" data-rolex-model="Oyster Perpetual">Oyster Perpetual</button>
-            <button type="button" class="subfilter-chip" data-rolex-model="Sky-Dweller">Sky-Dweller</button>
-            <button type="button" class="subfilter-chip" data-rolex-model="Submariner">Submariner</button>
-            <button type="button" class="subfilter-chip" data-rolex-model="Yacht-Master">Yacht-Master</button>
+      <div class="rolex-filter-panel" id="rolex-filter-panel" aria-label="Rolex Model and Size Filters">
+        <div class="rolex-filter-inner">
+          <div class="filter-dropdown-wrapper">
+            <label for="rolex-model-select" class="subfilter-label">Model</label>
+            <div class="select-container">
+              <select id="rolex-model-select" class="luxury-select" aria-label="Filter by Rolex model">
+                <option value="All">All Models</option>
+                <option value="Air-King">Air-King</option>
+                <option value="Cosmograph Daytona">Cosmograph Daytona</option>
+                <option value="Datejust">Datejust</option>
+                <option value="Day-Date">Day-Date</option>
+                <option value="GMT-Master II">GMT-Master II</option>
+                <option value="Land-Dweller">Land-Dweller</option>
+                <option value="Oyster Perpetual">Oyster Perpetual</option>
+                <option value="Sky-Dweller">Sky-Dweller</option>
+                <option value="Submariner">Submariner</option>
+                <option value="Yacht-Master">Yacht-Master</option>
+              </select>
+              <svg class="select-chevron" width="12" height="8" viewBox="0 0 12 8" fill="none" aria-hidden="true">
+                <path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
           </div>
-        </div>
-        <div class="subfilter-group">
-          <span class="subfilter-label">Case Size</span>
-          <div class="subfilter-row" role="group" aria-label="Filter by Rolex case size">
-            <button type="button" class="subfilter-chip is-active" data-rolex-size="All">All Sizes</button>
-            <button type="button" class="subfilter-chip" data-rolex-size="31mm">31mm</button>
-            <button type="button" class="subfilter-chip" data-rolex-size="34mm">34mm</button>
-            <button type="button" class="subfilter-chip" data-rolex-size="36mm">36mm</button>
-            <button type="button" class="subfilter-chip" data-rolex-size="40mm">40mm</button>
-            <button type="button" class="subfilter-chip" data-rolex-size="41mm">41mm</button>
-            <button type="button" class="subfilter-chip" data-rolex-size="42mm">42mm</button>
-            <button type="button" class="subfilter-chip" data-rolex-size="44mm">44mm</button>
+
+          <div class="filter-dropdown-wrapper">
+            <label for="rolex-size-select" class="subfilter-label">Case Size</label>
+            <div class="select-container">
+              <select id="rolex-size-select" class="luxury-select" aria-label="Filter by Rolex case size">
+                <option value="All">All Sizes</option>
+                <option value="31mm">31mm</option>
+                <option value="34mm">34mm</option>
+                <option value="36mm">36mm</option>
+                <option value="40mm">40mm</option>
+                <option value="41mm">41mm</option>
+                <option value="42mm">42mm</option>
+                <option value="44mm">44mm</option>
+              </select>
+              <svg class="select-chevron" width="12" height="8" viewBox="0 0 12 8" fill="none" aria-hidden="true">
+                <path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
           </div>
         </div>
       </div>

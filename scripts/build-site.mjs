@@ -323,36 +323,45 @@ function footer(site, pathname) {
     '<div class="footer-copyright">&copy; 2026 ' + esc(site.legalName) + '<br>COMPANY NUMBER: ' + esc(site.companyNumber) + '<br>VAT NUMBER: ' + esc(site.vatNumber) + '<br><br>Brought to life by <a href="https://qu4rk.github.io/QuarkMade/" target="_blank" rel="noopener noreferrer" class="quark-link"><span class="quark-shimmer" data-text="Quark">Quark</span></a>.</div></div></footer></body></html>'
   ].join("\n");
 }
-function rolexFilterPanel(style = "display: flex;") {
+function rolexFilterPanel(isOpen = false) {
+  const openClass = isOpen ? " is-open" : "";
   return [
-    '      <div class="rolex-filter-panel" id="rolex-filter-panel" style="' + style + '" aria-label="Rolex Model and Size Filters">',
-    '        <div class="subfilter-group">',
-    '          <span class="subfilter-label">Model</span>',
-    '          <div class="subfilter-row" role="group" aria-label="Filter by Rolex model">',
-    '            <button type="button" class="subfilter-chip is-active" data-rolex-model="All">All Models</button>',
-    '            <button type="button" class="subfilter-chip" data-rolex-model="Air-King">Air-King</button>',
-    '            <button type="button" class="subfilter-chip" data-rolex-model="Cosmograph Daytona">Cosmograph Daytona</button>',
-    '            <button type="button" class="subfilter-chip" data-rolex-model="Datejust">Datejust</button>',
-    '            <button type="button" class="subfilter-chip" data-rolex-model="Day-Date">Day-Date</button>',
-    '            <button type="button" class="subfilter-chip" data-rolex-model="GMT-Master II">GMT-Master II</button>',
-    '            <button type="button" class="subfilter-chip" data-rolex-model="Land-Dweller">Land-Dweller</button>',
-    '            <button type="button" class="subfilter-chip" data-rolex-model="Oyster Perpetual">Oyster Perpetual</button>',
-    '            <button type="button" class="subfilter-chip" data-rolex-model="Sky-Dweller">Sky-Dweller</button>',
-    '            <button type="button" class="subfilter-chip" data-rolex-model="Submariner">Submariner</button>',
-    '            <button type="button" class="subfilter-chip" data-rolex-model="Yacht-Master">Yacht-Master</button>',
+    '      <div class="rolex-filter-panel' + openClass + '" id="rolex-filter-panel" aria-label="Rolex Model and Size Filters">',
+    '        <div class="rolex-filter-inner">',
+    '          <div class="filter-dropdown-wrapper">',
+    '            <label for="rolex-model-select" class="subfilter-label">Model</label>',
+    '            <div class="select-container">',
+    '              <select id="rolex-model-select" class="luxury-select" aria-label="Filter by Rolex model">',
+    '                <option value="All">All Models</option>',
+    '                <option value="Air-King">Air-King</option>',
+    '                <option value="Cosmograph Daytona">Cosmograph Daytona</option>',
+    '                <option value="Datejust">Datejust</option>',
+    '                <option value="Day-Date">Day-Date</option>',
+    '                <option value="GMT-Master II">GMT-Master II</option>',
+    '                <option value="Land-Dweller">Land-Dweller</option>',
+    '                <option value="Oyster Perpetual">Oyster Perpetual</option>',
+    '                <option value="Sky-Dweller">Sky-Dweller</option>',
+    '                <option value="Submariner">Submariner</option>',
+    '                <option value="Yacht-Master">Yacht-Master</option>',
+    '              </select>',
+    '              <svg class="select-chevron" width="12" height="8" viewBox="0 0 12 8" fill="none" aria-hidden="true"><path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    '            </div>',
     '          </div>',
-    '        </div>',
-    '        <div class="subfilter-group">',
-    '          <span class="subfilter-label">Case Size</span>',
-    '          <div class="subfilter-row" role="group" aria-label="Filter by Rolex case size">',
-    '            <button type="button" class="subfilter-chip is-active" data-rolex-size="All">All Sizes</button>',
-    '            <button type="button" class="subfilter-chip" data-rolex-size="31mm">31mm</button>',
-    '            <button type="button" class="subfilter-chip" data-rolex-size="34mm">34mm</button>',
-    '            <button type="button" class="subfilter-chip" data-rolex-size="36mm">36mm</button>',
-    '            <button type="button" class="subfilter-chip" data-rolex-size="40mm">40mm</button>',
-    '            <button type="button" class="subfilter-chip" data-rolex-size="41mm">41mm</button>',
-    '            <button type="button" class="subfilter-chip" data-rolex-size="42mm">42mm</button>',
-    '            <button type="button" class="subfilter-chip" data-rolex-size="44mm">44mm</button>',
+    '          <div class="filter-dropdown-wrapper">',
+    '            <label for="rolex-size-select" class="subfilter-label">Case Size</label>',
+    '            <div class="select-container">',
+    '              <select id="rolex-size-select" class="luxury-select" aria-label="Filter by Rolex case size">',
+    '                <option value="All">All Sizes</option>',
+    '                <option value="31mm">31mm</option>',
+    '                <option value="34mm">34mm</option>',
+    '                <option value="36mm">36mm</option>',
+    '                <option value="40mm">40mm</option>',
+    '                <option value="41mm">41mm</option>',
+    '                <option value="42mm">42mm</option>',
+    '                <option value="44mm">44mm</option>',
+    '              </select>',
+    '              <svg class="select-chevron" width="12" height="8" viewBox="0 0 12 8" fill="none" aria-hidden="true"><path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    '            </div>',
     '          </div>',
     '        </div>',
     '      </div>'
@@ -364,7 +373,7 @@ function collectionPage(title, description, canonical, site, catalog, pathname, 
   const intro = brand ? "A private selection of " + brand.name + " references represented in the Chronotomi Wealth sourcing catalog." : "Explore the curated Chronotomi Wealth catalog by brand, reference, case size, and set presentation.";
   const schema = { "@context": "https://schema.org", "@type": "CollectionPage", name: title, url: canonical, description: description, mainEntity: { "@type": "ItemList", numberOfItems: shown.length, itemListElement: shown.map(function(watch, index) { return { "@type": "ListItem", position: index + 1, url: site.origin + "/watches/" + watch.brandSlug + "/" + watch.slug, name: watch.brand + " " + watch.model + " " + watch.reference }; }) } };
   const isRolex = Boolean(brand && brand.slug === "rolex");
-  const rolexPanel = isRolex ? "\n" + rolexFilterPanel("display: flex;") : "";
+  const rolexPanel = isRolex ? "\n" + rolexFilterPanel(true) : "";
   const emptyBlock = isRolex ? '\n        <div id="inventory-empty" class="inventory-empty" style="display: none;">\n          <h3>No matching timepieces found</h3>\n          <p>We source bespoke and rare Rolex references upon request.</p>\n          <a href="/sourcing" class="btn-primary">Request Private Sourcing</a>\n        </div>' : '';
   return head(title, description, canonical, schema, site) +
     '<main class="seo-page">' +

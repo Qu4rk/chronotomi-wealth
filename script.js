@@ -31,6 +31,9 @@ const selectedMessage = document.querySelector("#selected-message");
 const copyButton = document.querySelector("#copy-reference");
 const copyFeedback = document.querySelector("#copy-feedback");
 const instagramLink = document.querySelector("#instagram-inquire");
+const rolexFilterPanel = document.querySelector("#rolex-filter-panel");
+const rolexModelSelect = document.querySelector("#rolex-model-select");
+const rolexSizeSelect = document.querySelector("#rolex-size-select");
 
 let activeWatch = null;
 let activeFilter = "All";
@@ -88,22 +91,14 @@ function filterInventory(filter) {
   if (!inventoryGrid) return;
 
   const isRolex = activeFilter === "Rolex";
-  const rolexPanel = document.querySelector("#rolex-filter-panel");
-  if (rolexPanel) {
-    rolexPanel.style.display = isRolex ? "flex" : "none";
-  }
-
-  if (!isRolex) {
+  if (isRolex) {
+    rolexFilterPanel?.classList.add("is-open");
+  } else {
+    rolexFilterPanel?.classList.remove("is-open");
+    if (rolexModelSelect) rolexModelSelect.value = "All";
+    if (rolexSizeSelect) rolexSizeSelect.value = "All";
     activeRolexModel = "All";
     activeRolexSize = "All";
-    if (rolexPanel) {
-      rolexPanel.querySelectorAll(".subfilter-row").forEach((row) => {
-        row.querySelectorAll(".subfilter-chip").forEach((btn) => {
-          const val = btn.dataset.rolexModel ?? btn.dataset.model ?? btn.dataset.rolexSize ?? btn.dataset.size ?? btn.dataset.value ?? "";
-          btn.classList.toggle("is-active", val === "All");
-        });
-      });
-    }
   }
 
   let visibleCount = 0;
@@ -208,39 +203,21 @@ function initializeWatchFromUrl() {
 }
 
 function bindSubfilterInteractions() {
-  const rolexPanel = document.querySelector("#rolex-filter-panel");
-  if (!rolexPanel) return;
-
-  rolexPanel.querySelectorAll(".subfilter-chip").forEach((button) => {
-    if (button.dataset.bound === "true") return;
-    button.dataset.bound = "true";
-
-    button.addEventListener("click", () => {
-      const isModelBtn = button.dataset.rolexModel !== undefined || button.dataset.model !== undefined || button.dataset.subfilter === "model" || button.closest('[aria-label*="model" i], [data-subfilter-type="model"]');
-      const isSizeBtn = button.dataset.rolexSize !== undefined || button.dataset.size !== undefined || button.dataset.subfilter === "size" || button.closest('[aria-label*="size" i], [data-subfilter-type="size"]');
-
-      const modelVal = button.dataset.rolexModel ?? button.dataset.model ?? (isModelBtn ? button.dataset.value : undefined);
-      const sizeVal = button.dataset.rolexSize ?? button.dataset.size ?? (isSizeBtn ? button.dataset.value : undefined);
-
-      const row = button.closest(".subfilter-row") || button.parentElement;
-
-      if (modelVal !== undefined && isModelBtn) {
-        activeRolexModel = modelVal;
-        if (row) {
-          row.querySelectorAll(".subfilter-chip").forEach((chip) => chip.classList.remove("is-active"));
-        }
-        button.classList.add("is-active");
-        filterInventory();
-      } else if (sizeVal !== undefined && isSizeBtn) {
-        activeRolexSize = sizeVal;
-        if (row) {
-          row.querySelectorAll(".subfilter-chip").forEach((chip) => chip.classList.remove("is-active"));
-        }
-        button.classList.add("is-active");
-        filterInventory();
-      }
+  if (rolexModelSelect && rolexModelSelect.dataset.bound !== "true") {
+    rolexModelSelect.dataset.bound = "true";
+    rolexModelSelect.addEventListener("change", (e) => {
+      activeRolexModel = e.target.value;
+      filterInventory();
     });
-  });
+  }
+
+  if (rolexSizeSelect && rolexSizeSelect.dataset.bound !== "true") {
+    rolexSizeSelect.dataset.bound = "true";
+    rolexSizeSelect.addEventListener("change", (e) => {
+      activeRolexSize = e.target.value;
+      filterInventory();
+    });
+  }
 }
 
 filterButtons.forEach((button) => {
@@ -265,6 +242,10 @@ if (isRolexPage) {
   activeFilter = activeBrandChip.dataset.filter;
 } else {
   activeFilter = "All";
+}
+
+if (activeFilter === "Rolex") {
+  rolexFilterPanel?.classList.add("is-open");
 }
 
 bindInventoryInteractions();
