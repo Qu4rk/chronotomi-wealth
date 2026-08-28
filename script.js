@@ -33,6 +33,9 @@ const copyFeedback = document.querySelector("#copy-feedback");
 const instagramLink = document.querySelector("#instagram-inquire");
 
 let activeWatch = null;
+let activeFilter = "All";
+let activeRolexModel = "All";
+let activeRolexSize = "All";
 
 const ANALYTICS_PROPERTIES = new Set(["landing_path", "channel", "watch_id"]);
 const ANALYTICS_EVENTS = new Set([
@@ -78,19 +81,68 @@ const revealObserver = new (window.IntersectionObserver || class {
   }
 );
 
-function filterInventory(filter = "All") {
+function filterInventory(filter) {
+  if (filter !== undefined) {
+    activeFilter = filter;
+  }
   if (!inventoryGrid) return;
 
+  const isRolex = activeFilter === "Rolex";
+  const rolexPanel = document.querySelector("#rolex-filter-panel");
+  if (rolexPanel) {
+    rolexPanel.style.display = isRolex ? "flex" : "none";
+  }
+
+  if (!isRolex) {
+    activeRolexModel = "All";
+    activeRolexSize = "All";
+    if (rolexPanel) {
+      rolexPanel.querySelectorAll(".subfilter-row").forEach((row) => {
+        row.querySelectorAll(".subfilter-chip").forEach((btn) => {
+          const val = btn.dataset.rolexModel ?? btn.dataset.model ?? btn.dataset.rolexSize ?? btn.dataset.size ?? btn.dataset.value ?? "";
+          btn.classList.toggle("is-active", val === "All");
+        });
+      });
+    }
+  }
+
+  let visibleCount = 0;
   inventoryGrid.querySelectorAll(".inventory-card").forEach((card) => {
-    const isMatch = filter === "All" || card.dataset.brand === filter;
+    const brand = card.dataset.brand || "";
+    const brandMatch = activeFilter === "All" || brand === activeFilter;
+    let isMatch = brandMatch;
+
+    if (isMatch && brand === "Rolex") {
+      const model = card.dataset.model || "";
+      const size = card.dataset.size || "";
+
+      let modelMatch = true;
+      if (activeRolexModel !== "All") {
+        modelMatch = model.toLowerCase().includes(activeRolexModel.toLowerCase());
+      }
+
+      let sizeMatch = true;
+      if (activeRolexSize !== "All") {
+        sizeMatch = size === activeRolexSize;
+      }
+
+      isMatch = brandMatch && modelMatch && sizeMatch;
+    }
+
     card.hidden = !isMatch;
     card.setAttribute("aria-hidden", String(!isMatch));
     if (!isMatch) {
       card.style.setProperty("display", "none", "important");
     } else {
       card.style.removeProperty("display");
+      visibleCount++;
     }
   });
+
+  const emptyState = document.querySelector("#inventory-empty");
+  if (emptyState) {
+    emptyState.style.display = visibleCount === 0 ? "block" : "none";
+  }
 }
 
 function selectWatch(button) {
@@ -155,6 +207,42 @@ function initializeWatchFromUrl() {
   if (button) selectWatch(button);
 }
 
+function bindSubfilterInteractions() {
+  const rolexPanel = document.querySelector("#rolex-filter-panel");
+  if (!rolexPanel) return;
+
+  rolexPanel.querySelectorAll(".subfilter-chip").forEach((button) => {
+    if (button.dataset.bound === "true") return;
+    button.dataset.bound = "true";
+
+    button.addEventListener("click", () => {
+      const isModelBtn = button.dataset.rolexModel !== undefined || button.dataset.model !== undefined || button.dataset.subfilter === "model" || button.closest('[aria-label*="model" i], [data-subfilter-type="model"]');
+      const isSizeBtn = button.dataset.rolexSize !== undefined || button.dataset.size !== undefined || button.dataset.subfilter === "size" || button.closest('[aria-label*="size" i], [data-subfilter-type="size"]');
+
+      const modelVal = button.dataset.rolexModel ?? button.dataset.model ?? (isModelBtn ? button.dataset.value : undefined);
+      const sizeVal = button.dataset.rolexSize ?? button.dataset.size ?? (isSizeBtn ? button.dataset.value : undefined);
+
+      const row = button.closest(".subfilter-row") || button.parentElement;
+
+      if (modelVal !== undefined && isModelBtn) {
+        activeRolexModel = modelVal;
+        if (row) {
+          row.querySelectorAll(".subfilter-chip").forEach((chip) => chip.classList.remove("is-active"));
+        }
+        button.classList.add("is-active");
+        filterInventory();
+      } else if (sizeVal !== undefined && isSizeBtn) {
+        activeRolexSize = sizeVal;
+        if (row) {
+          row.querySelectorAll(".subfilter-chip").forEach((chip) => chip.classList.remove("is-active"));
+        }
+        button.classList.add("is-active");
+        filterInventory();
+      }
+    });
+  });
+}
+
 filterButtons.forEach((button) => {
   button.addEventListener("click", (event) => {
     const isPlainAnchorClick = button.tagName !== "A" ||
@@ -164,12 +252,24 @@ filterButtons.forEach((button) => {
     event.preventDefault();
     filterButtons.forEach((chip) => chip.classList.remove("is-active"));
     button.classList.add("is-active");
-    filterInventory(button.dataset.filter || "All");
+    activeFilter = button.dataset.filter || "All";
+    filterInventory();
   });
 });
 
+const isRolexPage = window.location.pathname.replace(/\/+$/, "") === "/watches/rolex";
+const activeBrandChip = document.querySelector(".filter-chip.is-active");
+if (isRolexPage) {
+  activeFilter = "Rolex";
+} else if (activeBrandChip?.dataset.filter) {
+  activeFilter = activeBrandChip.dataset.filter;
+} else {
+  activeFilter = "All";
+}
+
 bindInventoryInteractions();
-filterInventory(document.querySelector(".filter-chip.is-active")?.dataset.filter || "All");
+bindSubfilterInteractions();
+filterInventory();
 initializeWatchFromUrl();
 if (instagramLink) {
   instagramLink.href = INSTAGRAM_URL;

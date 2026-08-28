@@ -77,7 +77,7 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&display=swap"
     rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=70" />
+  <link rel="stylesheet" href="styles.css?v=71" />
     <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32x32.png?v=4" />
   <link rel="icon" type="image/png" sizes="48x48" href="assets/favicon-48x48.png?v=4" />
   <link rel="icon" type="image/png" sizes="192x192" href="assets/favicon-192x192.png?v=4" />
@@ -327,9 +327,46 @@
         <a class="filter-chip" data-filter="Cartier" href="/watches/cartier">Cartier</a>
       </div>
 
+      <div class="rolex-filter-panel" id="rolex-filter-panel" style="display: none;" aria-label="Rolex Model and Size Filters">
+        <div class="subfilter-group">
+          <span class="subfilter-label">Model</span>
+          <div class="subfilter-row" role="group" aria-label="Filter by Rolex model">
+            <button type="button" class="subfilter-chip is-active" data-rolex-model="All">All Models</button>
+            <button type="button" class="subfilter-chip" data-rolex-model="Air-King">Air-King</button>
+            <button type="button" class="subfilter-chip" data-rolex-model="Cosmograph Daytona">Cosmograph Daytona</button>
+            <button type="button" class="subfilter-chip" data-rolex-model="Datejust">Datejust</button>
+            <button type="button" class="subfilter-chip" data-rolex-model="Day-Date">Day-Date</button>
+            <button type="button" class="subfilter-chip" data-rolex-model="GMT-Master II">GMT-Master II</button>
+            <button type="button" class="subfilter-chip" data-rolex-model="Land-Dweller">Land-Dweller</button>
+            <button type="button" class="subfilter-chip" data-rolex-model="Oyster Perpetual">Oyster Perpetual</button>
+            <button type="button" class="subfilter-chip" data-rolex-model="Sky-Dweller">Sky-Dweller</button>
+            <button type="button" class="subfilter-chip" data-rolex-model="Submariner">Submariner</button>
+            <button type="button" class="subfilter-chip" data-rolex-model="Yacht-Master">Yacht-Master</button>
+          </div>
+        </div>
+        <div class="subfilter-group">
+          <span class="subfilter-label">Case Size</span>
+          <div class="subfilter-row" role="group" aria-label="Filter by Rolex case size">
+            <button type="button" class="subfilter-chip is-active" data-rolex-size="All">All Sizes</button>
+            <button type="button" class="subfilter-chip" data-rolex-size="31mm">31mm</button>
+            <button type="button" class="subfilter-chip" data-rolex-size="34mm">34mm</button>
+            <button type="button" class="subfilter-chip" data-rolex-size="36mm">36mm</button>
+            <button type="button" class="subfilter-chip" data-rolex-size="40mm">40mm</button>
+            <button type="button" class="subfilter-chip" data-rolex-size="41mm">41mm</button>
+            <button type="button" class="subfilter-chip" data-rolex-size="42mm">42mm</button>
+            <button type="button" class="subfilter-chip" data-rolex-size="44mm">44mm</button>
+          </div>
+        </div>
+      </div>
+
       <div class="inventory-grid" id="inventory-grid" aria-live="polite">
         <!-- SEO:CATALOG -->
         <!-- Populated by JS -->
+        <div id="inventory-empty" class="inventory-empty" style="display: none;">
+          <h3>No matching timepieces found</h3>
+          <p>We source bespoke and rare Rolex references upon request.</p>
+          <a href="#source" class="btn-primary">Request Private Sourcing</a>
+        </div>
       </div>
     </section>
 

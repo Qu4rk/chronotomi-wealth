@@ -196,7 +196,7 @@ function card(watch, pathname, root) {
   const image = watch.images[0];
   const detail = "/watches/" + watch.brandSlug + "/" + watch.slug;
   return [
-    '        <article class="inventory-card reveal" data-id="' + esc(watch.id) + '" data-brand="' + esc(watch.brand) + '" style="position: relative; overflow: hidden;">',
+    '        <article class="inventory-card reveal" data-id="' + esc(watch.id) + '" data-brand="' + esc(watch.brand) + '" data-model="' + esc(watch.model) + '" data-size="' + esc(watch.caseSize) + '" style="position: relative; overflow: hidden;">',
     '          <div class="inventory-image" style="position: relative; z-index: 1;">' + responsivePicture(root, image, pathname, CARD_IMAGE_SIZES, { loading: "lazy", decoding: "async" }) + "</div>",
     '          <div style="padding: 0 2rem 3rem;">',
     '            <a class="inventory-detail-anchor" href="' + detail + '" aria-label="View ' + esc(watch.brand + " " + watch.model + " reference " + watch.reference) + ' details">',
@@ -323,11 +323,49 @@ function footer(site, pathname) {
     '<div class="footer-copyright">&copy; 2026 ' + esc(site.legalName) + '<br>COMPANY NUMBER: ' + esc(site.companyNumber) + '<br>VAT NUMBER: ' + esc(site.vatNumber) + '<br><br>Brought to life by <a href="https://qu4rk.github.io/QuarkMade/" target="_blank" rel="noopener noreferrer" class="quark-link"><span class="quark-shimmer" data-text="Quark">Quark</span></a>.</div></div></footer></body></html>'
   ].join("\n");
 }
+function rolexFilterPanel(style = "display: flex;") {
+  return [
+    '      <div class="rolex-filter-panel" id="rolex-filter-panel" style="' + style + '" aria-label="Rolex Model and Size Filters">',
+    '        <div class="subfilter-group">',
+    '          <span class="subfilter-label">Model</span>',
+    '          <div class="subfilter-row" role="group" aria-label="Filter by Rolex model">',
+    '            <button type="button" class="subfilter-chip is-active" data-rolex-model="All">All Models</button>',
+    '            <button type="button" class="subfilter-chip" data-rolex-model="Air-King">Air-King</button>',
+    '            <button type="button" class="subfilter-chip" data-rolex-model="Cosmograph Daytona">Cosmograph Daytona</button>',
+    '            <button type="button" class="subfilter-chip" data-rolex-model="Datejust">Datejust</button>',
+    '            <button type="button" class="subfilter-chip" data-rolex-model="Day-Date">Day-Date</button>',
+    '            <button type="button" class="subfilter-chip" data-rolex-model="GMT-Master II">GMT-Master II</button>',
+    '            <button type="button" class="subfilter-chip" data-rolex-model="Land-Dweller">Land-Dweller</button>',
+    '            <button type="button" class="subfilter-chip" data-rolex-model="Oyster Perpetual">Oyster Perpetual</button>',
+    '            <button type="button" class="subfilter-chip" data-rolex-model="Sky-Dweller">Sky-Dweller</button>',
+    '            <button type="button" class="subfilter-chip" data-rolex-model="Submariner">Submariner</button>',
+    '            <button type="button" class="subfilter-chip" data-rolex-model="Yacht-Master">Yacht-Master</button>',
+    '          </div>',
+    '        </div>',
+    '        <div class="subfilter-group">',
+    '          <span class="subfilter-label">Case Size</span>',
+    '          <div class="subfilter-row" role="group" aria-label="Filter by Rolex case size">',
+    '            <button type="button" class="subfilter-chip is-active" data-rolex-size="All">All Sizes</button>',
+    '            <button type="button" class="subfilter-chip" data-rolex-size="31mm">31mm</button>',
+    '            <button type="button" class="subfilter-chip" data-rolex-size="34mm">34mm</button>',
+    '            <button type="button" class="subfilter-chip" data-rolex-size="36mm">36mm</button>',
+    '            <button type="button" class="subfilter-chip" data-rolex-size="40mm">40mm</button>',
+    '            <button type="button" class="subfilter-chip" data-rolex-size="41mm">41mm</button>',
+    '            <button type="button" class="subfilter-chip" data-rolex-size="42mm">42mm</button>',
+    '            <button type="button" class="subfilter-chip" data-rolex-size="44mm">44mm</button>',
+    '          </div>',
+    '        </div>',
+    '      </div>'
+  ].join("\n");
+}
 function collectionPage(title, description, canonical, site, catalog, pathname, brand, root) {
   const shown = brand ? catalog.filter(function(watch) { return watch.brandSlug === brand.slug; }) : catalog;
   const heading = brand ? brand.name + " watches" : "Curated timepiece collection";
   const intro = brand ? "A private selection of " + brand.name + " references represented in the Chronotomi Wealth sourcing catalog." : "Explore the curated Chronotomi Wealth catalog by brand, reference, case size, and set presentation.";
   const schema = { "@context": "https://schema.org", "@type": "CollectionPage", name: title, url: canonical, description: description, mainEntity: { "@type": "ItemList", numberOfItems: shown.length, itemListElement: shown.map(function(watch, index) { return { "@type": "ListItem", position: index + 1, url: site.origin + "/watches/" + watch.brandSlug + "/" + watch.slug, name: watch.brand + " " + watch.model + " " + watch.reference }; }) } };
+  const isRolex = Boolean(brand && brand.slug === "rolex");
+  const rolexPanel = isRolex ? "\n" + rolexFilterPanel("display: flex;") : "";
+  const emptyBlock = isRolex ? '\n        <div id="inventory-empty" class="inventory-empty" style="display: none;">\n          <h3>No matching timepieces found</h3>\n          <p>We source bespoke and rare Rolex references upon request.</p>\n          <a href="/sourcing" class="btn-primary">Request Private Sourcing</a>\n        </div>' : '';
   return head(title, description, canonical, schema, site) +
     '<main class="seo-page">' +
     '<div class="seo-hero">' +
@@ -341,8 +379,10 @@ function collectionPage(title, description, canonical, site, catalog, pathname, 
     '</div>' +
     '</div>' +
     '<section class="seo-grid">' +
+    rolexPanel +
     '<div class="inventory-grid" id="inventory-grid">' +
     cards(shown, pathname, brand && brand.slug, root) +
+    emptyBlock +
     '</div>' +
     '</section>' +
     '</main>' +
@@ -429,7 +469,8 @@ function servicePage(kind, site, canonical, pathname) {
 function injectHomepage(html, catalog, root) {
   const pattern = /(<div class="inventory-grid" id="inventory-grid" aria-live="polite">)[\s\S]*?(<\/div>)/;
   if (!pattern.test(html)) fail("index.html is missing the inventory-grid injection target");
-  const injected = html.replace(pattern, function(_match, opening, closing) { return opening + "\n" + cards(catalog, "/", "", root) + "\n      " + closing; });
+  const emptyBlock = '\n        <div id="inventory-empty" class="inventory-empty" style="display: none;">\n          <h3>No matching timepieces found</h3>\n          <p>We source bespoke and rare Rolex references upon request.</p>\n          <a href="#source" class="btn-primary">Request Private Sourcing</a>\n        </div>';
+  const injected = html.replace(pattern, function(_match, opening, closing) { return opening + "\n" + cards(catalog, "/", "", root) + emptyBlock + "\n      " + closing; });
   return injected;
 }
 function renderRoute(entry, catalog, site, root) {
