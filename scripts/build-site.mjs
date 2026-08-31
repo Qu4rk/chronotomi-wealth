@@ -31,6 +31,36 @@ function esc(value) {
 function slugify(value) {
   return String(value).toLowerCase().replaceAll("&", "and").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 }
+function elementBoundary(html, tagName, className, fromIndex = 0) {
+  const openingPattern = new RegExp(`<${tagName}\\b[^>]*>`, "gi");
+  openingPattern.lastIndex = fromIndex;
+  let opening;
+  while ((opening = openingPattern.exec(html)) !== null) {
+    if (className) {
+      const classes = (opening[0].match(/\bclass\s*=\s*["']([^"']*)["']/i)?.[1] ?? "").split(/\s+/).filter(Boolean);
+      if (!classes.includes(className)) continue;
+    }
+    const tokenPattern = new RegExp(`<\\/?${tagName}\\b[^>]*>`, "gi");
+    tokenPattern.lastIndex = opening.index;
+    let depth = 0;
+    let token;
+    while ((token = tokenPattern.exec(html)) !== null) {
+      if (/^<\//.test(token[0])) depth -= 1;
+      else if (!/\/\s*>$/.test(token[0])) depth += 1;
+      if (depth === 0) {
+        const closeStart = /^<\//.test(token[0]) ? token.index : token.index + token[0].length;
+        return {
+          start: opening.index,
+          openEnd: opening.index + opening[0].length,
+          closeStart,
+          end: token.index + token[0].length,
+          body: html.slice(opening.index + opening[0].length, closeStart),
+        };
+      }
+    }
+  }
+  return null;
+}
 function nonEmpty(value, label) {
   if (typeof value !== "string" || !value.trim()) fail(label + " must be a non-empty string");
 }
@@ -702,19 +732,32 @@ function injectStaticSchemas(root, site) {
     if (entry[0] === "/about") html = replaceJsonLd(html, aboutSchema(site), entry[1]);
     if (entry[0] === "/logistics") html = replaceJsonLd(html, serviceSchema(site, { canonical: site.origin + "/logistics", name: "Timepiece Acquisition & Logistics", serviceType: "Luxury timepiece acquisition and logistics guidance", description: site.pages["/logistics"].description, breadcrumbName: "Acquisition & Logistics" }), entry[1]);
     html = normalizeStaticBranding(html);
-    html = injectContextualFooterLinks(html);
+    html = injectContextualFooterLinks(html, entry[0], entry[1]);
     fs.writeFileSync(target, html);
   }
 }
 function normalizeStaticBranding(html) {
   return html.replaceAll("Your Wealth, Excelled.", "Your Time, Defined.");
 }
-function injectContextualFooterLinks(html) {
+function injectContextualFooterLinks(html, route, file) {
   const cyprusRoute = locationPages.find((page) => /cyprus/i.test(page.path))?.path || "/luxury-watches-cyprus";
   const limassolRoute = locationPages.find((page) => /limassol/i.test(page.path))?.path || "/luxury-watches-limassol";
   const links = '<nav class="seo-footer-links" aria-label="Contextual links"><a href="' + esc(cyprusRoute) + '">Luxury watches in Cyprus</a><a href="' + esc(limassolRoute) + '">Luxury watches in Limassol</a><a href="' + esc(journalPage.path) + '">Journal</a><a href="/sourcing">Sourcing</a><a href="/watches">Watches</a></nav>';
-  if (html.includes('class="seo-footer-links"')) return html;
-  return html.replace(/(<\/div>\s*)(<div\b[^>]*class=["'][^"']*\bfooter-right\b[^"']*["'][^>]*>)/i, links + "$1$2");
+  const context = `${route} (${file})`;
+  const footer = elementBoundary(html, "footer");
+  if (!footer) fail(`cannot inject contextual footer links for ${context}: footer element is missing`);
+  const left = elementBoundary(html, "div", "footer-left", footer.openEnd);
+  const right = left ? elementBoundary(html, "div", "footer-right", left.end) : null;
+  if (!left || !right || left.end > right.start || right.end > footer.closeStart) fail(`cannot inject contextual footer links for ${context}: expected footer-left/footer-right sibling boundary is missing`);
+
+  const existingNav = elementBoundary(html, "nav", "seo-footer-links", left.openEnd);
+  if (existingNav && existingNav.end <= left.closeStart) return html;
+  const misplacedNav = elementBoundary(html, "nav", "seo-footer-links", footer.openEnd);
+  if (misplacedNav && misplacedNav.end <= footer.closeStart) fail(`cannot inject contextual footer links for ${context}: existing seo-footer-links nav is outside footer-left`);
+
+  const updated = html.slice(0, left.closeStart) + links + html.slice(left.closeStart);
+  if (updated === html || !updated.includes(links)) fail(`cannot inject contextual footer links for ${context}: footer-left replacement did not occur`);
+  return updated;
 }
 function writeSitemap(root, routes) {
   const rows = ['  <url><loc>' + ORIGIN + "/</loc></url>"];

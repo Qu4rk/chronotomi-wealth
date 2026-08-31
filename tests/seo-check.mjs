@@ -60,6 +60,14 @@ const FORBIDDEN_INDEXABLE_COPY = [
   { pattern: /\bcurrent\s+(?:timepiece\s+)?collection\b/i, label: "Current Collection" },
   { pattern: /\bverified[\s-]+stock\b/i, label: "verified stock" },
 ];
+const EXPECTED_SEO_FOOTER_HREFS = [
+  "/luxury-watches-cyprus",
+  "/luxury-watches-limassol",
+  "/journal",
+  "/sourcing",
+  "/watches",
+];
+const EXPECTED_POLICY_HREFS = ["/privacy", "/terms", "/logistics"];
 
 const options = parseArgs(process.argv.slice(2));
 const root = path.resolve(options.root ?? DEFAULT_ROOT);
@@ -173,6 +181,50 @@ function findElements(html, tagName) {
     open: match[0].slice(0, match[0].indexOf(">") + 1),
     body: match[1],
   }));
+}
+
+function elementBoundary(html, tagName, className, fromIndex = 0) {
+  const openingPattern = new RegExp(`<${tagName}\\b[^>]*>`, "gi");
+  openingPattern.lastIndex = fromIndex;
+  let opening;
+  while ((opening = openingPattern.exec(html)) !== null) {
+    if (className) {
+      const classes = (parseAttributes(opening[0]).class ?? "").split(/\s+/).filter(Boolean);
+      if (!classes.includes(className)) continue;
+    }
+    const tokenPattern = new RegExp(`<\\/?${tagName}\\b[^>]*>`, "gi");
+    tokenPattern.lastIndex = opening.index;
+    let depth = 0;
+    let token;
+    while ((token = tokenPattern.exec(html)) !== null) {
+      if (/^<\//.test(token[0])) depth -= 1;
+      else if (!/\/\s*>$/.test(token[0])) depth += 1;
+      if (depth === 0) {
+        const closeStart = /^<\//.test(token[0]) ? token.index : token.index + token[0].length;
+        return {
+          start: opening.index,
+          openEnd: opening.index + opening[0].length,
+          closeStart,
+          end: token.index + token[0].length,
+          open: opening[0],
+          body: html.slice(opening.index + opening[0].length, closeStart),
+        };
+      }
+    }
+  }
+  return null;
+}
+
+function elementBoundaries(html, tagName, className, fromIndex = 0, untilIndex = html.length) {
+  const found = [];
+  let cursor = fromIndex;
+  while (cursor < untilIndex) {
+    const boundary = elementBoundary(html, tagName, className, cursor);
+    if (!boundary || boundary.start >= untilIndex) break;
+    found.push(boundary);
+    cursor = boundary.end;
+  }
+  return found;
 }
 
 function metaValues(html, attribute, value) {
@@ -555,7 +607,7 @@ function inspectVercelConfig(vercel) {
 }
 
 function inspectHtml(route, html, label, context = {}) {
-  if (context.generatedOutput) inspectFooterContract(route, html, label);
+  if (context.generatedOutput) inspectFooterContract(route, html, label, context.site);
   if (!html.includes('class="quark-shimmer" data-text="Quark">Quark</span>')) {
     addFailure("QUARK_SHIMMER_MARKUP", `${label} must mark the footer Quark credit for the shimmer effect`, { route, file: label });
   }
@@ -681,30 +733,52 @@ function inspectHtml(route, html, label, context = {}) {
   inspectInternalLinks(html, route, label, context);
 }
 
-function inspectFooterContract(route, html, label) {
-  const footer = html.match(/<footer\b[^>]*>([\s\S]*?)<\/footer\s*>/i);
+function inspectFooterContract(route, html, label, site) {
+  const footer = elementBoundary(html, "footer");
   if (!footer) {
     addFailure("FOOTER_MISSING", `${label} must contain a footer`, { route, file: label });
     return;
   }
 
-  const footerBody = footer[1];
-  const leftMatch = footerBody.match(/<div\b[^>]*class=["'][^"']*\bfooter-left\b[^"']*["'][^>]*>/i);
-  const rightMatch = footerBody.match(/<div\b[^>]*class=["'][^"']*\bfooter-right\b[^"']*["'][^>]*>/i);
-  if (!leftMatch || !rightMatch || leftMatch.index >= rightMatch.index) {
+  const footerBody = footer.body;
+  const left = elementBoundary(footerBody, "div", "footer-left");
+  const right = elementBoundary(footerBody, "div", "footer-right");
+  if (!left || !right || left.end > right.start) {
     addFailure("FOOTER_LAYOUT", `${label} must contain ordered .footer-left and .footer-right columns`, { route, file: label });
     return;
   }
 
-  const leftBody = footerBody.slice(leftMatch.index + leftMatch[0].length, rightMatch.index);
-  const rightBody = footerBody.slice(rightMatch.index + rightMatch[0].length);
-  const countSeoLinks = (value) => (value.match(/class=["'][^"']*\bseo-footer-links\b[^"']*["']/gi) ?? []).length;
-  const leftCount = countSeoLinks(leftBody);
-  const rightCount = countSeoLinks(rightBody);
-  const totalCount = countSeoLinks(footerBody);
-  if (leftCount !== 1) addFailure("FOOTER_SEO_LINKS_PARENT", `${label} must contain exactly one .seo-footer-links nav inside .footer-left; found ${leftCount}`, { route, file: label, expected: 1, found: leftCount });
-  if (rightCount !== 0) addFailure("FOOTER_SEO_LINKS_RIGHT", `${label} must not contain .seo-footer-links inside .footer-right; found ${rightCount}`, { route, file: label, expected: 0, found: rightCount });
-  if (totalCount !== 1) addFailure("FOOTER_SEO_LINKS_COUNT", `${label} footer must contain exactly one .seo-footer-links nav; found ${totalCount}`, { route, file: label, expected: 1, found: totalCount });
+  const leftNavs = elementBoundaries(footerBody, "nav", "seo-footer-links", left.openEnd, left.closeStart).filter((nav) => nav.end <= left.closeStart);
+  const rightNavs = elementBoundaries(footerBody, "nav", "seo-footer-links", right.openEnd, right.closeStart).filter((nav) => nav.end <= right.closeStart);
+  const footerNavs = elementBoundaries(footerBody, "nav", "seo-footer-links", 0, footerBody.length);
+  if (leftNavs.length !== 1) addFailure("FOOTER_SEO_LINKS_PARENT", `${label} must contain exactly one .seo-footer-links nav inside .footer-left; found ${leftNavs.length}`, { route, file: label, expected: 1, found: leftNavs.length });
+  if (rightNavs.length !== 0) addFailure("FOOTER_SEO_LINKS_RIGHT", `${label} must not contain .seo-footer-links inside .footer-right; found ${rightNavs.length}`, { route, file: label, expected: 0, found: rightNavs.length });
+  if (footerNavs.length !== 1) addFailure("FOOTER_SEO_LINKS_COUNT", `${label} footer must contain exactly one .seo-footer-links nav; found ${footerNavs.length}`, { route, file: label, expected: 1, found: footerNavs.length });
+
+  const seoNav = leftNavs[0];
+  if (seoNav) {
+    const hrefs = findTags(seoNav.body, "a").map((tag) => parseAttributes(tag).href ?? "");
+    if (hrefs.length !== EXPECTED_SEO_FOOTER_HREFS.length || hrefs.some((href, index) => href !== EXPECTED_SEO_FOOTER_HREFS[index])) addFailure("FOOTER_SEO_LINKS_ORDER", `${label} contextual footer links must preserve the approved ordered hrefs`, { route, file: label, expected: EXPECTED_SEO_FOOTER_HREFS, found: hrefs });
+  }
+
+  const socialBlocks = elementBoundaries(footerBody, "div", "footer-socials", right.openEnd, right.closeStart).filter((block) => block.end <= right.closeStart);
+  const copyrightBlocks = elementBoundaries(footerBody, "div", "footer-copyright", right.openEnd, right.closeStart).filter((block) => block.end <= right.closeStart);
+  if (socialBlocks.length !== 1) addFailure("FOOTER_SOCIALS_PRESERVED", `${label} must preserve exactly one footer-socials block in footer-right`, { route, file: label, expected: 1, found: socialBlocks.length });
+  if (copyrightBlocks.length !== 1) addFailure("FOOTER_COPYRIGHT_PRESERVED", `${label} must preserve exactly one footer-copyright block in footer-right`, { route, file: label, expected: 1, found: copyrightBlocks.length });
+  if (socialBlocks.length === 1 && site?.socialProfiles) {
+    const hrefs = findTags(socialBlocks[0].body, "a").map((tag) => parseAttributes(tag).href ?? "");
+    const expected = [site.socialProfiles.instagram, site.socialProfiles.facebook];
+    if (hrefs.length !== expected.length || hrefs.some((href, index) => href !== expected[index])) addFailure("FOOTER_SOCIAL_LINKS_PRESERVED", `${label} footer social hrefs must preserve the configured Instagram/Facebook links`, { route, file: label, expected, found: hrefs });
+  }
+  if (copyrightBlocks.length === 1) {
+    const copyright = stripTags(copyrightBlocks[0].body);
+    for (const value of [site?.legalName, site?.companyNumber, site?.vatNumber]) if (value && !copyright.includes(value)) addFailure("FOOTER_COPYRIGHT_CONTENT", `${label} footer copyright must preserve ${value}`, { route, file: label, expected: value });
+  }
+  if (/\bfooter-links\b|\bseo-footer-links\b/i.test(right.body)) addFailure("FOOTER_RIGHT_CONTENT_SCOPE", `${label} footer-right may contain only social links and copyright content`, { route, file: label });
+  if (REQUIRED_STATIC_ROUTES.includes(route)) {
+    const policyHrefs = findTags(left.body, "a").map((tag) => parseAttributes(tag).href ?? "");
+    for (const href of EXPECTED_POLICY_HREFS) if (!policyHrefs.includes(href)) addFailure("FOOTER_POLICY_LINK_PRESERVED", `${label} must preserve footer policy link ${href}`, { route, file: label, expected: href });
+  }
 }
 
 function inspectQuarkShimmerStyles() {
@@ -725,6 +799,10 @@ function inspectFooterStyles() {
   if (!stylesheet.includes(`${selector} {`)) addFailure("FOOTER_SEO_LINKS_STYLE_SCOPE", "styles.css must scope contextual footer navigation to the footer-left column", { file: "styles.css", expected: `${selector} {` });
   const responsivePattern = /@media\s*\(max-width:\s*900px\)[\s\S]*?\.site-footer \.footer-left \.seo-footer-links\s*\{[\s\S]*?flex-direction:\s*column;/;
   if (!responsivePattern.test(stylesheet)) addFailure("FOOTER_SEO_LINKS_RESPONSIVE", "styles.css must collapse and center contextual footer navigation within footer-left on mobile", { file: "styles.css", expected: "@media (max-width: 900px) .site-footer .footer-left .seo-footer-links { flex-direction: column; }" });
+  const mediumContainmentPattern = /@media\s*\(min-width:\s*901px\)\s*and\s*\(max-width:\s*1200px\)[\s\S]*?\.site-footer \.footer-left\s*\{[\s\S]*?max-width:\s*calc\(100%\s*-\s*16rem\);/;
+  if (!mediumContainmentPattern.test(stylesheet)) addFailure("FOOTER_SEO_LINKS_MEDIUM_CONTAINMENT", "styles.css must contain the footer-left SEO navigation within the 901–1200px desktop range", { file: "styles.css", expected: "@media (min-width: 901px) and (max-width: 1200px) .site-footer .footer-left { max-width: calc(100% - 16rem); }" });
+  const mobileLayoutPattern = /@media\s*\(max-width:\s*900px\)[\s\S]*?\.site-footer\s*\{[\s\S]*?flex-direction:\s*column;[\s\S]*?text-align:\s*center;[\s\S]*?\.site-footer \.footer-left\s*\{[\s\S]*?width:\s*100%;/;
+  if (!mobileLayoutPattern.test(stylesheet)) addFailure("FOOTER_MOBILE_CENTERING", "styles.css must center and stack the complete footer at <=900px", { file: "styles.css", expected: "@media (max-width: 900px) .site-footer { flex-direction: column; text-align: center; } .site-footer .footer-left { width: 100%; }" });
 }
 
 function registerUniqueMetadata(registry, kind, value, route, label) {
