@@ -741,6 +741,15 @@ function inspectFooterContract(route, html, label, site) {
   }
 
   const footerBody = footer.body;
+  const watermarkImages = findTags(footerBody, "img").map((tag) => parseAttributes(tag)).filter((attrs) => attrs.class?.split(/\s+/).includes("footer-watermark"));
+  if (watermarkImages.length !== 1) addFailure("FOOTER_WATERMARK_COUNT", `${label} must contain exactly one footer-watermark image`, { route, file: label, expected: 1, found: watermarkImages.length });
+  if (watermarkImages.length === 1) {
+    const watermark = watermarkImages[0];
+    const resolvedLogo = resolvedAssetPath(watermark.src, route);
+    if (resolvedLogo !== VERIFIED_LOGO_ASSET) addFailure("FOOTER_WATERMARK_SOURCE", `${label} footer-watermark must use the verified logo asset`, { route, file: label, expected: VERIFIED_LOGO_ASSET, found: watermark.src ?? null, resolved: resolvedLogo });
+    if (watermark["aria-hidden"] !== "true") addFailure("FOOTER_WATERMARK_DECORATIVE", `${label} footer-watermark must be aria-hidden`, { route, file: label, expected: "true", found: watermark["aria-hidden"] ?? null });
+    if (watermark.alt !== "") addFailure("FOOTER_WATERMARK_ALT", `${label} footer-watermark must have an empty alt attribute`, { route, file: label, expected: "", found: watermark.alt ?? null });
+  }
   const left = elementBoundary(footerBody, "div", "footer-left");
   const right = elementBoundary(footerBody, "div", "footer-right");
   if (!left || !right || left.end > right.start) {
