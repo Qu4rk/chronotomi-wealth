@@ -8,11 +8,41 @@
   "contract": {
     "canonicalOrigin": "https://www.chronotomi.com",
     "routePolicy": "extensionless, no trailing slash except root",
+    "requiredCanonicalRouteCount": 52,
     "requiredStaticRoutes": ["/", "/advisory", "/about", "/logistics", "/privacy", "/terms"],
     "requiredGeneratedRoutes": ["/watches", "/sourcing", "/authenticity"],
+    "requiredEditorialRoutes": [
+      "/luxury-watches-cyprus",
+      "/luxury-watches-limassol",
+      "/journal",
+      "/journal/private-watch-sourcing-cyprus"
+    ],
     "requiredBrandRouteCount": 4,
+    "homepage": {
+      "title": "Luxury Watches Cyprus | Private Watch Sourcing | Chronotomi",
+      "descriptionTerms": ["luxury watches", "Cyprus", "private watch sourcing", "Rolex", "Patek Philippe", "Audemars Piguet", "Cartier"]
+    },
     "requiredPageSignals": ["title", "meta description", "canonical", "one H1", "OG/Twitter metadata", "parseable JSON-LD"],
-    "forbiddenJsonLd": ["Offer", "aggregateRating", "Review", "price", "availability", "LocalBusiness"],
+    "serializedBodyWordRanges": {
+      "/luxury-watches-cyprus": [500, 700],
+      "/luxury-watches-limassol": [400, 600],
+      "/journal/private-watch-sourcing-cyprus": [1000, 1400],
+      "brand introductions": [180, 250]
+    },
+    "productIdentity": "Every product H1 and Product.name contains brand, model, and reference; product og:image resolves to its local primary image.",
+    "structuredData": {
+      "websiteName": "Chronotomi",
+      "websiteAlternateName": "Chronotomi Wealth",
+      "organizationIdentifiers": ["HE 492185", "60359894D"],
+      "organizationRequiresLogo": true,
+      "allowedTypes": ["Organization", "WebSite", "WebPage", "AboutPage", "Service", "BreadcrumbList", "CollectionPage", "ItemList", "Product", "Brand", "PropertyValue", "ListItem", "Article", "ImageObject", "PostalAddress"],
+      "forbidden": ["Offer", "aggregateRating", "Review", "price", "availability", "LocalBusiness", "Store", "rating", "review"]
+    },
+    "generated404": {
+      "file": "dist/404.html",
+      "robots": "noindex,follow",
+      "excludedFromSitemap": true
+    },
     "sitemapPolicy": "every intended canonical page exactly once; exclude manage, assets, and redirect-source paths"
   },
   "currentTreeRisks": [

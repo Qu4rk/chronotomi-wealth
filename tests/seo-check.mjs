@@ -11,6 +11,13 @@ const CANONICAL_ORIGIN = "https://www.chronotomi.com";
 const CANONICAL_HOST = "www.chronotomi.com";
 const REQUIRED_STATIC_ROUTES = ["/", "/advisory", "/about", "/logistics", "/privacy", "/terms"];
 const REQUIRED_GENERATED_ROUTES = ["/watches", "/sourcing", "/authenticity"];
+const REQUIRED_EDITORIAL_ROUTES = [
+  { route: "/luxury-watches-cyprus", kind: "location", wordRange: [500, 700] },
+  { route: "/luxury-watches-limassol", kind: "location", wordRange: [400, 600] },
+  { route: "/journal", kind: "journal" },
+  { route: "/journal/private-watch-sourcing-cyprus", kind: "guide", wordRange: [1000, 1400] },
+];
+const REQUIRED_EDITORIAL_ROUTE_PATHS = REQUIRED_EDITORIAL_ROUTES.map((entry) => entry.route);
 const FIXED_PAGE_ROUTES = ["/", "/watches", "/sourcing", "/authenticity", "/logistics", "/advisory", "/about", "/privacy", "/terms"];
 const REQUIRED_REDIRECTS = new Map([
   ["/index", "/"],
@@ -33,7 +40,20 @@ const REQUIRED_META = [
   ["name", "twitter:image"],
 ];
 const FORBIDDEN_JSON_LD_KEYS = new Set(["offer", "offers", "aggregaterating", "review", "reviews", "rating", "price", "availability"]);
-const FORBIDDEN_JSON_LD_TYPES = new Set(["offer", "review", "localbusiness"]);
+const FORBIDDEN_JSON_LD_TYPES = new Set(["offer", "review", "localbusiness", "store"]);
+const ALLOWED_JSON_LD_TYPES = new Set([
+  "Organization", "WebSite", "WebPage", "AboutPage", "Service", "BreadcrumbList",
+  "CollectionPage", "ItemList", "Product", "Brand", "PropertyValue", "ListItem",
+  "Article", "ImageObject", "PostalAddress",
+]);
+const HOMEPAGE_TITLE = "Luxury Watches Cyprus | Private Watch Sourcing | Chronotomi";
+const HOMEPAGE_DESCRIPTION_TERMS = [
+  "luxury watches", "Cyprus", "private watch sourcing", "Rolex", "Patek Philippe", "Audemars Piguet", "Cartier",
+];
+const VERIFIED_ORGANIZATION_IDENTIFIERS = [
+  { label: "company number", propertyPattern: /company\s*number/i, value: "HE 492185" },
+  { label: "VAT number", propertyPattern: /vat\s*(?:number|registration)?/i, value: "60359894D" },
+];
 const FORBIDDEN_INDEXABLE_COPY = [
   { pattern: /\bcurrent\s+(?:timepiece\s+)?collection\b/i, label: "Current Collection" },
   { pattern: /\bverified[\s-]+stock\b/i, label: "verified stock" },
@@ -352,6 +372,99 @@ function normalizeMetadata(value) {
   return decodeHtml(String(value ?? "")).replace(/\s+/g, " ").trim().toLowerCase();
 }
 
+function countWords(value) {
+  const words = stripTags(value).match(/[A-Za-z0-9]+(?:['’][A-Za-z0-9]+)*/g);
+  return words ? words.length : 0;
+}
+
+function jsonLdObjects(value, objects = []) {
+  if (Array.isArray(value)) {
+    value.forEach((item) => jsonLdObjects(item, objects));
+    return objects;
+  }
+  if (!value || typeof value !== "object") return objects;
+  if (typeof value["@type"] === "string" || Array.isArray(value["@type"])) objects.push(value);
+  Object.values(value).forEach((child) => jsonLdObjects(child, objects));
+  return objects;
+}
+
+function jsonLdType(value) {
+  if (typeof value?.["@type"] === "string") return value["@type"];
+  if (Array.isArray(value?.["@type"])) return value["@type"].map(String).join(",");
+  return "";
+}
+
+function jsonLdFieldText(value) {
+  if (typeof value === "string" || typeof value === "number") return String(value);
+  if (Array.isArray(value)) return value.map(jsonLdFieldText).join(" ");
+  if (value && typeof value === "object") return Object.values(value).map(jsonLdFieldText).join(" ");
+  return "";
+}
+
+function organizationIdentifierMatches(identifier, requirement) {
+  if (!identifier || typeof identifier !== "object") return false;
+  const property = [identifier.propertyID, identifier.propertyId, identifier.name, identifier.type]
+    .filter((value) => value !== undefined).map(String).join(" ");
+  return requirement.propertyPattern.test(property) && jsonLdFieldText(identifier.value).trim() === requirement.value;
+}
+
+function inspectStructuredDataContracts(route, objects, label) {
+  for (const object of objects) {
+    const types = Array.isArray(object["@type"]) ? object["@type"].map(String) : [String(object["@type"] ?? "")];
+    for (const type of types) {
+      if (type && !ALLOWED_JSON_LD_TYPES.has(type)) addFailure("JSON_LD_TYPE_NOT_ALLOWED", `${label} uses JSON-LD type ${type}, which is outside the allowed SEO schema vocabulary`, { route, file: label, type });
+    }
+    if (types.includes("Organization")) {
+      const logo = jsonLdFieldText(object.logo).trim();
+      if (!logo) addFailure("ORGANIZATION_LOGO_MISSING", `${label} Organization must include a logo`, { route, file: label });
+      const identifiers = Array.isArray(object.identifier) ? object.identifier : [object.identifier];
+      for (const requirement of VERIFIED_ORGANIZATION_IDENTIFIERS) {
+        if (!identifiers.some((identifier) => organizationIdentifierMatches(identifier, requirement))) {
+          addFailure("ORGANIZATION_IDENTIFIER_MISSING", `${label} Organization must include verified ${requirement.label} ${requirement.value}`, { route, file: label, expected: requirement.value });
+        }
+      }
+    }
+  }
+
+  if (route === "/") {
+    const websites = objects.filter((object) => (Array.isArray(object["@type"]) ? object["@type"].map(String) : [String(object["@type"] ?? "")]).includes("WebSite"));
+    if (websites.length !== 1) addFailure("WEBSITE_SCHEMA_COUNT", `${label} must contain exactly one WebSite JSON-LD object; found ${websites.length}`, { route, file: label });
+    else {
+      if (websites[0].name !== "Chronotomi") addFailure("WEBSITE_NAME", `${label} WebSite name must be Chronotomi`, { route, file: label, expected: "Chronotomi", found: websites[0].name });
+      if (websites[0].alternateName !== "Chronotomi Wealth") addFailure("WEBSITE_ALTERNATE_NAME", `${label} WebSite alternateName must be Chronotomi Wealth`, { route, file: label, expected: "Chronotomi Wealth", found: websites[0].alternateName });
+    }
+  }
+}
+
+function inspectBodyWordRange(route, html, label, range) {
+  const main = findElements(html, "main")[0];
+  if (!main) {
+    addFailure("BODY_MISSING", `${label} must contain a serialized <main> body for word-range validation`, { route, file: label });
+    return;
+  }
+  const count = countWords(main.body);
+  if (count < range[0] || count > range[1]) addFailure("BODY_WORD_RANGE", `${label} serialized body must contain ${range[0]}–${range[1]} words; found ${count}`, { route, file: label, words: count, min: range[0], max: range[1] });
+}
+
+function brandIntroductionBody(html) {
+  const marked = html.match(/<(section|div)\b[^>]*class=["'][^"']*(?:brand-introduction|brand-intro)[^"']*["'][^>]*>([\s\S]*?)<\/\1\s*>/i);
+  if (marked) return marked[2];
+  const h1 = html.match(/<h1\b[^>]*>[\s\S]*?<\/h1\s*>/i);
+  const collection = html.search(/<(?:section|div)\b[^>]*(?:class=["'][^"']*inventory-grid|id=["']inventory-grid)[^>]*>/i);
+  if (!h1 || collection < 0) return null;
+  return html.slice(h1.index + h1[0].length, collection);
+}
+
+function inspectBrandIntroduction(route, html, label) {
+  const body = brandIntroductionBody(html);
+  if (body === null) {
+    addFailure("BRAND_INTRODUCTION_MISSING", `${label} must serialize a brand introduction before its collection`, { route, file: label });
+    return;
+  }
+  const count = countWords(body);
+  if (count < 180 || count > 250) addFailure("BRAND_INTRODUCTION_WORD_RANGE", `${label} brand introduction must contain 180–250 words; found ${count}`, { route, file: label, words: count, min: 180, max: 250 });
+}
+
 function inspectSiteConfig(site) {
   if (!site || typeof site !== "object" || Array.isArray(site)) return;
   if (!site.pages || typeof site.pages !== "object" || Array.isArray(site.pages)) {
@@ -416,6 +529,14 @@ function inspectHtml(route, html, label, context = {}) {
   const descriptions = metaValues(html, "name", "description").map((value) => value.trim()).filter(Boolean);
   if (descriptions.length !== 1) addFailure("META_DESCRIPTION_COUNT", `${label} must contain exactly one nonempty meta description; found ${descriptions.length}`, { route, file: label });
 
+  if (route === "/") {
+    if (title.length === 1 && title[0] !== HOMEPAGE_TITLE) addFailure("HOMEPAGE_TITLE", `${label} title must be exactly ${HOMEPAGE_TITLE}`, { route, file: label, expected: HOMEPAGE_TITLE, found: title[0] });
+    if (descriptions.length === 1) {
+      const description = descriptions[0].toLowerCase();
+      for (const term of HOMEPAGE_DESCRIPTION_TERMS) if (!description.includes(term.toLowerCase())) addFailure("HOMEPAGE_DESCRIPTION_TERM", `${label} description must contain the required term "${term}"`, { route, file: label, term });
+    }
+  }
+
   const configuredPage = context.site?.pages?.[route];
   if (configuredPage && title.length === 1 && title[0] !== configuredPage.title) addFailure("SITE_PAGE_TITLE_DRIFT", `${label} title does not match site.json pages[${route}].title`, { route, file: label, expected: configuredPage.title, found: title[0] });
   if (configuredPage && descriptions.length === 1 && descriptions[0] !== configuredPage.description) addFailure("SITE_PAGE_DESCRIPTION_DRIFT", `${label} description does not match site.json pages[${route}].description`, { route, file: label, expected: configuredPage.description, found: descriptions[0] });
@@ -469,6 +590,7 @@ function inspectHtml(route, html, label, context = {}) {
     return (attrs.type ?? "").toLowerCase() === "application/ld+json";
   });
   const schemaTypes = new Set();
+  const schemaObjects = [];
   if (jsonLdScripts.length === 0) addFailure("JSON_LD_MISSING", `${label} must contain parseable application/ld+json`, { route, file: label });
   for (const [scriptIndex, script] of jsonLdScripts.entries()) {
     let parsed;
@@ -479,15 +601,40 @@ function inspectHtml(route, html, label, context = {}) {
       continue;
     }
     collectJsonLdTypes(parsed, schemaTypes);
+    jsonLdObjects(parsed, schemaObjects);
     inspectJsonLd(parsed, `${label} JSON-LD block ${scriptIndex + 1}`, route);
   }
+  inspectStructuredDataContracts(route, schemaObjects, label);
   for (const requiredType of requiredSchemaTypes(route)) {
     if (!schemaTypes.has(requiredType)) addFailure("JSON_LD_REQUIRED_TYPE", `${label} must include JSON-LD type ${requiredType}`, { route, file: label, type: requiredType, found: [...schemaTypes].sort() });
   }
 
   inspectResponsiveCatalogImages(route, html, label, context.catalogImageSources);
   inspectInquiryCtas(route, html, label, context.watchByRoute);
-  inspectInternalLinks(html, route, label);
+  if (context.watchByRoute?.has(route)) {
+    const watch = context.watchByRoute.get(route);
+    const h1Text = h1s[0] ?? "";
+    for (const field of [watch.brand, watch.model, watch.reference]) {
+      if (!h1Text.toLowerCase().includes(String(field).toLowerCase())) addFailure("WATCH_H1_IDENTITY", `${label} product H1 must contain ${watch.brand}, ${watch.model}, and ${watch.reference}`, { route, file: label, field, expected: `${watch.brand} ${watch.model} ${watch.reference}`, found: h1Text });
+    }
+    const products = schemaObjects.filter((object) => jsonLdType(object) === "Product");
+    if (products.length === 0) addFailure("PRODUCT_SCHEMA_MISSING", `${label} must contain a Product JSON-LD object`, { route, file: label });
+    for (const product of products) {
+      const name = String(product.name ?? "");
+      for (const field of [watch.brand, watch.model, watch.reference]) {
+        if (!name.toLowerCase().includes(String(field).toLowerCase())) addFailure("PRODUCT_SCHEMA_IDENTITY", `${label} Product name must contain ${watch.brand}, ${watch.model}, and ${watch.reference}`, { route, file: label, field, expected: `${watch.brand} ${watch.model} ${watch.reference}`, found: name });
+      }
+    }
+    const image = metaValues(html, "property", "og:image").map((value) => value.trim()).filter(Boolean);
+    const primary = recordImages(watch)[0];
+    const resolved = image.length === 1 ? resolvedAssetPath(image[0], route) : null;
+    const expectedImage = typeof primary === "string" ? primary.replace(/^\/+|^\.\//, "").split(/[?#]/, 1)[0] : null;
+    if (image.length !== 1 || !expectedImage || resolved !== expectedImage) addFailure("PRODUCT_OG_IMAGE", `${label} product og:image must resolve to the watch's local primary image`, { route, file: label, expected: expectedImage, found: image[0] ?? null, resolved });
+  }
+  const editorial = REQUIRED_EDITORIAL_ROUTES.find((entry) => entry.route === route);
+  if (editorial?.wordRange) inspectBodyWordRange(route, html, label, editorial.wordRange);
+  if (route.startsWith("/watches/") && /^\/watches\/[^/]+$/.test(route)) inspectBrandIntroduction(route, html, label);
+  inspectInternalLinks(html, route, label, context);
 }
 
 function inspectQuarkShimmerStyles() {
@@ -611,6 +758,9 @@ function requiredSchemaTypes(route) {
   if (["/sourcing", "/authenticity", "/logistics"].includes(route)) return ["Service", "BreadcrumbList"];
   if (route === "/watches" || /^\/watches\/[^/]+$/.test(route)) return ["CollectionPage", "ItemList"];
   if (/^\/watches\/[^/]+\/[^/]+$/.test(route)) return ["Product", "BreadcrumbList"];
+  if (["/luxury-watches-cyprus", "/luxury-watches-limassol"].includes(route)) return ["WebPage", "Service", "BreadcrumbList", "Organization"];
+  if (route === "/journal") return ["CollectionPage", "ItemList", "BreadcrumbList"];
+  if (route === "/journal/private-watch-sourcing-cyprus") return ["Article", "BreadcrumbList", "Organization"];
   return [];
 }
 
@@ -631,7 +781,7 @@ function inspectJsonLd(value, location, route, keyPath = "$") {
   }
 }
 
-function inspectInternalLinks(html, route, label) {
+function inspectInternalLinks(html, route, label, context = {}) {
   for (const tag of findTags(html, "a")) {
     const href = parseAttributes(tag).href?.trim();
     if (!href || href.startsWith("#") || /^(?:mailto:|tel:|javascript:|data:)/i.test(href)) continue;
@@ -642,9 +792,21 @@ function inspectInternalLinks(html, route, label) {
       continue;
     }
     if (url.hostname !== CANONICAL_HOST) continue;
+    const linkedRoute = normalizeRoute(url.pathname);
+    if (linkedRoute && context.expectedRoutes?.includes(linkedRoute) && linkedRoute !== route) {
+      if (!context.inboundRoutes.has(linkedRoute)) context.inboundRoutes.set(linkedRoute, new Set());
+      context.inboundRoutes.get(linkedRoute).add(route);
+    }
     if (url.pathname.toLowerCase().endsWith(".html") || /\/index\.html$/i.test(url.pathname)) {
       addFailure("INTERNAL_HTML_LINK", `${label} uses a non-clean internal link: ${href}`, { route, file: label, href });
     }
+  }
+}
+
+function inspectInboundRoutes(context) {
+  for (const route of REQUIRED_EDITORIAL_ROUTE_PATHS) {
+    const sources = context.inboundRoutes.get(route);
+    if (!sources || sources.size === 0) addFailure("EDITORIAL_INBOUND_LINK_MISSING", `No crawlable internal link points to required editorial route ${route}`, { route, expected: route });
   }
 }
 
@@ -735,6 +897,23 @@ function inspectRobotsAndSitemap(expectedRoutes) {
     if (!expected.includes(location)) addFailure("SITEMAP_UNEXPECTED_ROUTE", `sitemap.xml contains a non-canonical or unintended URL: ${location}`, { file: path.relative(root, sitemapPath), url: location, count, route });
     if (route && /\/(?:manage|assets)(?:\/|$)/i.test(route)) addFailure("SITEMAP_EXCLUDED_PATH", `sitemap.xml must exclude manage/assets paths: ${location}`, { file: path.relative(root, sitemapPath), url: location, route });
     if (route && redirectPaths.has(route)) addFailure("SITEMAP_REDIRECT_PATH", `sitemap.xml must exclude redirect source path ${route}: ${location}`, { file: path.relative(root, sitemapPath), url: location, route });
+    if (route === "/404" || /\/404\.html$/i.test(location)) addFailure("SITEMAP_404_INCLUDED", `sitemap.xml must exclude the generated 404 page: ${location}`, { file: path.relative(root, sitemapPath), url: location, route });
+  }
+}
+
+function inspectGenerated404(hasDist) {
+  if (!hasDist || options.sourceOnly) return;
+  const notFoundPath = path.join(distRoot, "404.html");
+  const html = readText(notFoundPath);
+  if (html === null) {
+    addFailure("GENERATED_404_MISSING", `Generated output must contain 404.html`, { file: path.relative(root, notFoundPath), expected: path.relative(root, notFoundPath) });
+    return;
+  }
+  const robots = metaValues(html, "name", "robots").map((value) => value.trim()).filter(Boolean);
+  if (robots.length !== 1) addFailure("GENERATED_404_ROBOTS", `Generated 404.html must contain exactly one nonempty robots meta tag`, { file: path.relative(root, notFoundPath), expected: "noindex,follow", found: robots });
+  else {
+    const directives = new Set(robots[0].toLowerCase().split(",").map((value) => value.trim()).filter(Boolean));
+    for (const directive of ["noindex", "follow"]) if (!directives.has(directive)) addFailure("GENERATED_404_ROBOTS_DIRECTIVE", `Generated 404.html robots metadata must include ${directive}`, { file: path.relative(root, notFoundPath), directive, expected: "noindex,follow", found: robots[0] });
   }
 }
 
@@ -769,18 +948,23 @@ function main() {
   inspectSiteConfig(site);
   const catalog = readJson(path.join(root, "watches.json"), "CATALOG");
   const catalogInfo = inspectCatalog(catalog);
-  const expectedRoutes = [...REQUIRED_STATIC_ROUTES, ...REQUIRED_GENERATED_ROUTES, ...catalogInfo.brandRoutes.map((entry) => entry.route), ...catalogInfo.expectedWatchRoutes];
+  const expectedRoutes = [...REQUIRED_STATIC_ROUTES, ...REQUIRED_GENERATED_ROUTES, ...catalogInfo.brandRoutes.map((entry) => entry.route), ...catalogInfo.expectedWatchRoutes, ...REQUIRED_EDITORIAL_ROUTE_PATHS];
   inspectRouteSet(expectedRoutes);
+  if (expectedRoutes.length !== 52) addFailure("CANONICAL_ROUTE_COUNT", `Expected exactly 52 canonical routes; found ${expectedRoutes.length}`, { expected: 52, found: expectedRoutes.length });
 
   const hasDist = fs.existsSync(distRoot) && fs.statSync(distRoot).isDirectory();
   const context = {
     site,
     metadataRegistry: { titles: new Map(), descriptions: new Map() },
+    expectedRoutes,
+    inboundRoutes: new Map(),
     catalogImageSources: hasDist && !options.sourceOnly ? new Set(catalogInfo.records.flatMap((record) => recordImages(record)).map((source) => source.replace(/^\/+|^\.\//g, "").split(/[?#]/, 1)[0])) : new Set(),
     watchByRoute: new Map(catalogInfo.indexable.map((entry) => [entry.route, entry.record])),
   };
   if (!options.sourceOnly) inspectHomepageSource(catalogInfo, hasDist);
   inspectRoutePages(expectedRoutes, hasDist, context);
+  inspectInboundRoutes(context);
+  inspectGenerated404(hasDist);
   inspectQuarkShimmerStyles();
   if (hasDist && !options.sourceOnly) inspectRobotsAndSitemap(expectedRoutes);
   else if (!options.sourceOnly) addFailure("GENERATED_CHECKS_SKIPPED", "robots.txt and sitemap.xml checks were skipped because dist/ is unavailable; run after npm run build", { expected: "dist/robots.txt and dist/sitemap.xml" });
