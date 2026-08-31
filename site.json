@@ -8,7 +8,7 @@
     "addressLocality": "Limassol",
     "addressCountry": "CY"
   },
-  "areaServed": ["Cyprus", "European Union"],
+  "areaServed": ["Cyprus", "Limassol", "European Union"],
   "companyNumber": "HE 492185",
   "vatNumber": "60359894D",
   "socialProfiles": {
@@ -22,8 +22,8 @@
   },
   "pages": {
     "/": {
-      "title": "Luxury Watches & Private Sourcing in Cyprus | Chronotomi Wealth",
-      "description": "Discover curated luxury watches and discreet private sourcing from Chronotomi Wealth in Limassol, Cyprus, serving collectors across Cyprus and the EU."
+      "title": "Luxury Watches Cyprus | Private Watch Sourcing | Chronotomi",
+      "description": "Discover luxury watches in Cyprus through private watch sourcing for Rolex, Patek Philippe, Audemars Piguet, and Cartier with Chronotomi Wealth."
     },
     "/watches": {
       "title": "Luxury Watches | Chronotomi Wealth",
