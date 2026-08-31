@@ -489,8 +489,8 @@ function head(title, description, canonical, schema, site, socialImagePath = sit
     "</div></nav></header>"
   ].join("\n");
 }
-function footer(site, pathname) {
-  const prefix = assetHref(pathname, "");
+function footer(site, pathname, options = {}) {
+  const prefix = options.absoluteAssets ? "/" : assetHref(pathname, "");
   const cyprusRoute = locationPages.find((page) => /cyprus/i.test(page.path))?.path || "/luxury-watches-cyprus";
   const limassolRoute = locationPages.find((page) => /limassol/i.test(page.path))?.path || "/luxury-watches-limassol";
   const policyLinks = '<div class="footer-links" style="display:flex;flex-direction:column;gap:0.3rem;margin-top:1rem;"><a href="/privacy">Privacy &amp; Discretion Policy</a><a href="/terms">Terms of Service</a><a href="/logistics">Acquisition &amp; Logistics Policy</a></div>';
@@ -740,9 +740,10 @@ function normalizeNotFoundFooter(root, site) {
   const target = path.join(root, "dist", "404.html");
   const html = fs.readFileSync(target, "utf8");
   const existingFooter = elementBoundary(html, "footer");
-  const generatedFooter = elementBoundary(footer(site, "/"), "footer");
+  const generatedMarkup = footer(site, "/", { absoluteAssets: true });
+  const generatedFooter = elementBoundary(generatedMarkup, "footer");
   if (!existingFooter || !generatedFooter) fail("cannot normalize 404.html footer: expected existing and generated footer boundaries");
-  const replacement = footer(site, "/").slice(generatedFooter.start, generatedFooter.end);
+  const replacement = generatedMarkup.slice(generatedFooter.start, generatedFooter.end);
   const normalized = html.slice(0, existingFooter.start) + replacement + html.slice(existingFooter.end);
   if (normalized === html || !normalized.includes('class="seo-footer-links"')) fail("cannot normalize 404.html footer: generated contextual footer structure was not inserted");
   fs.writeFileSync(target, normalized);

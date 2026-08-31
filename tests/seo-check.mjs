@@ -1094,6 +1094,9 @@ function inspectGenerated404(hasDist, site) {
     return;
   }
   inspectFooterContract("/404", html, path.relative(root, notFoundPath), site);
+  const notFoundFooter = elementBoundary(html, "footer");
+  const notFoundWatermark = notFoundFooter ? findTags(notFoundFooter.body, "img").map((tag) => parseAttributes(tag)).find((attrs) => attrs.class?.split(/\s+/).includes("footer-watermark")) : null;
+  if (notFoundWatermark?.src !== "/assets/logo_transparent.png") addFailure("GENERATED_404_WATERMARK_SOURCE", "Generated 404.html footer-watermark must use the root-absolute logo asset path", { file: path.relative(root, notFoundPath), expected: "/assets/logo_transparent.png", found: notFoundWatermark?.src ?? null });
   const robots = metaValues(html, "name", "robots").map((value) => value.trim()).filter(Boolean);
   if (robots.length !== 1) addFailure("GENERATED_404_ROBOTS", `Generated 404.html must contain exactly one nonempty robots meta tag`, { file: path.relative(root, notFoundPath), expected: "noindex,follow", found: robots });
   else {
