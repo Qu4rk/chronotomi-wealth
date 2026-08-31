@@ -714,7 +714,7 @@ function injectContextualFooterLinks(html) {
   const limassolRoute = locationPages.find((page) => /limassol/i.test(page.path))?.path || "/luxury-watches-limassol";
   const links = '<nav class="seo-footer-links" aria-label="Contextual links"><a href="' + esc(cyprusRoute) + '">Luxury watches in Cyprus</a><a href="' + esc(limassolRoute) + '">Luxury watches in Limassol</a><a href="' + esc(journalPage.path) + '">Journal</a><a href="/sourcing">Sourcing</a><a href="/watches">Watches</a></nav>';
   if (html.includes('class="seo-footer-links"')) return html;
-  return html.replace(/(<div class="footer-copyright")/i, links + "$1");
+  return html.replace(/(<\/div>\s*)(<div\b[^>]*class=["'][^"']*\bfooter-right\b[^"']*["'][^>]*>)/i, links + "$1$2");
 }
 function writeSitemap(root, routes) {
   const rows = ['  <url><loc>' + ORIGIN + "/</loc></url>"];

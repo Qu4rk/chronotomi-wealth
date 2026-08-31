@@ -555,6 +555,7 @@ function inspectVercelConfig(vercel) {
 }
 
 function inspectHtml(route, html, label, context = {}) {
+  if (context.generatedOutput) inspectFooterContract(route, html, label);
   if (!html.includes('class="quark-shimmer" data-text="Quark">Quark</span>')) {
     addFailure("QUARK_SHIMMER_MARKUP", `${label} must mark the footer Quark credit for the shimmer effect`, { route, file: label });
   }
@@ -680,6 +681,32 @@ function inspectHtml(route, html, label, context = {}) {
   inspectInternalLinks(html, route, label, context);
 }
 
+function inspectFooterContract(route, html, label) {
+  const footer = html.match(/<footer\b[^>]*>([\s\S]*?)<\/footer\s*>/i);
+  if (!footer) {
+    addFailure("FOOTER_MISSING", `${label} must contain a footer`, { route, file: label });
+    return;
+  }
+
+  const footerBody = footer[1];
+  const leftMatch = footerBody.match(/<div\b[^>]*class=["'][^"']*\bfooter-left\b[^"']*["'][^>]*>/i);
+  const rightMatch = footerBody.match(/<div\b[^>]*class=["'][^"']*\bfooter-right\b[^"']*["'][^>]*>/i);
+  if (!leftMatch || !rightMatch || leftMatch.index >= rightMatch.index) {
+    addFailure("FOOTER_LAYOUT", `${label} must contain ordered .footer-left and .footer-right columns`, { route, file: label });
+    return;
+  }
+
+  const leftBody = footerBody.slice(leftMatch.index + leftMatch[0].length, rightMatch.index);
+  const rightBody = footerBody.slice(rightMatch.index + rightMatch[0].length);
+  const countSeoLinks = (value) => (value.match(/class=["'][^"']*\bseo-footer-links\b[^"']*["']/gi) ?? []).length;
+  const leftCount = countSeoLinks(leftBody);
+  const rightCount = countSeoLinks(rightBody);
+  const totalCount = countSeoLinks(footerBody);
+  if (leftCount !== 1) addFailure("FOOTER_SEO_LINKS_PARENT", `${label} must contain exactly one .seo-footer-links nav inside .footer-left; found ${leftCount}`, { route, file: label, expected: 1, found: leftCount });
+  if (rightCount !== 0) addFailure("FOOTER_SEO_LINKS_RIGHT", `${label} must not contain .seo-footer-links inside .footer-right; found ${rightCount}`, { route, file: label, expected: 0, found: rightCount });
+  if (totalCount !== 1) addFailure("FOOTER_SEO_LINKS_COUNT", `${label} footer must contain exactly one .seo-footer-links nav; found ${totalCount}`, { route, file: label, expected: 1, found: totalCount });
+}
+
 function inspectQuarkShimmerStyles() {
   const stylesheet = readText(path.join(root, "styles.css"));
   if (stylesheet === null) return;
@@ -689,6 +716,15 @@ function inspectQuarkShimmerStyles() {
   if (!/animation:\s*quarkGlimmerSweep\s+5\.6s\s+cubic-bezier\(0\.4,\s*0,\s*0\.2,\s*1\)\s+infinite;/.test(stylesheet)) addFailure("QUARK_SHIMMER_LUMINA_DURATION", "styles.css must use a 5.6-second gentle Quark glimmer loop", { file: "styles.css" });
   if (!/@keyframes quarkGlimmerSweep\s*\{[\s\S]*?0%\s*\{[\s\S]*?background-position:\s*150%\s+0;[\s\S]*?70%,\s*100%\s*\{[\s\S]*?background-position:\s*-150%\s+0;/.test(stylesheet)) addFailure("QUARK_SHIMMER_LUMINA_TIMING", "styles.css must use Lumina-style gentle one-pass timing, with a longer sweep and off-screen rest", { file: "styles.css" });
   if (!stylesheet.includes("prefers-reduced-motion: reduce")) addFailure("QUARK_SHIMMER_REDUCED_MOTION", "styles.css must disable the Quark shimmer for reduced-motion users", { file: "styles.css" });
+}
+
+function inspectFooterStyles() {
+  const stylesheet = readText(path.join(root, "styles.css"));
+  if (stylesheet === null) return;
+  const selector = ".site-footer .footer-left .seo-footer-links";
+  if (!stylesheet.includes(`${selector} {`)) addFailure("FOOTER_SEO_LINKS_STYLE_SCOPE", "styles.css must scope contextual footer navigation to the footer-left column", { file: "styles.css", expected: `${selector} {` });
+  const responsivePattern = /@media\s*\(max-width:\s*900px\)[\s\S]*?\.site-footer \.footer-left \.seo-footer-links\s*\{[\s\S]*?flex-direction:\s*column;/;
+  if (!responsivePattern.test(stylesheet)) addFailure("FOOTER_SEO_LINKS_RESPONSIVE", "styles.css must collapse and center contextual footer navigation within footer-left on mobile", { file: "styles.css", expected: "@media (max-width: 900px) .site-footer .footer-left .seo-footer-links { flex-direction: column; }" });
 }
 
 function registerUniqueMetadata(registry, kind, value, route, label) {
@@ -1013,6 +1049,7 @@ function main() {
   const hasDist = fs.existsSync(distRoot) && fs.statSync(distRoot).isDirectory();
   const context = {
     site,
+    generatedOutput: hasDist && !options.sourceOnly,
     metadataRegistry: { titles: new Map(), descriptions: new Map() },
     expectedRoutes,
     inboundRoutes: new Map(),
@@ -1024,6 +1061,7 @@ function main() {
   inspectInboundRoutes(context);
   inspectGenerated404(hasDist);
   inspectQuarkShimmerStyles();
+  inspectFooterStyles();
   if (hasDist && !options.sourceOnly) inspectRobotsAndSitemap(expectedRoutes);
   else if (!options.sourceOnly) addFailure("GENERATED_CHECKS_SKIPPED", "robots.txt and sitemap.xml checks were skipped because dist/ is unavailable; run after npm run build", { expected: "dist/robots.txt and dist/sitemap.xml" });
 
