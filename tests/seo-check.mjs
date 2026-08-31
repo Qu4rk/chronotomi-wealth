@@ -422,7 +422,7 @@ function resolveCanonicalLogo(value, route) {
     for (const base of [CANONICAL_ORIGIN, canonicalUrl(route)]) {
       try {
         const url = new URL(candidate, base);
-        if (url.hostname === CANONICAL_HOST && decodeURIComponent(url.pathname).replace(/^\/+/, "") === VERIFIED_LOGO_ASSET) return url;
+        if (url.protocol === "https:" && url.hostname === CANONICAL_HOST && !url.username && !url.password && !url.port && !url.search && !url.hash && decodeURIComponent(url.pathname).replace(/^\/+/, "") === VERIFIED_LOGO_ASSET) return url;
       } catch {
         // Continue checking another representation of the logo.
       }
