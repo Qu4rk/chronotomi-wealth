@@ -578,6 +578,14 @@ function inspectHtml(route, html, label, context = {}) {
   const h1s = findElements(html, "h1").map((element) => stripTags(element.body)).filter(Boolean);
   if (h1s.length !== 1) addFailure("H1_COUNT", `${label} must contain exactly one nonempty <h1>; found ${h1s.length}`, { route, file: label });
 
+  if (REQUIRED_EDITORIAL_ROUTE_PATHS.includes(route)) {
+    const paragraphClasses = findElements(html, "p").map((element) => (parseAttributes(element.open).class ?? "").split(/\s+/).filter(Boolean));
+    const articleIntros = paragraphClasses.filter((classes) => classes.includes("seo-article__intro"));
+    const sectionIntros = paragraphClasses.filter((classes) => classes.includes("seo-intro"));
+    if (articleIntros.length !== 1) addFailure("EDITORIAL_ARTICLE_INTRO_CLASS", `${label} must mark exactly one lead paragraph with seo-article__intro; found ${articleIntros.length}`, { route, file: label, expected: 1, found: articleIntros.length });
+    if (sectionIntros.length !== 0) addFailure("EDITORIAL_SECTION_INTRO_REUSE", `${label} editorial paragraphs must not reuse the section-level seo-intro class; found ${sectionIntros.length}`, { route, file: label, expected: 0, found: sectionIntros.length });
+  }
+
   const pageText = stripTags(html);
   for (const forbidden of FORBIDDEN_INDEXABLE_COPY) {
     if (forbidden.pattern.test(pageText)) addFailure("INDEXABLE_COPY_STOCK_CLAIM", `${label} uses forbidden stock-implying phrasing: ${forbidden.label}`, { route, file: label, phrase: forbidden.label });

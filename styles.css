@@ -2331,12 +2331,18 @@ span.text-mask {
   letter-spacing: -0.02em;
 }
 
-.seo-article__header p {
+.seo-article__header p,
+.seo-article__intro {
   max-width: 720px;
   margin: 0 auto;
   color: var(--muted);
   font-size: 1.08rem;
   line-height: 1.85;
+}
+
+.seo-article > .seo-article__intro {
+  margin-bottom: clamp(2.5rem, 5vw, 4rem);
+  text-align: center;
 }
 
 .seo-article__body {

@@ -499,19 +499,19 @@ function editorialPage(page, type, site, canonical) {
   const location = type === "location";
   const cta = location ? ctaDetails(page.cta) : null;
   const body = location
-    ? '<p class="seo-intro">' + esc(page.intro) + '</p><div class="seo-article__body">' + sectionMarkup(page.sections) + '</div><div class="seo-intro__links"><a class="btn-primary" href="' + esc(cta.href) + '">' + esc(cta.label) + '</a><a class="btn-outline" href="/watches">Explore watches</a><a class="btn-outline" href="' + esc(journalPage.path) + '">Read the Journal</a></div>'
-    : '<p class="seo-intro">' + esc(page.intro || page.summary) + '</p>';
+    ? '<p class="seo-article__intro">' + esc(page.intro) + '</p><div class="seo-article__body">' + sectionMarkup(page.sections) + '</div><div class="seo-intro__links"><a class="btn-primary" href="' + esc(cta.href) + '">' + esc(cta.label) + '</a><a class="btn-outline" href="/watches">Explore watches</a><a class="btn-outline" href="' + esc(journalPage.path) + '">Read the Journal</a></div>'
+    : '<p class="seo-article__intro">' + esc(page.intro || page.summary) + '</p>';
   return head(page.title, page.description, canonical, location ? locationSchema(site, page, canonical) : journalSchema(site, page, canonical, guides), site) +
     '<main class="seo-page"><article class="seo-article"><header class="seo-article__header"><span class="eyebrow">' + esc(page.eyebrow) + '</span><h1>' + esc(page.h1) + '</h1></header>' + body + '</article></main>' + footer(site, new URL(canonical).pathname);
 }
 function guidePage(guide, site, canonical) {
   return head(guide.title, guide.description, canonical, guideSchema(site, guide, canonical), site) +
-    '<main class="seo-page"><article class="seo-article"><header class="seo-article__header"><span class="eyebrow">' + esc(guide.eyebrow) + '</span><h1>' + esc(guide.h1) + '</h1><p class="seo-intro">' + esc(guide.summary) + '</p><p class="seo-article__date"><time datetime="' + esc(guide.dateModified) + '">Updated ' + esc(guide.dateModified) + '</time></p></header><div class="seo-article__body">' + sectionMarkup(guide.sections) + '</div>' + relatedMarkup(guide.relatedPaths, site) + '</article></main>' + footer(site, new URL(canonical).pathname);
+    '<main class="seo-page"><article class="seo-article"><header class="seo-article__header"><span class="eyebrow">' + esc(guide.eyebrow) + '</span><h1>' + esc(guide.h1) + '</h1><p class="seo-article__intro">' + esc(guide.summary) + '</p><p class="seo-article__date"><time datetime="' + esc(guide.dateModified) + '">Updated ' + esc(guide.dateModified) + '</time></p></header><div class="seo-article__body">' + sectionMarkup(guide.sections) + '</div>' + relatedMarkup(guide.relatedPaths, site) + '</article></main>' + footer(site, new URL(canonical).pathname);
 }
 function journalPageHtml(page, site, canonical) {
   const cardsHtml = guides.map((guide) => '<article class="seo-related"><h2><a href="' + esc(guide.path) + '">' + esc(guide.h1) + '</a></h2><p>' + esc(guide.summary) + '</p><a class="btn-outline" href="' + esc(guide.path) + '">Read guide</a></article>').join("");
   return head(page.title, page.description, canonical, journalSchema(site, page, canonical, guides), site) +
-    '<main class="seo-page"><article class="seo-article"><header class="seo-article__header"><span class="eyebrow">' + esc(page.eyebrow) + '</span><h1>' + esc(page.h1) + '</h1><p class="seo-intro">' + esc(page.intro) + '</p></header><div class="seo-article__body">' + cardsHtml + '</div></article></main>' + footer(site, new URL(canonical).pathname);
+    '<main class="seo-page"><article class="seo-article"><header class="seo-article__header"><span class="eyebrow">' + esc(page.eyebrow) + '</span><h1>' + esc(page.h1) + '</h1><p class="seo-article__intro">' + esc(page.intro) + '</p></header><div class="seo-article__body">' + cardsHtml + '</div></article></main>' + footer(site, new URL(canonical).pathname);
 }
 function rolexFilterPanel(isOpen = false) {
   const openClass = isOpen ? " is-open" : "";
