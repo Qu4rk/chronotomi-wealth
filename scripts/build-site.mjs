@@ -736,6 +736,17 @@ function copyPublic(root) {
   for (const file of PUBLIC_FILES) fs.copyFileSync(path.join(root, file), path.join(dist, file));
   fs.cpSync(path.join(root, "assets"), path.join(dist, "assets"), { recursive: true });
 }
+function normalizeNotFoundFooter(root, site) {
+  const target = path.join(root, "dist", "404.html");
+  const html = fs.readFileSync(target, "utf8");
+  const existingFooter = elementBoundary(html, "footer");
+  const generatedFooter = elementBoundary(footer(site, "/"), "footer");
+  if (!existingFooter || !generatedFooter) fail("cannot normalize 404.html footer: expected existing and generated footer boundaries");
+  const replacement = footer(site, "/").slice(generatedFooter.start, generatedFooter.end);
+  const normalized = html.slice(0, existingFooter.start) + replacement + html.slice(existingFooter.end);
+  if (normalized === html || !normalized.includes('class="seo-footer-links"')) fail("cannot normalize 404.html footer: generated contextual footer structure was not inserted");
+  fs.writeFileSync(target, normalized);
+}
 function injectStaticSchemas(root, site) {
   const dist = path.join(root, "dist");
   const fixedFiles = [["/", "index.html"]].concat(STATIC_ROUTES);
@@ -792,6 +803,7 @@ export function buildSite(root = ROOT) {
   if (fs.existsSync(dist)) fs.rmSync(dist, { recursive: true, force: true });
   fs.mkdirSync(dist, { recursive: true });
   copyPublic(root);
+  normalizeNotFoundFooter(root, site);
   injectStaticSchemas(root, site);
   fs.writeFileSync(path.join(dist, "index.html"), injectHomepage(fs.readFileSync(path.join(dist, "index.html"), "utf8"), catalog, root));
   for (const entry of routes) {

@@ -819,6 +819,10 @@ function inspectFooterStyles() {
   if (!mobileLayoutPattern.test(stylesheet)) addFailure("FOOTER_MOBILE_CENTERING", "styles.css must center and stack the complete footer at <=900px", { file: "styles.css", expected: "@media (max-width: 900px) .site-footer { grid-template-columns: 1fr; text-align: center; }" });
   if (!/@media\s*\(max-width:\s*600px\)[\s\S]*?\.site-footer > \.seo-footer-links\s*\{[\s\S]*?grid-template-columns:\s*1fr;/.test(stylesheet)) addFailure("FOOTER_NARROW_NAV", "styles.css must collapse the contextual nav to one column at <=600px", { file: "styles.css", expected: "@media (max-width: 600px) .site-footer > .seo-footer-links { grid-template-columns: 1fr; }" });
   if (!/\.footer-socials\s+a\s*\{[\s\S]*?min-width:\s*44px;[\s\S]*?min-height:\s*44px;/.test(stylesheet)) addFailure("FOOTER_SOCIAL_HIT_AREA", "styles.css must keep footer social anchors at least 44px square", { file: "styles.css", expected: ".footer-socials a { min-width: 44px; min-height: 44px; }" });
+  const policyLinkRule = stylesheet.match(/\.site-footer \.footer-links a\s*\{([\s\S]*?)\}/)?.[1] ?? "";
+  const hasPolicyLinkStyle = /font-size:\s*0\.65rem;/.test(policyLinkRule) && /letter-spacing:\s*0\.05em;/.test(policyLinkRule) && /color:\s*rgba\(255,\s*255,\s*255,\s*0\.6\);/.test(policyLinkRule) && /text-decoration:\s*none;/.test(policyLinkRule);
+  if (!hasPolicyLinkStyle) addFailure("FOOTER_POLICY_LINK_STYLE", "styles.css must share static-style typography, muted color, and underline treatment for footer policy links", { file: "styles.css", expected: ".site-footer .footer-links a { font-size: 0.65rem; letter-spacing: 0.05em; color: rgba(255,255,255,0.6); text-decoration: none; }" });
+  if (/@media\s*\(max-width:\s*900px\)[\s\S]*?\.footer-watermark\s*\{[\s\S]*?height:\s*120px;/.test(stylesheet)) addFailure("FOOTER_WATERMARK_MOBILE_OVERRIDE", "styles.css must not override the approved subtle watermark clamp with a fixed 120px mobile height", { file: "styles.css", expected: "mobile footer watermark height remains clamp(84px, 9vw, 112px)" });
   const ctaSelector = /\.seo-intro__links a:not\(\.btn-primary\):not\(\.btn-outline\)\s*\{/;
   if (!ctaSelector.test(stylesheet)) addFailure("SEO_CTA_SELECTOR_SCOPE", "styles.css must exclude button classes from the generic SEO intro link treatment", { file: "styles.css", expected: ".seo-intro__links a:not(.btn-primary):not(.btn-outline) {" });
   if (/\.seo-intro__links a,\s*\n\s*\.site-footer/.test(stylesheet)) addFailure("SEO_CTA_SELECTOR_BROAD", "styles.css must not let generic SEO intro link styling override CTA button classes", { file: "styles.css" });
@@ -1081,7 +1085,7 @@ function inspectRobotsAndSitemap(expectedRoutes) {
   }
 }
 
-function inspectGenerated404(hasDist) {
+function inspectGenerated404(hasDist, site) {
   if (!hasDist || options.sourceOnly) return;
   const notFoundPath = path.join(distRoot, "404.html");
   const html = readText(notFoundPath);
@@ -1089,6 +1093,7 @@ function inspectGenerated404(hasDist) {
     addFailure("GENERATED_404_MISSING", `Generated output must contain 404.html`, { file: path.relative(root, notFoundPath), expected: path.relative(root, notFoundPath) });
     return;
   }
+  inspectFooterContract("/404", html, path.relative(root, notFoundPath), site);
   const robots = metaValues(html, "name", "robots").map((value) => value.trim()).filter(Boolean);
   if (robots.length !== 1) addFailure("GENERATED_404_ROBOTS", `Generated 404.html must contain exactly one nonempty robots meta tag`, { file: path.relative(root, notFoundPath), expected: "noindex,follow", found: robots });
   else {
@@ -1158,7 +1163,7 @@ function main() {
   if (!options.sourceOnly) inspectHomepageSource(catalogInfo, hasDist);
   inspectRoutePages(expectedRoutes, hasDist, context);
   inspectInboundRoutes(context);
-  inspectGenerated404(hasDist);
+  inspectGenerated404(hasDist, context.site);
   inspectQuarkShimmerStyles();
   inspectFooterStyles();
   if (hasDist && !options.sourceOnly) inspectRobotsAndSitemap(expectedRoutes);
