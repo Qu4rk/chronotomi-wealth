@@ -491,7 +491,7 @@ function journalSchema(site, page, canonical, guideEntries) {
 function guideSchema(site, guide, canonical) {
   return schemaGraph([
     organization(site),
-    { "@type": "Article", "@id": canonical + "#article", headline: guide.h1, name: guide.title, description: guide.description, url: canonical, datePublished: guide.datePublished, dateModified: guide.dateModified, author: { "@id": site.origin + "/#organization" }, publisher: { "@id": site.origin + "/#organization" }, mainEntityOfPage: { "@id": canonical + "#article" } },
+    { "@type": "Article", "@id": canonical + "#article", headline: guide.h1, name: guide.title, description: guide.description, url: canonical, datePublished: guide.datePublished, dateModified: guide.dateModified, author: { "@id": site.origin + "/#organization" }, publisher: { "@id": site.origin + "/#organization" }, mainEntityOfPage: canonical },
     breadcrumbList(site, [{ name: "Journal", url: site.origin + journalPage.path }, { name: guide.h1, url: canonical }])
   ]);
 }

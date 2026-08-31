@@ -1,8 +1,8 @@
 {
   "title": "Chronotomi generated-site SEO contract review",
   "scope": {
-    "ownedFiles": ["tests/seo-check.mjs", "tests/seo-review.json"],
-    "productionFilesModified": false,
+    "ownedFiles": ["404.html", "styles.css", "scripts/build-site.mjs", "tests/seo-check.mjs", "tests/seo-review.json"],
+    "productionFilesModified": true,
     "dependencies": "Node built-ins only"
   },
   "contract": {
@@ -45,7 +45,10 @@
     },
     "sitemapPolicy": "every intended canonical page exactly once; exclude manage, assets, and redirect-source paths"
   },
-  "currentTreeRisks": [
+  "baselineEvidence": {
+    "status": "pre-integration",
+    "note": "The following findings were captured before the SEO build integration. They are retained as historical evidence and do not describe the current HEAD.",
+    "items": [
     {
       "code": "PRE_BUILD",
       "finding": "The current tree has no dist/ directory. package.json declares npm run build, but its scripts/build-site.mjs entry file is absent in the current checkout.",
@@ -81,7 +84,9 @@
       "finding": "At least one current catalog image source, assets/santos-de-cartier-wssa0018.jpeg, does not exist locally.",
       "impact": "The build must replace or correct the source before a generated watch page can satisfy the local-image contract."
     }
-  ],
+    ]
+  },
+  "currentTreeRisks": [],
   "integrationNotes": [
     "Run node tests/seo-check.mjs after npm run build; the verifier exits 0 only when the full generated route inventory and source homepage contract pass.",
     "Use node tests/seo-check.mjs --json for CI artifacts and machine-readable failure codes.",

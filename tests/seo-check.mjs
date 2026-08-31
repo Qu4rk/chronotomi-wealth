@@ -460,6 +460,15 @@ function inspectStructuredDataContracts(route, objects, label) {
       if (websites[0].alternateName !== "Chronotomi Wealth") addFailure("WEBSITE_ALTERNATE_NAME", `${label} WebSite alternateName must be Chronotomi Wealth`, { route, file: label, expected: "Chronotomi Wealth", found: websites[0].alternateName });
     }
   }
+
+  if (route === "/journal/private-watch-sourcing-cyprus") {
+    const articles = objects.filter((object) => jsonLdType(object) === "Article");
+    for (const article of articles) {
+      if (article.mainEntityOfPage !== canonicalUrl(route)) {
+        addFailure("ARTICLE_MAIN_ENTITY_MISMATCH", `${label} Article mainEntityOfPage must point to the canonical guide URL`, { route, file: label, expected: canonicalUrl(route), found: article.mainEntityOfPage ?? null });
+      }
+    }
+  }
 }
 
 function inspectBodyWordRange(route, html, label, range) {
@@ -951,6 +960,17 @@ function inspectGenerated404(hasDist) {
     const directives = new Set(robots[0].toLowerCase().split(",").map((value) => value.trim()).filter(Boolean));
     for (const directive of ["noindex", "follow"]) if (!directives.has(directive)) addFailure("GENERATED_404_ROBOTS_DIRECTIVE", `Generated 404.html robots metadata must include ${directive}`, { file: path.relative(root, notFoundPath), directive, expected: "noindex,follow", found: robots[0] });
   }
+
+  const introParagraphs = findElements(html, "p").filter((element) => (parseAttributes(element.open).class ?? "").split(/\s+/).includes("seo-404-intro"));
+  if (introParagraphs.length !== 1) addFailure("GENERATED_404_INTRO_CLASS", "Generated 404.html must use exactly one dedicated seo-404-intro paragraph", { file: path.relative(root, notFoundPath), expected: 1, found: introParagraphs.length });
+  const sectionLevelIntros = findElements(html, "p").filter((element) => (parseAttributes(element.open).class ?? "").split(/\s+/).includes("seo-intro"));
+  if (sectionLevelIntros.length !== 0) addFailure("GENERATED_404_SECTION_INTRO_REUSE", "Generated 404.html must not apply the section-level seo-intro class to its lead paragraph", { file: path.relative(root, notFoundPath), expected: 0, found: sectionLevelIntros.length });
+
+  const primaryNav = findElements(html, "nav").find((element) => (parseAttributes(element.open).class ?? "").split(/\s+/).includes("seo-404-nav"));
+  const primaryLinks = primaryNav ? findTags(primaryNav.body, "a").map((tag) => parseAttributes(tag)).filter((attrs) => attrs.href) : [];
+  if (!primaryNav) addFailure("GENERATED_404_NAV_MISSING", "Generated 404.html must contain a dedicated primary navigation landmark", { file: path.relative(root, notFoundPath), expected: "nav.seo-404-nav" });
+  if (primaryLinks.length < 3) addFailure("GENERATED_404_NAV_LINKS", "Generated 404.html primary navigation must expose at least three static links", { file: path.relative(root, notFoundPath), expected: 3, found: primaryLinks.length });
+  if (/class=["'][^"']*\bnav-links\b/i.test(html)) addFailure("GENERATED_404_NAV_HIDDEN", "Generated 404.html must not use the script-controlled nav-links wrapper without its toggle behavior", { file: path.relative(root, notFoundPath) });
 }
 
 function inspectRouteSet(expectedRoutes) {
