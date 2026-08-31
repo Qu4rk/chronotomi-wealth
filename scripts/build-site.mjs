@@ -56,7 +56,12 @@ function wordRange(value, label) {
   return { min: value.min, max: value.max };
 }
 function wordCount(value) {
-  return String(value || "").trim().split(/\s+/).filter(Boolean).length;
+  return String(value || "").replace(/<[^>]*>/g, " ").trim().split(/\s+/).filter(Boolean).length;
+}
+function enforceWordRange(value, range, label) {
+  const count = wordCount(value);
+  if (count < range.min || count > range.max) fail(label + " word count " + count + " is outside declared range " + range.min + "-" + range.max);
+  return count;
 }
 function contentParagraphs(value, label) {
   if (!Array.isArray(value) || value.length === 0) fail(label + " must be a non-empty array of paragraphs");
@@ -90,6 +95,7 @@ function validateEditorialContent() {
     if (!Array.isArray(page.areaServed) || page.areaServed.length === 0) fail("locationPages[" + index + "].areaServed must be a non-empty array");
     page.areaServed.forEach((area, areaIndex) => nonEmpty(area, "locationPages[" + index + "].areaServed[" + areaIndex + "]"));
     page.wordRange = wordRange(page.wordRange, "locationPages[" + index + "].wordRange");
+    enforceWordRange([page.intro, ...page.sections.flatMap((section) => section.paragraphs)].join(" "), page.wordRange, "locationPages[" + index + "]");
     records.push(page);
   });
   for (const field of ["path", "title", "description", "eyebrow", "h1", "intro"]) nonEmpty(journalPage[field], "journalPage." + field);
@@ -106,6 +112,7 @@ function validateEditorialContent() {
     if (!Array.isArray(guide.relatedPaths)) fail("guides[" + index + "].relatedPaths must be an array");
     guide.relatedPaths.forEach((related, relatedIndex) => routePath(related, "guides[" + index + "].relatedPaths[" + relatedIndex + "]"));
     guide.wordRange = wordRange(guide.wordRange, "guides[" + index + "].wordRange");
+    enforceWordRange([guide.summary, ...guide.sections.flatMap((section) => section.paragraphs)].join(" "), guide.wordRange, "guides[" + index + "]");
     records.push(guide);
   });
   const keys = Object.keys(brandIntroductions).sort();
@@ -115,6 +122,7 @@ function validateEditorialContent() {
     if (!intro || typeof intro !== "object" || Array.isArray(intro)) fail("brandIntroductions." + slug + " must be an object");
     nonEmpty(intro.heading, "brandIntroductions." + slug + ".heading");
     contentParagraphs(intro.paragraphs, "brandIntroductions." + slug + ".paragraphs");
+    enforceWordRange(intro.paragraphs.join(" "), { min: 180, max: 250 }, "brandIntroductions." + slug);
   }
   const paths = [...FIXED_PAGE_ROUTES, ...records.map((record) => record.path)];
   const seen = new Set();
@@ -693,9 +701,13 @@ function injectStaticSchemas(root, site) {
     if (entry[0] === "/") html = replaceJsonLd(html, homepageSchema(site), entry[1]);
     if (entry[0] === "/about") html = replaceJsonLd(html, aboutSchema(site), entry[1]);
     if (entry[0] === "/logistics") html = replaceJsonLd(html, serviceSchema(site, { canonical: site.origin + "/logistics", name: "Timepiece Acquisition & Logistics", serviceType: "Luxury timepiece acquisition and logistics guidance", description: site.pages["/logistics"].description, breadcrumbName: "Acquisition & Logistics" }), entry[1]);
+    html = normalizeStaticBranding(html);
     html = injectContextualFooterLinks(html);
     fs.writeFileSync(target, html);
   }
+}
+function normalizeStaticBranding(html) {
+  return html.replaceAll("Your Wealth, Excelled.", "Your Time, Defined.");
 }
 function injectContextualFooterLinks(html) {
   const cyprusRoute = locationPages.find((page) => /cyprus/i.test(page.path))?.path || "/luxury-watches-cyprus";
