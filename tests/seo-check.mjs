@@ -50,6 +50,8 @@ const HOMEPAGE_TITLE = "Luxury Watches Cyprus | Private Watch Sourcing | Chronot
 const HOMEPAGE_DESCRIPTION_TERMS = [
   "luxury watches", "Cyprus", "private watch sourcing", "Rolex", "Patek Philippe", "Audemars Piguet", "Cartier",
 ];
+const VERIFIED_LOGO_ASSET = "assets/logo_transparent.png";
+const VERIFIED_LOGO_URL = `${CANONICAL_ORIGIN}/${VERIFIED_LOGO_ASSET}`;
 const VERIFIED_ORGANIZATION_IDENTIFIERS = [
   { label: "company number", propertyPattern: /company\s*number/i, value: "HE 492185" },
   { label: "VAT number", propertyPattern: /vat\s*(?:number|registration)?/i, value: "60359894D" },
@@ -408,6 +410,27 @@ function organizationIdentifierMatches(identifier, requirement) {
   return requirement.propertyPattern.test(property) && jsonLdFieldText(identifier.value).trim() === requirement.value;
 }
 
+function organizationLogoCandidates(value) {
+  if (typeof value === "string" || typeof value === "number") return [String(value)];
+  if (Array.isArray(value)) return value.flatMap(organizationLogoCandidates);
+  if (!value || typeof value !== "object") return [];
+  return [value.url, value.contentUrl, value.src].filter((candidate) => typeof candidate === "string" && candidate.trim());
+}
+
+function resolveCanonicalLogo(value, route) {
+  for (const candidate of organizationLogoCandidates(value)) {
+    for (const base of [CANONICAL_ORIGIN, canonicalUrl(route)]) {
+      try {
+        const url = new URL(candidate, base);
+        if (url.hostname === CANONICAL_HOST && decodeURIComponent(url.pathname).replace(/^\/+/, "") === VERIFIED_LOGO_ASSET) return url;
+      } catch {
+        // Continue checking another representation of the logo.
+      }
+    }
+  }
+  return null;
+}
+
 function inspectStructuredDataContracts(route, objects, label) {
   for (const object of objects) {
     const types = Array.isArray(object["@type"]) ? object["@type"].map(String) : [String(object["@type"] ?? "")];
@@ -415,8 +438,11 @@ function inspectStructuredDataContracts(route, objects, label) {
       if (type && !ALLOWED_JSON_LD_TYPES.has(type)) addFailure("JSON_LD_TYPE_NOT_ALLOWED", `${label} uses JSON-LD type ${type}, which is outside the allowed SEO schema vocabulary`, { route, file: label, type });
     }
     if (types.includes("Organization")) {
-      const logo = jsonLdFieldText(object.logo).trim();
-      if (!logo) addFailure("ORGANIZATION_LOGO_MISSING", `${label} Organization must include a logo`, { route, file: label });
+      const logo = resolveCanonicalLogo(object.logo, route);
+      if (!organizationLogoCandidates(object.logo).length) addFailure("ORGANIZATION_LOGO_MISSING", `${label} Organization must include a logo`, { route, file: label, expected: VERIFIED_LOGO_URL });
+      else if (!logo) addFailure("ORGANIZATION_LOGO_MISMATCH", `${label} Organization logo must resolve to ${VERIFIED_LOGO_URL}`, { route, file: label, expected: VERIFIED_LOGO_URL, found: organizationLogoCandidates(object.logo) });
+      const logoPath = path.resolve(root, VERIFIED_LOGO_ASSET);
+      if (!fs.existsSync(logoPath) || !fs.statSync(logoPath).isFile()) addFailure("ORGANIZATION_LOGO_LOCAL_MISSING", `${label} verified Organization logo asset is missing locally`, { route, file: path.relative(root, logoPath), expected: VERIFIED_LOGO_ASSET });
       const identifiers = Array.isArray(object.identifier) ? object.identifier : [object.identifier];
       for (const requirement of VERIFIED_ORGANIZATION_IDENTIFIERS) {
         if (!identifiers.some((identifier) => organizationIdentifierMatches(identifier, requirement))) {
@@ -447,10 +473,10 @@ function inspectBodyWordRange(route, html, label, range) {
 }
 
 function brandIntroductionBody(html) {
-  const marked = html.match(/<(section|div)\b[^>]*class=["'][^"']*(?:brand-introduction|brand-intro)[^"']*["'][^>]*>([\s\S]*?)<\/\1\s*>/i);
-  if (marked) return marked[2];
-  const h1 = html.match(/<h1\b[^>]*>[\s\S]*?<\/h1\s*>/i);
   const collection = html.search(/<(?:section|div)\b[^>]*(?:class=["'][^"']*inventory-grid|id=["']inventory-grid)[^>]*>/i);
+  const marked = html.match(/<(section|div)\b[^>]*class=["'][^"']*(?:brand-introduction|brand-intro)[^"']*["'][^>]*>([\s\S]*?)<\/\1\s*>/i);
+  if (marked) return collection >= 0 && marked.index < collection ? marked[2] : null;
+  const h1 = html.match(/<h1\b[^>]*>[\s\S]*?<\/h1\s*>/i);
   if (!h1 || collection < 0) return null;
   return html.slice(h1.index + h1[0].length, collection);
 }
@@ -783,7 +809,8 @@ function inspectJsonLd(value, location, route, keyPath = "$") {
 
 function inspectInternalLinks(html, route, label, context = {}) {
   for (const tag of findTags(html, "a")) {
-    const href = parseAttributes(tag).href?.trim();
+    const attrs = parseAttributes(tag);
+    const href = attrs.href?.trim();
     if (!href || href.startsWith("#") || /^(?:mailto:|tel:|javascript:|data:)/i.test(href)) continue;
     let url;
     try {
@@ -793,7 +820,8 @@ function inspectInternalLinks(html, route, label, context = {}) {
     }
     if (url.hostname !== CANONICAL_HOST) continue;
     const linkedRoute = normalizeRoute(url.pathname);
-    if (linkedRoute && context.expectedRoutes?.includes(linkedRoute) && linkedRoute !== route) {
+    const nofollow = (attrs.rel ?? "").split(/\s+/).some((rel) => rel.toLowerCase() === "nofollow");
+    if (!nofollow && linkedRoute && context.expectedRoutes?.includes(linkedRoute) && linkedRoute !== route) {
       if (!context.inboundRoutes.has(linkedRoute)) context.inboundRoutes.set(linkedRoute, new Set());
       context.inboundRoutes.get(linkedRoute).add(route);
     }
