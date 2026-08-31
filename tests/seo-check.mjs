@@ -757,14 +757,16 @@ function inspectFooterContract(route, html, label, site) {
     return;
   }
 
-  const leftNavs = elementBoundaries(footerBody, "nav", "seo-footer-links", left.openEnd, left.closeStart).filter((nav) => nav.end <= left.closeStart);
-  const rightNavs = elementBoundaries(footerBody, "nav", "seo-footer-links", right.openEnd, right.closeStart).filter((nav) => nav.end <= right.closeStart);
   const footerNavs = elementBoundaries(footerBody, "nav", "seo-footer-links", 0, footerBody.length);
-  if (leftNavs.length !== 1) addFailure("FOOTER_SEO_LINKS_PARENT", `${label} must contain exactly one .seo-footer-links nav inside .footer-left; found ${leftNavs.length}`, { route, file: label, expected: 1, found: leftNavs.length });
+  const directNavs = footerNavs.filter((nav) => nav.start >= left.end && nav.end <= right.start);
+  const leftNavs = footerNavs.filter((nav) => nav.start >= left.openEnd && nav.end <= left.closeStart);
+  const rightNavs = footerNavs.filter((nav) => nav.start >= right.openEnd && nav.end <= right.closeStart);
+  if (directNavs.length !== 1) addFailure("FOOTER_SEO_LINKS_PARENT", `${label} must contain exactly one direct-child .seo-footer-links nav between .footer-left and .footer-right; found ${directNavs.length}`, { route, file: label, expected: 1, found: directNavs.length });
+  if (leftNavs.length !== 0) addFailure("FOOTER_SEO_LINKS_LEFT", `${label} must not nest .seo-footer-links inside .footer-left; found ${leftNavs.length}`, { route, file: label, expected: 0, found: leftNavs.length });
   if (rightNavs.length !== 0) addFailure("FOOTER_SEO_LINKS_RIGHT", `${label} must not contain .seo-footer-links inside .footer-right; found ${rightNavs.length}`, { route, file: label, expected: 0, found: rightNavs.length });
   if (footerNavs.length !== 1) addFailure("FOOTER_SEO_LINKS_COUNT", `${label} footer must contain exactly one .seo-footer-links nav; found ${footerNavs.length}`, { route, file: label, expected: 1, found: footerNavs.length });
 
-  const seoNav = leftNavs[0];
+  const seoNav = directNavs[0];
   if (seoNav) {
     const hrefs = findTags(seoNav.body, "a").map((tag) => parseAttributes(tag).href ?? "");
     if (hrefs.length !== EXPECTED_SEO_FOOTER_HREFS.length || hrefs.some((href, index) => href !== EXPECTED_SEO_FOOTER_HREFS[index])) addFailure("FOOTER_SEO_LINKS_ORDER", `${label} contextual footer links must preserve the approved ordered hrefs`, { route, file: label, expected: EXPECTED_SEO_FOOTER_HREFS, found: hrefs });
@@ -775,19 +777,23 @@ function inspectFooterContract(route, html, label, site) {
   if (socialBlocks.length !== 1) addFailure("FOOTER_SOCIALS_PRESERVED", `${label} must preserve exactly one footer-socials block in footer-right`, { route, file: label, expected: 1, found: socialBlocks.length });
   if (copyrightBlocks.length !== 1) addFailure("FOOTER_COPYRIGHT_PRESERVED", `${label} must preserve exactly one footer-copyright block in footer-right`, { route, file: label, expected: 1, found: copyrightBlocks.length });
   if (socialBlocks.length === 1 && site?.socialProfiles) {
-    const hrefs = findTags(socialBlocks[0].body, "a").map((tag) => parseAttributes(tag).href ?? "");
+    const socialAnchors = findTags(socialBlocks[0].body, "a");
+    const hrefs = socialAnchors.map((tag) => parseAttributes(tag).href ?? "");
     const expected = [site.socialProfiles.instagram, site.socialProfiles.facebook];
     if (hrefs.length !== expected.length || hrefs.some((href, index) => href !== expected[index])) addFailure("FOOTER_SOCIAL_LINKS_PRESERVED", `${label} footer social hrefs must preserve the configured Instagram/Facebook links`, { route, file: label, expected, found: hrefs });
+    const socialAnchorElements = findElements(socialBlocks[0].body, "a");
+    if (socialAnchors.some((tag, index) => !(parseAttributes(tag).class ?? "").split(/\s+/).includes("social-icon") || !/<svg\b/i.test(socialAnchorElements[index]?.body ?? ""))) addFailure("FOOTER_SOCIAL_ICONS", `${label} footer social links must use the shared social-icon SVG markup`, { route, file: label, expected: "two .social-icon anchors containing SVG icons" });
   }
   if (copyrightBlocks.length === 1) {
     const copyright = stripTags(copyrightBlocks[0].body);
     for (const value of [site?.legalName, site?.companyNumber, site?.vatNumber]) if (value && !copyright.includes(value)) addFailure("FOOTER_COPYRIGHT_CONTENT", `${label} footer copyright must preserve ${value}`, { route, file: label, expected: value });
   }
   if (/\bfooter-links\b|\bseo-footer-links\b/i.test(right.body)) addFailure("FOOTER_RIGHT_CONTENT_SCOPE", `${label} footer-right may contain only social links and copyright content`, { route, file: label });
-  if (REQUIRED_STATIC_ROUTES.includes(route)) {
-    const policyHrefs = findTags(left.body, "a").map((tag) => parseAttributes(tag).href ?? "");
-    for (const href of EXPECTED_POLICY_HREFS) if (!policyHrefs.includes(href)) addFailure("FOOTER_POLICY_LINK_PRESERVED", `${label} must preserve footer policy link ${href}`, { route, file: label, expected: href });
-  }
+  const identity = stripTags(left.body);
+  if (site?.name && !identity.includes(site.name)) addFailure("FOOTER_IDENTITY_PRESERVED", `${label} footer-left must preserve the configured identity`, { route, file: label, expected: site.name });
+  if (!identity.includes("Your Time, Defined.")) addFailure("FOOTER_TAGLINE_PRESERVED", `${label} footer-left must preserve the canonical tagline`, { route, file: label, expected: "Your Time, Defined." });
+  const policyHrefs = findTags(left.body, "a").map((tag) => parseAttributes(tag).href ?? "");
+  for (const href of EXPECTED_POLICY_HREFS) if (!policyHrefs.includes(href)) addFailure("FOOTER_POLICY_LINK_PRESERVED", `${label} must preserve footer policy link ${href}`, { route, file: label, expected: href });
 }
 
 function inspectQuarkShimmerStyles() {
@@ -804,14 +810,20 @@ function inspectQuarkShimmerStyles() {
 function inspectFooterStyles() {
   const stylesheet = readText(path.join(root, "styles.css"));
   if (stylesheet === null) return;
-  const selector = ".site-footer .footer-left .seo-footer-links";
-  if (!stylesheet.includes(`${selector} {`)) addFailure("FOOTER_SEO_LINKS_STYLE_SCOPE", "styles.css must scope contextual footer navigation to the footer-left column", { file: "styles.css", expected: `${selector} {` });
-  const responsivePattern = /@media\s*\(max-width:\s*900px\)[\s\S]*?\.site-footer \.footer-left \.seo-footer-links\s*\{[\s\S]*?flex-direction:\s*column;/;
-  if (!responsivePattern.test(stylesheet)) addFailure("FOOTER_SEO_LINKS_RESPONSIVE", "styles.css must collapse and center contextual footer navigation within footer-left on mobile", { file: "styles.css", expected: "@media (max-width: 900px) .site-footer .footer-left .seo-footer-links { flex-direction: column; }" });
-  const mediumContainmentPattern = /@media\s*\(min-width:\s*901px\)\s*and\s*\(max-width:\s*1200px\)[\s\S]*?\.site-footer \.footer-left\s*\{[\s\S]*?max-width:\s*calc\(100%\s*-\s*16rem\);/;
-  if (!mediumContainmentPattern.test(stylesheet)) addFailure("FOOTER_SEO_LINKS_MEDIUM_CONTAINMENT", "styles.css must contain the footer-left SEO navigation within the 901–1200px desktop range", { file: "styles.css", expected: "@media (min-width: 901px) and (max-width: 1200px) .site-footer .footer-left { max-width: calc(100% - 16rem); }" });
-  const mobileLayoutPattern = /@media\s*\(max-width:\s*900px\)[\s\S]*?\.site-footer\s*\{[\s\S]*?flex-direction:\s*column;[\s\S]*?text-align:\s*center;[\s\S]*?\.site-footer \.footer-left\s*\{[\s\S]*?width:\s*100%;/;
-  if (!mobileLayoutPattern.test(stylesheet)) addFailure("FOOTER_MOBILE_CENTERING", "styles.css must center and stack the complete footer at <=900px", { file: "styles.css", expected: "@media (max-width: 900px) .site-footer { flex-direction: column; text-align: center; } .site-footer .footer-left { width: 100%; }" });
+  const gridPattern = /\.site-footer\s*\{[\s\S]*?display:\s*grid;[\s\S]*?grid-template-columns:\s*minmax\(14rem,\s*0\.9fr\)\s+minmax\(20rem,\s*1\.25fr\)\s+minmax\(13rem,\s*0\.85fr\);[\s\S]*?align-items:\s*start;/;
+  if (!gridPattern.test(stylesheet)) addFailure("FOOTER_GRID", "styles.css must define the footer as a start-aligned three-column grid", { file: "styles.css", expected: "grid-template-columns: minmax(14rem, 0.9fr) minmax(20rem, 1.25fr) minmax(13rem, 0.85fr)" });
+  if (!stylesheet.includes(".site-footer > .seo-footer-links {")) addFailure("FOOTER_SEO_LINKS_STYLE_SCOPE", "styles.css must style contextual footer navigation as a direct footer child", { file: "styles.css", expected: ".site-footer > .seo-footer-links {" });
+  const mediumPattern = /@media\s*\(min-width:\s*901px\)\s*and\s*\(max-width:\s*1200px\)[\s\S]*?\.site-footer\s*\{[\s\S]*?grid-template-columns:/;
+  if (!mediumPattern.test(stylesheet)) addFailure("FOOTER_MEDIUM_GRID", "styles.css must tighten but retain three footer columns from 901–1200px", { file: "styles.css", expected: "@media (min-width: 901px) and (max-width: 1200px) .site-footer { grid-template-columns: ... }" });
+  const mobileLayoutPattern = /@media\s*\(max-width:\s*900px\)[\s\S]*?\.site-footer\s*\{[\s\S]*?grid-template-columns:\s*1fr;[\s\S]*?text-align:\s*center;/;
+  if (!mobileLayoutPattern.test(stylesheet)) addFailure("FOOTER_MOBILE_CENTERING", "styles.css must center and stack the complete footer at <=900px", { file: "styles.css", expected: "@media (max-width: 900px) .site-footer { grid-template-columns: 1fr; text-align: center; }" });
+  if (!/@media\s*\(max-width:\s*600px\)[\s\S]*?\.site-footer > \.seo-footer-links\s*\{[\s\S]*?grid-template-columns:\s*1fr;/.test(stylesheet)) addFailure("FOOTER_NARROW_NAV", "styles.css must collapse the contextual nav to one column at <=600px", { file: "styles.css", expected: "@media (max-width: 600px) .site-footer > .seo-footer-links { grid-template-columns: 1fr; }" });
+  if (!/\.footer-socials\s+a\s*\{[\s\S]*?min-width:\s*44px;[\s\S]*?min-height:\s*44px;/.test(stylesheet)) addFailure("FOOTER_SOCIAL_HIT_AREA", "styles.css must keep footer social anchors at least 44px square", { file: "styles.css", expected: ".footer-socials a { min-width: 44px; min-height: 44px; }" });
+  const ctaSelector = /\.seo-intro__links a:not\(\.btn-primary\):not\(\.btn-outline\)\s*\{/;
+  if (!ctaSelector.test(stylesheet)) addFailure("SEO_CTA_SELECTOR_SCOPE", "styles.css must exclude button classes from the generic SEO intro link treatment", { file: "styles.css", expected: ".seo-intro__links a:not(.btn-primary):not(.btn-outline) {" });
+  if (/\.seo-intro__links a,\s*\n\s*\.site-footer/.test(stylesheet)) addFailure("SEO_CTA_SELECTOR_BROAD", "styles.css must not let generic SEO intro link styling override CTA button classes", { file: "styles.css" });
+  if (!/\.seo-intro__links\s*\{[\s\S]*?align-items:\s*center;/.test(stylesheet)) addFailure("SEO_CTA_ALIGNMENT", "styles.css must vertically center the SEO intro CTA group", { file: "styles.css", expected: ".seo-intro__links { align-items: center; }" });
+  if (!/\.seo-intro__links\s+(?:>\s*)?\.btn-primary[\s\S]*?display:\s*inline-flex;[\s\S]*?align-items:\s*center;[\s\S]*?justify-content:\s*center;[\s\S]*?text-align:\s*center;[\s\S]*?padding:\s*1rem\s+2rem;/.test(stylesheet)) addFailure("SEO_CTA_BUTTON_GEOMETRY", "styles.css must explicitly preserve centered inline-flex CTA button geometry and symmetric padding", { file: "styles.css", expected: ".seo-intro__links .btn-primary/.btn-outline { inline-flex; align-items: center; justify-content: center; text-align: center; padding: 1rem 2rem; }" });
 }
 
 function registerUniqueMetadata(registry, kind, value, route, label) {

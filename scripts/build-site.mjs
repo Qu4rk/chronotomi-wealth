@@ -61,6 +61,17 @@ function elementBoundary(html, tagName, className, fromIndex = 0) {
   }
   return null;
 }
+function elementBoundaries(html, tagName, className, fromIndex = 0, untilIndex = html.length) {
+  const found = [];
+  let cursor = fromIndex;
+  while (cursor < untilIndex) {
+    const boundary = elementBoundary(html, tagName, className, cursor);
+    if (!boundary || boundary.start >= untilIndex) break;
+    found.push(boundary);
+    cursor = boundary.end;
+  }
+  return found;
+}
 function nonEmpty(value, label) {
   if (typeof value !== "string" || !value.trim()) fail(label + " must be a non-empty string");
 }
@@ -482,10 +493,13 @@ function footer(site, pathname) {
   const prefix = assetHref(pathname, "");
   const cyprusRoute = locationPages.find((page) => /cyprus/i.test(page.path))?.path || "/luxury-watches-cyprus";
   const limassolRoute = locationPages.find((page) => /limassol/i.test(page.path))?.path || "/luxury-watches-limassol";
+  const policyLinks = '<div class="footer-links" style="display:flex;flex-direction:column;gap:0.3rem;margin-top:1rem;"><a href="/privacy">Privacy &amp; Discretion Policy</a><a href="/terms">Terms of Service</a><a href="/logistics">Acquisition &amp; Logistics Policy</a></div>';
+  const socialLinks = '<div class="footer-socials"><a href="' + esc(site.socialProfiles.instagram) + '" target="_blank" rel="noreferrer" class="social-icon" aria-label="Instagram"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 1 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg></a><a href="' + esc(site.socialProfiles.facebook) + '" target="_blank" rel="noreferrer" class="social-icon" aria-label="Facebook"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3.81l.39-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg></a></div>';
   return [
     '<footer class="site-footer" style="position:relative;overflow:hidden;background:#000;border-top:1px solid rgba(255,255,255,.05);">',
-    '<img src="' + prefix + 'assets/logo_transparent.png" class="footer-watermark" aria-hidden="true" alt="" /><div class="footer-left"><strong>' + esc(site.name) + '</strong><br/><span>Your Time, Defined.</span><nav class="seo-footer-links" aria-label="Contextual links"><a href="' + esc(cyprusRoute) + '">Luxury watches in Cyprus</a><a href="' + esc(limassolRoute) + '">Luxury watches in Limassol</a><a href="' + esc(journalPage.path) + '">Journal</a><a href="/sourcing">Sourcing</a><a href="/watches">Watches</a></nav></div>',
-    '<div class="footer-right"><div class="footer-socials"><a href="' + esc(site.socialProfiles.instagram) + '" rel="noreferrer" aria-label="Instagram">Instagram</a><a href="' + esc(site.socialProfiles.facebook) + '" rel="noreferrer" aria-label="Facebook">Facebook</a></div>',
+    '<img src="' + prefix + 'assets/logo_transparent.png" class="footer-watermark" aria-hidden="true" alt="" /><div class="footer-left" style="position:relative;z-index:2;"><strong>' + esc(site.name) + '</strong><br/><span>Your Time, Defined.</span>' + policyLinks + '</div>',
+    '<nav class="seo-footer-links" aria-label="Contextual links"><a href="' + esc(cyprusRoute) + '">Luxury watches in Cyprus</a><a href="' + esc(limassolRoute) + '">Luxury watches in Limassol</a><a href="' + esc(journalPage.path) + '">Journal</a><a href="/sourcing">Sourcing</a><a href="/watches">Watches</a></nav>',
+    '<div class="footer-right" style="position:relative;z-index:2;">' + socialLinks,
     '<div class="footer-copyright">&copy; 2026 ' + esc(site.legalName) + '<br>COMPANY NUMBER: ' + esc(site.companyNumber) + '<br>VAT NUMBER: ' + esc(site.vatNumber) + '<br><br>Brought to life by <a href="https://qu4rk.github.io/QuarkMade/" target="_blank" rel="noopener noreferrer" class="quark-link"><span class="quark-shimmer" data-text="Quark">Quark</span></a>.</div></div></footer></body></html>'
   ].join("\n");
 }
@@ -746,17 +760,21 @@ function injectContextualFooterLinks(html, route, file) {
   const context = `${route} (${file})`;
   const footer = elementBoundary(html, "footer");
   if (!footer) fail(`cannot inject contextual footer links for ${context}: footer element is missing`);
-  const left = elementBoundary(html, "div", "footer-left", footer.openEnd);
-  const right = left ? elementBoundary(html, "div", "footer-right", left.end) : null;
-  if (!left || !right || left.end > right.start || right.end > footer.closeStart) fail(`cannot inject contextual footer links for ${context}: expected footer-left/footer-right sibling boundary is missing`);
+  const footerBody = footer.body;
+  const left = elementBoundary(footerBody, "div", "footer-left");
+  const right = left ? elementBoundary(footerBody, "div", "footer-right", left.end) : null;
+  if (!left || !right || left.end > right.start) fail(`cannot inject contextual footer links for ${context}: expected footer-left/footer-right sibling boundary is missing`);
 
-  const existingNav = elementBoundary(html, "nav", "seo-footer-links", left.openEnd);
-  if (existingNav && existingNav.end <= left.closeStart) return html;
-  const misplacedNav = elementBoundary(html, "nav", "seo-footer-links", footer.openEnd);
-  if (misplacedNav && misplacedNav.end <= footer.closeStart) fail(`cannot inject contextual footer links for ${context}: existing seo-footer-links nav is outside footer-left`);
+  const existingNavs = elementBoundaries(footerBody, "nav", "seo-footer-links");
+  const directNavs = existingNavs.filter((nav) => nav.start >= left.end && nav.end <= right.start);
+  if (existingNavs.length > 0) {
+    if (existingNavs.length !== 1 || directNavs.length !== 1) fail(`cannot inject contextual footer links for ${context}: existing seo-footer-links nav is not a direct sibling between footer-left/footer-right`);
+    return html;
+  }
 
-  const updated = html.slice(0, left.closeStart) + links + html.slice(left.closeStart);
-  if (updated === html || !updated.includes(links)) fail(`cannot inject contextual footer links for ${context}: footer-left replacement did not occur`);
+  const insertionPoint = footer.openEnd + right.start;
+  const updated = html.slice(0, insertionPoint) + links + html.slice(insertionPoint);
+  if (updated === html || !updated.includes(links)) fail(`cannot inject contextual footer links for ${context}: direct footer navigation insertion did not occur`);
   return updated;
 }
 function writeSitemap(root, routes) {
