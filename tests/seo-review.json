@@ -93,6 +93,6 @@
     "The route resolver accepts dist/<route>, dist/<route>/index.html, and dist/<route>.html while requiring canonical URLs to remain extensionless.",
     "Watch route derivation prefers explicit canonicalPath/path/route/canonicalUrl, then /watches/<slug>; a deterministic fallback keeps pre-contract failures actionable but does not waive missing id/slug errors.",
     "The harness checks serialized HTML only and intentionally does not run JavaScript, so homepage watch links must be present in initial HTML.",
-    "No production, package, catalog, config, script, template, or asset files are owned by this review."
+    "Review scope includes 404.html, styles.css, scripts/build-site.mjs, tests/seo-check.mjs, and tests/seo-review.json; unrelated package, catalog, config, and asset files remain outside scope."
   ]
 }

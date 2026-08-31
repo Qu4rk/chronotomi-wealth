@@ -965,6 +965,8 @@ function inspectGenerated404(hasDist) {
   if (introParagraphs.length !== 1) addFailure("GENERATED_404_INTRO_CLASS", "Generated 404.html must use exactly one dedicated seo-404-intro paragraph", { file: path.relative(root, notFoundPath), expected: 1, found: introParagraphs.length });
   const sectionLevelIntros = findElements(html, "p").filter((element) => (parseAttributes(element.open).class ?? "").split(/\s+/).includes("seo-intro"));
   if (sectionLevelIntros.length !== 0) addFailure("GENERATED_404_SECTION_INTRO_REUSE", "Generated 404.html must not apply the section-level seo-intro class to its lead paragraph", { file: path.relative(root, notFoundPath), expected: 0, found: sectionLevelIntros.length });
+  const stylesheet = readText(path.join(root, "styles.css"));
+  if (!stylesheet?.includes(".seo-article__header .seo-404-intro")) addFailure("GENERATED_404_INTRO_SELECTOR", "styles.css must give the 404 intro a selector specific enough to override the later article-header paragraph rule", { file: "styles.css", expected: ".seo-article__header .seo-404-intro" });
 
   const primaryNav = findElements(html, "nav").find((element) => (parseAttributes(element.open).class ?? "").split(/\s+/).includes("seo-404-nav"));
   const primaryLinks = primaryNav ? findTags(primaryNav.body, "a").map((tag) => parseAttributes(tag)).filter((attrs) => attrs.href) : [];

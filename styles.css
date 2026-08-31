@@ -2266,7 +2266,7 @@ span.text-mask {
   color: var(--gold, #e5b05c);
 }
 
-.seo-404-intro {
+.seo-article__header .seo-404-intro {
   max-width: 44rem;
   margin: 0 auto 2rem;
   color: var(--muted);
