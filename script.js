@@ -146,15 +146,17 @@ function selectWatch(button) {
 
   const watchName = button.dataset.watch || "Selected watch";
   const reference = button.dataset.reference || "";
+  const colourway = button?.dataset?.colourway || card?.dataset?.colourway || "";
 
   activeWatch = {
     id: button.dataset.id || card.dataset.id || "",
     brand: card.dataset.brand || "",
     model: watchName.replace(`${card.dataset.brand || ""} `, ""),
-    reference
+    reference,
+    colourway
   };
 
-  if (selectedWatch) selectedWatch.textContent = watchName;
+  if (selectedWatch) selectedWatch.textContent = colourway ? `${watchName} - ${colourway}` : watchName;
   if (selectedMessage) {
     selectedMessage.textContent =
       "Reference loaded. Reach out via Instagram or send a direct email.";
@@ -163,12 +165,13 @@ function selectWatch(button) {
 
   const clientMessageInput = document.querySelector("#client-message");
   if (clientMessageInput) {
-    clientMessageInput.value = `I am inquiring about the ${watchName} (Ref. ${reference}). `;
+    clientMessageInput.value = `I am inquiring about the ${watchName}${colourway ? ` - ${colourway}` : ""} (Ref. ${reference}). `;
   }
 
   const whatsappLink = document.querySelector("#whatsapp-inquire");
   if (whatsappLink) {
-    whatsappLink.href = `https://wa.me/35799426514?text=${encodeURIComponent(`Hello, I would like to inquire about the ${watchName} (Ref. ${reference}).`)}`;
+    const inquiryName = `${watchName}${colourway ? ` - ${colourway}` : ""}`;
+    whatsappLink.href = `https://wa.me/35799426514?text=${encodeURIComponent(`Hello, I would like to inquire about the ${inquiryName} (Ref. ${reference}).`)}`;
   }
 
   return true;
@@ -262,7 +265,8 @@ if (copyButton) {
       copyFeedback.textContent = "Please select a watch first.";
       return;
     }
-    const details = `${selectedWatch.textContent} | Ref. ${activeWatch.reference}`;
+    const displayName = `${activeWatch.brand} ${activeWatch.model}${activeWatch.colourway ? ` - ${activeWatch.colourway}` : ""}`;
+    const details = `${displayName} | Ref. ${activeWatch.reference}`;
 
     try {
       await navigator.clipboard.writeText(details);
@@ -383,6 +387,7 @@ function formContext(watchId) {
   return {
     Landing_Page: window.location.pathname,
     ...(watchId ? { Watch_ID: watchId } : {}),
+    ...(activeWatch?.colourway ? { Watch_Colourway: activeWatch.colourway } : {}),
     Referrer: document.referrer || ""
   };
 }
@@ -411,12 +416,16 @@ const contactForm = document.getElementById('contact-form');
 if (contactForm) {
   contactForm.addEventListener('submit', function(e) {
     e.preventDefault();
+    const watchDescriptor = activeWatch?.colourway
+      ? `${activeWatch.brand} ${activeWatch.model} - ${activeWatch.colourway}`
+      : `${activeWatch?.brand || ""} ${activeWatch?.model || ""}`.trim();
     const data = {
-      _subject: activeWatch ? `Inquiry: ${activeWatch.brand} ${activeWatch.model}` : "General Inquiry from Chronotomi Wealth",
+      _subject: activeWatch ? `Inquiry: ${watchDescriptor}` : "General Inquiry from Chronotomi Wealth",
       Name: document.getElementById('client-name').value,
       Email: document.getElementById('client-email').value,
       Phone: document.getElementById('client-country-code').value + ' ' + document.getElementById('client-phone').value,
       Message: document.getElementById('client-message').value,
+      ...(activeWatch?.colourway ? { Colourway: activeWatch.colourway } : {}),
       ...formContext(selectedWatchId())
     };
     sendEmailData(data, contactForm, () => {

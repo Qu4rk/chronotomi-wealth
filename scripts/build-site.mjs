@@ -196,7 +196,7 @@ function card(watch, pathname, root) {
   const image = watch.images[0];
   const detail = "/watches/" + watch.brandSlug + "/" + watch.slug;
   return [
-    '        <article class="inventory-card reveal" data-id="' + esc(watch.id) + '" data-brand="' + esc(watch.brand) + '" data-model="' + esc(watch.model) + '" data-size="' + esc(watch.caseSize) + '" style="position: relative; overflow: hidden;">',
+    '        <article class="inventory-card reveal" data-id="' + esc(watch.id) + '" data-brand="' + esc(watch.brand) + '" data-model="' + esc(watch.model) + '" data-size="' + esc(watch.caseSize) + '" data-colourway="' + esc(watch.colourway || "") + '" style="position: relative; overflow: hidden;">',
     '          <div class="inventory-image" style="position: relative; z-index: 1;">' + responsivePicture(root, image, pathname, CARD_IMAGE_SIZES, { loading: "lazy", decoding: "async" }) + "</div>",
     '          <div style="padding: 0 2rem 3rem;">',
     '            <a class="inventory-detail-anchor" href="' + detail + '" aria-label="View ' + esc(watch.brand + " " + watch.model + " reference " + watch.reference) + ' details">',
@@ -206,7 +206,7 @@ function card(watch, pathname, root) {
     '            </a>',
     '            <div class="inventory-specs" style="margin-bottom: 3rem;"><span>' + esc(watch.caseSize) + '</span></div>',
     '            <div class="inventory-actions" style="display: flex; flex-direction: column; gap: .75rem;">',
-    '              <button class="btn-primary js-select-watch" type="button" data-watch="' + esc(watch.brand + " " + watch.model) + '" data-reference="' + esc(watch.reference) + '" data-id="' + esc(watch.id) + '" style="width: 100%;">Inquire</button>',
+    '              <button class="btn-primary js-select-watch" type="button" data-watch="' + esc(watch.brand + " " + watch.model) + '" data-reference="' + esc(watch.reference) + '" data-id="' + esc(watch.id) + '" data-colourway="' + esc(watch.colourway || "") + '" style="width: 100%;">Inquire</button>',
     '            </div></div></article>'
   ].join("\n");
 }

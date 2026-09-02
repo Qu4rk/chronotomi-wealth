@@ -55,8 +55,10 @@ function normalizeWatch(record) {
     };
     const year = String(record.year || '').trim();
     const condition = String(record.condition || '').trim();
+    const colourway = String(record.colourway || '').trim();
     if (year) watch.year = year;
     if (condition) watch.condition = condition;
+    if (colourway) watch.colourway = colourway;
     return watch;
 }
 
@@ -262,7 +264,7 @@ function renderWatchGrid() {
                 <div class="card-body">
                     <div class="card-brand">${w.brand}</div>
                     <div class="card-model">${w.model}</div>
-                    <div class="card-ref">Ref. ${w.reference}</div>
+                    <div class="card-ref">Ref. ${w.reference}${w.colourway ? ` • ${w.colourway}` : ''}</div>
                     <div class="card-actions">
                         <button class="btn-edit" onclick="openEditModal(${i})">✎ Edit</button>
                         <button class="btn-remove" onclick="confirmDelete(${i})">✕ Remove</button>
@@ -284,6 +286,8 @@ function openAddModal() {
     document.getElementById('modal-title').textContent = 'Add New Watch';
     document.getElementById('watchForm').reset();
     document.getElementById('image-preview').innerHTML = '<span class="preview-placeholder">No image selected</span>';
+    const colourwayInput = document.getElementById('wColourway');
+    if (colourwayInput) colourwayInput.value = '';
     document.getElementById('wSummary').value = '';
     document.getElementById('wIndexable').checked = true;
     openModal('watch-modal');
@@ -300,6 +304,8 @@ function openEditModal(index) {
     document.getElementById('wCondition').value = w.condition || '';
     document.getElementById('wSet').value = w.set;
     document.getElementById('wCaseSize').value = w.caseSize;
+    const colourwayInput = document.getElementById('wColourway');
+    if (colourwayInput) colourwayInput.value = w.colourway || '';
     document.getElementById('wSummary').value = w.summary || '';
     document.getElementById('wIndexable').checked = w.indexable !== false;
 
@@ -356,6 +362,7 @@ function saveWatch(e) {
     const pendingImage = pendingImages.get(pendingIndex);
     const year = document.getElementById('wYear').value.trim();
     const condition = document.getElementById('wCondition').value.trim();
+    const colourway = document.getElementById('wColourway')?.value?.trim() || '';
     const brand = document.getElementById('wBrand').value.trim();
     const model = document.getElementById('wModel').value.trim();
     const reference = document.getElementById('wReference').value.trim();
@@ -377,6 +384,7 @@ function saveWatch(e) {
     };
     if (year) watch.year = year;
     if (condition) watch.condition = condition;
+    if (colourway) watch.colourway = colourway;
 
     const validationError = validateWatch(watch);
     if (validationError) {
