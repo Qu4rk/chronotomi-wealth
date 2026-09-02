@@ -1,21 +1,54 @@
 {
   "title": "Chronotomi generated-site SEO contract review",
   "scope": {
-    "ownedFiles": ["tests/seo-check.mjs", "tests/seo-review.json"],
-    "productionFilesModified": false,
+    "ownedFiles": ["404.html", "styles.css", "scripts/build-site.mjs", "tests/seo-check.mjs", "tests/seo-review.json"],
+    "productionFilesModified": true,
     "dependencies": "Node built-ins only"
   },
   "contract": {
     "canonicalOrigin": "https://www.chronotomi.com",
     "routePolicy": "extensionless, no trailing slash except root",
+    "requiredCanonicalRouteCount": 52,
     "requiredStaticRoutes": ["/", "/advisory", "/about", "/logistics", "/privacy", "/terms"],
     "requiredGeneratedRoutes": ["/watches", "/sourcing", "/authenticity"],
+    "requiredEditorialRoutes": [
+      "/luxury-watches-cyprus",
+      "/luxury-watches-limassol",
+      "/journal",
+      "/journal/private-watch-sourcing-cyprus"
+    ],
     "requiredBrandRouteCount": 4,
+    "homepage": {
+      "title": "Luxury Watches Cyprus | Private Watch Sourcing | Chronotomi",
+      "descriptionTerms": ["luxury watches", "Cyprus", "private watch sourcing", "Rolex", "Patek Philippe", "Audemars Piguet", "Cartier"]
+    },
     "requiredPageSignals": ["title", "meta description", "canonical", "one H1", "OG/Twitter metadata", "parseable JSON-LD"],
-    "forbiddenJsonLd": ["Offer", "aggregateRating", "Review", "price", "availability", "LocalBusiness"],
+    "serializedBodyWordRanges": {
+      "/luxury-watches-cyprus": [500, 700],
+      "/luxury-watches-limassol": [400, 600],
+      "/journal/private-watch-sourcing-cyprus": [1000, 1400],
+      "brand introductions": [180, 250]
+    },
+    "productIdentity": "Every product H1 and Product.name contains brand, model, and reference; product og:image resolves to its local primary image.",
+    "structuredData": {
+      "websiteName": "Chronotomi",
+      "websiteAlternateName": "Chronotomi Wealth",
+      "organizationIdentifiers": ["HE 492185", "60359894D"],
+      "organizationRequiresLogo": true,
+      "allowedTypes": ["Organization", "WebSite", "WebPage", "AboutPage", "Service", "BreadcrumbList", "CollectionPage", "ItemList", "Product", "Brand", "PropertyValue", "ListItem", "Article", "ImageObject", "PostalAddress"],
+      "forbidden": ["Offer", "aggregateRating", "Review", "price", "availability", "LocalBusiness", "Store", "rating", "review"]
+    },
+    "generated404": {
+      "file": "dist/404.html",
+      "robots": "noindex,follow",
+      "excludedFromSitemap": true
+    },
     "sitemapPolicy": "every intended canonical page exactly once; exclude manage, assets, and redirect-source paths"
   },
-  "currentTreeRisks": [
+  "baselineEvidence": {
+    "status": "pre-integration",
+    "note": "The following findings were captured before the SEO build integration. They are retained as historical evidence and do not describe the current HEAD.",
+    "items": [
     {
       "code": "PRE_BUILD",
       "finding": "The current tree has no dist/ directory. package.json declares npm run build, but its scripts/build-site.mjs entry file is absent in the current checkout.",
@@ -51,13 +84,15 @@
       "finding": "At least one current catalog image source, assets/santos-de-cartier-wssa0018.jpeg, does not exist locally.",
       "impact": "The build must replace or correct the source before a generated watch page can satisfy the local-image contract."
     }
-  ],
+    ]
+  },
+  "currentTreeRisks": [],
   "integrationNotes": [
     "Run node tests/seo-check.mjs after npm run build; the verifier exits 0 only when the full generated route inventory and source homepage contract pass.",
     "Use node tests/seo-check.mjs --json for CI artifacts and machine-readable failure codes.",
     "The route resolver accepts dist/<route>, dist/<route>/index.html, and dist/<route>.html while requiring canonical URLs to remain extensionless.",
     "Watch route derivation prefers explicit canonicalPath/path/route/canonicalUrl, then /watches/<slug>; a deterministic fallback keeps pre-contract failures actionable but does not waive missing id/slug errors.",
     "The harness checks serialized HTML only and intentionally does not run JavaScript, so homepage watch links must be present in initial HTML.",
-    "No production, package, catalog, config, script, template, or asset files are owned by this review."
+    "Review scope includes 404.html, styles.css, scripts/build-site.mjs, tests/seo-check.mjs, and tests/seo-review.json; unrelated package, catalog, config, and asset files remain outside scope."
   ]
 }

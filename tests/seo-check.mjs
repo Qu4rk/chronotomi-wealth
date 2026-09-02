@@ -11,6 +11,13 @@ const CANONICAL_ORIGIN = "https://www.chronotomi.com";
 const CANONICAL_HOST = "www.chronotomi.com";
 const REQUIRED_STATIC_ROUTES = ["/", "/advisory", "/about", "/logistics", "/privacy", "/terms"];
 const REQUIRED_GENERATED_ROUTES = ["/watches", "/sourcing", "/authenticity"];
+const REQUIRED_EDITORIAL_ROUTES = [
+  { route: "/luxury-watches-cyprus", kind: "location", wordRange: [500, 700] },
+  { route: "/luxury-watches-limassol", kind: "location", wordRange: [400, 600] },
+  { route: "/journal", kind: "journal" },
+  { route: "/journal/private-watch-sourcing-cyprus", kind: "guide", wordRange: [1000, 1400] },
+];
+const REQUIRED_EDITORIAL_ROUTE_PATHS = REQUIRED_EDITORIAL_ROUTES.map((entry) => entry.route);
 const FIXED_PAGE_ROUTES = ["/", "/watches", "/sourcing", "/authenticity", "/logistics", "/advisory", "/about", "/privacy", "/terms"];
 const REQUIRED_REDIRECTS = new Map([
   ["/index", "/"],
@@ -33,11 +40,34 @@ const REQUIRED_META = [
   ["name", "twitter:image"],
 ];
 const FORBIDDEN_JSON_LD_KEYS = new Set(["offer", "offers", "aggregaterating", "review", "reviews", "rating", "price", "availability"]);
-const FORBIDDEN_JSON_LD_TYPES = new Set(["offer", "review", "localbusiness"]);
+const FORBIDDEN_JSON_LD_TYPES = new Set(["offer", "review", "localbusiness", "store"]);
+const ALLOWED_JSON_LD_TYPES = new Set([
+  "Organization", "WebSite", "WebPage", "AboutPage", "Service", "BreadcrumbList",
+  "CollectionPage", "ItemList", "Product", "Brand", "PropertyValue", "ListItem",
+  "Article", "ImageObject", "PostalAddress",
+]);
+const HOMEPAGE_TITLE = "Luxury Watches Cyprus | Private Watch Sourcing | Chronotomi";
+const HOMEPAGE_DESCRIPTION_TERMS = [
+  "luxury watches", "Cyprus", "private watch sourcing", "Rolex", "Patek Philippe", "Audemars Piguet", "Cartier",
+];
+const VERIFIED_LOGO_ASSET = "assets/logo_transparent.png";
+const VERIFIED_LOGO_URL = `${CANONICAL_ORIGIN}/${VERIFIED_LOGO_ASSET}`;
+const VERIFIED_ORGANIZATION_IDENTIFIERS = [
+  { label: "company number", propertyPattern: /company\s*number/i, value: "HE 492185" },
+  { label: "VAT number", propertyPattern: /vat\s*(?:number|registration)?/i, value: "60359894D" },
+];
 const FORBIDDEN_INDEXABLE_COPY = [
   { pattern: /\bcurrent\s+(?:timepiece\s+)?collection\b/i, label: "Current Collection" },
   { pattern: /\bverified[\s-]+stock\b/i, label: "verified stock" },
 ];
+const EXPECTED_SEO_FOOTER_HREFS = [
+  "/luxury-watches-cyprus",
+  "/luxury-watches-limassol",
+  "/journal",
+  "/sourcing",
+  "/watches",
+];
+const EXPECTED_POLICY_HREFS = ["/privacy", "/terms", "/logistics"];
 
 const options = parseArgs(process.argv.slice(2));
 const root = path.resolve(options.root ?? DEFAULT_ROOT);
@@ -151,6 +181,50 @@ function findElements(html, tagName) {
     open: match[0].slice(0, match[0].indexOf(">") + 1),
     body: match[1],
   }));
+}
+
+function elementBoundary(html, tagName, className, fromIndex = 0) {
+  const openingPattern = new RegExp(`<${tagName}\\b[^>]*>`, "gi");
+  openingPattern.lastIndex = fromIndex;
+  let opening;
+  while ((opening = openingPattern.exec(html)) !== null) {
+    if (className) {
+      const classes = (parseAttributes(opening[0]).class ?? "").split(/\s+/).filter(Boolean);
+      if (!classes.includes(className)) continue;
+    }
+    const tokenPattern = new RegExp(`<\\/?${tagName}\\b[^>]*>`, "gi");
+    tokenPattern.lastIndex = opening.index;
+    let depth = 0;
+    let token;
+    while ((token = tokenPattern.exec(html)) !== null) {
+      if (/^<\//.test(token[0])) depth -= 1;
+      else if (!/\/\s*>$/.test(token[0])) depth += 1;
+      if (depth === 0) {
+        const closeStart = /^<\//.test(token[0]) ? token.index : token.index + token[0].length;
+        return {
+          start: opening.index,
+          openEnd: opening.index + opening[0].length,
+          closeStart,
+          end: token.index + token[0].length,
+          open: opening[0],
+          body: html.slice(opening.index + opening[0].length, closeStart),
+        };
+      }
+    }
+  }
+  return null;
+}
+
+function elementBoundaries(html, tagName, className, fromIndex = 0, untilIndex = html.length) {
+  const found = [];
+  let cursor = fromIndex;
+  while (cursor < untilIndex) {
+    const boundary = elementBoundary(html, tagName, className, cursor);
+    if (!boundary || boundary.start >= untilIndex) break;
+    found.push(boundary);
+    cursor = boundary.end;
+  }
+  return found;
 }
 
 function metaValues(html, attribute, value) {
@@ -352,6 +426,132 @@ function normalizeMetadata(value) {
   return decodeHtml(String(value ?? "")).replace(/\s+/g, " ").trim().toLowerCase();
 }
 
+function countWords(value) {
+  const words = stripTags(value).match(/[A-Za-z0-9]+(?:['’][A-Za-z0-9]+)*/g);
+  return words ? words.length : 0;
+}
+
+function jsonLdObjects(value, objects = []) {
+  if (Array.isArray(value)) {
+    value.forEach((item) => jsonLdObjects(item, objects));
+    return objects;
+  }
+  if (!value || typeof value !== "object") return objects;
+  if (typeof value["@type"] === "string" || Array.isArray(value["@type"])) objects.push(value);
+  Object.values(value).forEach((child) => jsonLdObjects(child, objects));
+  return objects;
+}
+
+function jsonLdType(value) {
+  if (typeof value?.["@type"] === "string") return value["@type"];
+  if (Array.isArray(value?.["@type"])) return value["@type"].map(String).join(",");
+  return "";
+}
+
+function jsonLdFieldText(value) {
+  if (typeof value === "string" || typeof value === "number") return String(value);
+  if (Array.isArray(value)) return value.map(jsonLdFieldText).join(" ");
+  if (value && typeof value === "object") return Object.values(value).map(jsonLdFieldText).join(" ");
+  return "";
+}
+
+function organizationIdentifierMatches(identifier, requirement) {
+  if (!identifier || typeof identifier !== "object") return false;
+  const property = [identifier.propertyID, identifier.propertyId, identifier.name, identifier.type]
+    .filter((value) => value !== undefined).map(String).join(" ");
+  return requirement.propertyPattern.test(property) && jsonLdFieldText(identifier.value).trim() === requirement.value;
+}
+
+function organizationLogoCandidates(value) {
+  if (typeof value === "string" || typeof value === "number") return [String(value)];
+  if (Array.isArray(value)) return value.flatMap(organizationLogoCandidates);
+  if (!value || typeof value !== "object") return [];
+  return [value.url, value.contentUrl, value.src].filter((candidate) => typeof candidate === "string" && candidate.trim());
+}
+
+function resolveCanonicalLogo(value, route) {
+  for (const candidate of organizationLogoCandidates(value)) {
+    for (const base of [CANONICAL_ORIGIN, canonicalUrl(route)]) {
+      try {
+        const url = new URL(candidate, base);
+        if (url.protocol === "https:" && url.hostname === CANONICAL_HOST && !url.username && !url.password && !url.port && !url.search && !url.hash && decodeURIComponent(url.pathname).replace(/^\/+/, "") === VERIFIED_LOGO_ASSET) return url;
+      } catch {
+        // Continue checking another representation of the logo.
+      }
+    }
+  }
+  return null;
+}
+
+function inspectStructuredDataContracts(route, objects, label) {
+  for (const object of objects) {
+    const types = Array.isArray(object["@type"]) ? object["@type"].map(String) : [String(object["@type"] ?? "")];
+    for (const type of types) {
+      if (type && !ALLOWED_JSON_LD_TYPES.has(type)) addFailure("JSON_LD_TYPE_NOT_ALLOWED", `${label} uses JSON-LD type ${type}, which is outside the allowed SEO schema vocabulary`, { route, file: label, type });
+    }
+    if (types.includes("Organization")) {
+      const logo = resolveCanonicalLogo(object.logo, route);
+      if (!organizationLogoCandidates(object.logo).length) addFailure("ORGANIZATION_LOGO_MISSING", `${label} Organization must include a logo`, { route, file: label, expected: VERIFIED_LOGO_URL });
+      else if (!logo) addFailure("ORGANIZATION_LOGO_MISMATCH", `${label} Organization logo must resolve to ${VERIFIED_LOGO_URL}`, { route, file: label, expected: VERIFIED_LOGO_URL, found: organizationLogoCandidates(object.logo) });
+      const logoPath = path.resolve(root, VERIFIED_LOGO_ASSET);
+      if (!fs.existsSync(logoPath) || !fs.statSync(logoPath).isFile()) addFailure("ORGANIZATION_LOGO_LOCAL_MISSING", `${label} verified Organization logo asset is missing locally`, { route, file: path.relative(root, logoPath), expected: VERIFIED_LOGO_ASSET });
+      const identifiers = Array.isArray(object.identifier) ? object.identifier : [object.identifier];
+      for (const requirement of VERIFIED_ORGANIZATION_IDENTIFIERS) {
+        if (!identifiers.some((identifier) => organizationIdentifierMatches(identifier, requirement))) {
+          addFailure("ORGANIZATION_IDENTIFIER_MISSING", `${label} Organization must include verified ${requirement.label} ${requirement.value}`, { route, file: label, expected: requirement.value });
+        }
+      }
+    }
+  }
+
+  if (route === "/") {
+    const websites = objects.filter((object) => (Array.isArray(object["@type"]) ? object["@type"].map(String) : [String(object["@type"] ?? "")]).includes("WebSite"));
+    if (websites.length !== 1) addFailure("WEBSITE_SCHEMA_COUNT", `${label} must contain exactly one WebSite JSON-LD object; found ${websites.length}`, { route, file: label });
+    else {
+      if (websites[0].name !== "Chronotomi") addFailure("WEBSITE_NAME", `${label} WebSite name must be Chronotomi`, { route, file: label, expected: "Chronotomi", found: websites[0].name });
+      if (websites[0].alternateName !== "Chronotomi Wealth") addFailure("WEBSITE_ALTERNATE_NAME", `${label} WebSite alternateName must be Chronotomi Wealth`, { route, file: label, expected: "Chronotomi Wealth", found: websites[0].alternateName });
+    }
+  }
+
+  if (route === "/journal/private-watch-sourcing-cyprus") {
+    const articles = objects.filter((object) => jsonLdType(object) === "Article");
+    for (const article of articles) {
+      if (article.mainEntityOfPage !== canonicalUrl(route)) {
+        addFailure("ARTICLE_MAIN_ENTITY_MISMATCH", `${label} Article mainEntityOfPage must point to the canonical guide URL`, { route, file: label, expected: canonicalUrl(route), found: article.mainEntityOfPage ?? null });
+      }
+    }
+  }
+}
+
+function inspectBodyWordRange(route, html, label, range) {
+  const main = findElements(html, "main")[0];
+  if (!main) {
+    addFailure("BODY_MISSING", `${label} must contain a serialized <main> body for word-range validation`, { route, file: label });
+    return;
+  }
+  const count = countWords(main.body);
+  if (count < range[0] || count > range[1]) addFailure("BODY_WORD_RANGE", `${label} serialized body must contain ${range[0]}–${range[1]} words; found ${count}`, { route, file: label, words: count, min: range[0], max: range[1] });
+}
+
+function brandIntroductionBody(html) {
+  const collection = html.search(/<(?:section|div)\b[^>]*(?:class=["'][^"']*inventory-grid|id=["']inventory-grid)[^>]*>/i);
+  const marked = html.match(/<(section|div)\b[^>]*class=["'][^"']*(?:brand-introduction|brand-intro)[^"']*["'][^>]*>([\s\S]*?)<\/\1\s*>/i);
+  if (marked) return collection >= 0 && marked.index < collection ? marked[2] : null;
+  const h1 = html.match(/<h1\b[^>]*>[\s\S]*?<\/h1\s*>/i);
+  if (!h1 || collection < 0) return null;
+  return html.slice(h1.index + h1[0].length, collection);
+}
+
+function inspectBrandIntroduction(route, html, label) {
+  const body = brandIntroductionBody(html);
+  if (body === null) {
+    addFailure("BRAND_INTRODUCTION_MISSING", `${label} must serialize a brand introduction before its collection`, { route, file: label });
+    return;
+  }
+  const count = countWords(body);
+  if (count < 180 || count > 250) addFailure("BRAND_INTRODUCTION_WORD_RANGE", `${label} brand introduction must contain 180–250 words; found ${count}`, { route, file: label, words: count, min: 180, max: 250 });
+}
+
 function inspectSiteConfig(site) {
   if (!site || typeof site !== "object" || Array.isArray(site)) return;
   if (!site.pages || typeof site.pages !== "object" || Array.isArray(site.pages)) {
@@ -407,6 +607,7 @@ function inspectVercelConfig(vercel) {
 }
 
 function inspectHtml(route, html, label, context = {}) {
+  if (context.generatedOutput) inspectFooterContract(route, html, label, context.site);
   if (!html.includes('class="quark-shimmer" data-text="Quark">Quark</span>')) {
     addFailure("QUARK_SHIMMER_MARKUP", `${label} must mark the footer Quark credit for the shimmer effect`, { route, file: label });
   }
@@ -415,6 +616,14 @@ function inspectHtml(route, html, label, context = {}) {
 
   const descriptions = metaValues(html, "name", "description").map((value) => value.trim()).filter(Boolean);
   if (descriptions.length !== 1) addFailure("META_DESCRIPTION_COUNT", `${label} must contain exactly one nonempty meta description; found ${descriptions.length}`, { route, file: label });
+
+  if (route === "/") {
+    if (title.length === 1 && title[0] !== HOMEPAGE_TITLE) addFailure("HOMEPAGE_TITLE", `${label} title must be exactly ${HOMEPAGE_TITLE}`, { route, file: label, expected: HOMEPAGE_TITLE, found: title[0] });
+    if (descriptions.length === 1) {
+      const description = descriptions[0].toLowerCase();
+      for (const term of HOMEPAGE_DESCRIPTION_TERMS) if (!description.includes(term.toLowerCase())) addFailure("HOMEPAGE_DESCRIPTION_TERM", `${label} description must contain the required term "${term}"`, { route, file: label, term });
+    }
+  }
 
   const configuredPage = context.site?.pages?.[route];
   if (configuredPage && title.length === 1 && title[0] !== configuredPage.title) addFailure("SITE_PAGE_TITLE_DRIFT", `${label} title does not match site.json pages[${route}].title`, { route, file: label, expected: configuredPage.title, found: title[0] });
@@ -430,6 +639,14 @@ function inspectHtml(route, html, label, context = {}) {
 
   const h1s = findElements(html, "h1").map((element) => stripTags(element.body)).filter(Boolean);
   if (h1s.length !== 1) addFailure("H1_COUNT", `${label} must contain exactly one nonempty <h1>; found ${h1s.length}`, { route, file: label });
+
+  if (REQUIRED_EDITORIAL_ROUTE_PATHS.includes(route)) {
+    const paragraphClasses = findElements(html, "p").map((element) => (parseAttributes(element.open).class ?? "").split(/\s+/).filter(Boolean));
+    const articleIntros = paragraphClasses.filter((classes) => classes.includes("seo-article__intro"));
+    const sectionIntros = paragraphClasses.filter((classes) => classes.includes("seo-intro"));
+    if (articleIntros.length !== 1) addFailure("EDITORIAL_ARTICLE_INTRO_CLASS", `${label} must mark exactly one lead paragraph with seo-article__intro; found ${articleIntros.length}`, { route, file: label, expected: 1, found: articleIntros.length });
+    if (sectionIntros.length !== 0) addFailure("EDITORIAL_SECTION_INTRO_REUSE", `${label} editorial paragraphs must not reuse the section-level seo-intro class; found ${sectionIntros.length}`, { route, file: label, expected: 0, found: sectionIntros.length });
+  }
 
   const pageText = stripTags(html);
   for (const forbidden of FORBIDDEN_INDEXABLE_COPY) {
@@ -469,6 +686,7 @@ function inspectHtml(route, html, label, context = {}) {
     return (attrs.type ?? "").toLowerCase() === "application/ld+json";
   });
   const schemaTypes = new Set();
+  const schemaObjects = [];
   if (jsonLdScripts.length === 0) addFailure("JSON_LD_MISSING", `${label} must contain parseable application/ld+json`, { route, file: label });
   for (const [scriptIndex, script] of jsonLdScripts.entries()) {
     let parsed;
@@ -479,15 +697,103 @@ function inspectHtml(route, html, label, context = {}) {
       continue;
     }
     collectJsonLdTypes(parsed, schemaTypes);
+    jsonLdObjects(parsed, schemaObjects);
     inspectJsonLd(parsed, `${label} JSON-LD block ${scriptIndex + 1}`, route);
   }
+  inspectStructuredDataContracts(route, schemaObjects, label);
   for (const requiredType of requiredSchemaTypes(route)) {
     if (!schemaTypes.has(requiredType)) addFailure("JSON_LD_REQUIRED_TYPE", `${label} must include JSON-LD type ${requiredType}`, { route, file: label, type: requiredType, found: [...schemaTypes].sort() });
   }
 
   inspectResponsiveCatalogImages(route, html, label, context.catalogImageSources);
   inspectInquiryCtas(route, html, label, context.watchByRoute);
-  inspectInternalLinks(html, route, label);
+  if (context.watchByRoute?.has(route)) {
+    const watch = context.watchByRoute.get(route);
+    const h1Text = h1s[0] ?? "";
+    for (const field of [watch.brand, watch.model, watch.reference]) {
+      if (!h1Text.toLowerCase().includes(String(field).toLowerCase())) addFailure("WATCH_H1_IDENTITY", `${label} product H1 must contain ${watch.brand}, ${watch.model}, and ${watch.reference}`, { route, file: label, field, expected: `${watch.brand} ${watch.model} ${watch.reference}`, found: h1Text });
+    }
+    const products = schemaObjects.filter((object) => jsonLdType(object) === "Product");
+    if (products.length === 0) addFailure("PRODUCT_SCHEMA_MISSING", `${label} must contain a Product JSON-LD object`, { route, file: label });
+    for (const product of products) {
+      const name = String(product.name ?? "");
+      for (const field of [watch.brand, watch.model, watch.reference]) {
+        if (!name.toLowerCase().includes(String(field).toLowerCase())) addFailure("PRODUCT_SCHEMA_IDENTITY", `${label} Product name must contain ${watch.brand}, ${watch.model}, and ${watch.reference}`, { route, file: label, field, expected: `${watch.brand} ${watch.model} ${watch.reference}`, found: name });
+      }
+    }
+    const image = metaValues(html, "property", "og:image").map((value) => value.trim()).filter(Boolean);
+    const primary = recordImages(watch)[0];
+    const resolved = image.length === 1 ? resolvedAssetPath(image[0], route) : null;
+    const expectedImage = typeof primary === "string" ? primary.replace(/^\/+|^\.\//, "").split(/[?#]/, 1)[0] : null;
+    if (image.length !== 1 || !expectedImage || resolved !== expectedImage) addFailure("PRODUCT_OG_IMAGE", `${label} product og:image must resolve to the watch's local primary image`, { route, file: label, expected: expectedImage, found: image[0] ?? null, resolved });
+  }
+  const editorial = REQUIRED_EDITORIAL_ROUTES.find((entry) => entry.route === route);
+  if (editorial?.wordRange) inspectBodyWordRange(route, html, label, editorial.wordRange);
+  if (route.startsWith("/watches/") && /^\/watches\/[^/]+$/.test(route)) inspectBrandIntroduction(route, html, label);
+  inspectInternalLinks(html, route, label, context);
+}
+
+function inspectFooterContract(route, html, label, site) {
+  const footer = elementBoundary(html, "footer");
+  if (!footer) {
+    addFailure("FOOTER_MISSING", `${label} must contain a footer`, { route, file: label });
+    return;
+  }
+
+  const footerBody = footer.body;
+  const watermarkImages = findTags(footerBody, "img").map((tag) => parseAttributes(tag)).filter((attrs) => attrs.class?.split(/\s+/).includes("footer-watermark"));
+  if (watermarkImages.length !== 1) addFailure("FOOTER_WATERMARK_COUNT", `${label} must contain exactly one footer-watermark image`, { route, file: label, expected: 1, found: watermarkImages.length });
+  if (watermarkImages.length === 1) {
+    const watermark = watermarkImages[0];
+    const resolvedLogo = resolvedAssetPath(watermark.src, route);
+    if (resolvedLogo !== VERIFIED_LOGO_ASSET) addFailure("FOOTER_WATERMARK_SOURCE", `${label} footer-watermark must use the verified logo asset`, { route, file: label, expected: VERIFIED_LOGO_ASSET, found: watermark.src ?? null, resolved: resolvedLogo });
+    if (watermark["aria-hidden"] !== "true") addFailure("FOOTER_WATERMARK_DECORATIVE", `${label} footer-watermark must be aria-hidden`, { route, file: label, expected: "true", found: watermark["aria-hidden"] ?? null });
+    if (watermark.alt !== "") addFailure("FOOTER_WATERMARK_ALT", `${label} footer-watermark must have an empty alt attribute`, { route, file: label, expected: "", found: watermark.alt ?? null });
+  }
+  const left = elementBoundary(footerBody, "div", "footer-left");
+  const right = elementBoundary(footerBody, "div", "footer-right");
+  if (!left || !right || left.end > right.start) {
+    addFailure("FOOTER_LAYOUT", `${label} must contain ordered .footer-left and .footer-right columns`, { route, file: label });
+    return;
+  }
+
+  const footerNavs = elementBoundaries(footerBody, "nav", "seo-footer-links", 0, footerBody.length);
+  const directNavs = footerNavs.filter((nav) => nav.start >= left.end && nav.end <= right.start);
+  const leftNavs = footerNavs.filter((nav) => nav.start >= left.openEnd && nav.end <= left.closeStart);
+  const rightNavs = footerNavs.filter((nav) => nav.start >= right.openEnd && nav.end <= right.closeStart);
+  if (directNavs.length !== 1) addFailure("FOOTER_SEO_LINKS_PARENT", `${label} must contain exactly one direct-child .seo-footer-links nav between .footer-left and .footer-right; found ${directNavs.length}`, { route, file: label, expected: 1, found: directNavs.length });
+  if (leftNavs.length !== 0) addFailure("FOOTER_SEO_LINKS_LEFT", `${label} must not nest .seo-footer-links inside .footer-left; found ${leftNavs.length}`, { route, file: label, expected: 0, found: leftNavs.length });
+  if (rightNavs.length !== 0) addFailure("FOOTER_SEO_LINKS_RIGHT", `${label} must not contain .seo-footer-links inside .footer-right; found ${rightNavs.length}`, { route, file: label, expected: 0, found: rightNavs.length });
+  if (footerNavs.length !== 1) addFailure("FOOTER_SEO_LINKS_COUNT", `${label} footer must contain exactly one .seo-footer-links nav; found ${footerNavs.length}`, { route, file: label, expected: 1, found: footerNavs.length });
+
+  const seoNav = directNavs[0];
+  if (seoNav) {
+    const hrefs = findTags(seoNav.body, "a").map((tag) => parseAttributes(tag).href ?? "");
+    if (hrefs.length !== EXPECTED_SEO_FOOTER_HREFS.length || hrefs.some((href, index) => href !== EXPECTED_SEO_FOOTER_HREFS[index])) addFailure("FOOTER_SEO_LINKS_ORDER", `${label} contextual footer links must preserve the approved ordered hrefs`, { route, file: label, expected: EXPECTED_SEO_FOOTER_HREFS, found: hrefs });
+  }
+
+  const socialBlocks = elementBoundaries(footerBody, "div", "footer-socials", right.openEnd, right.closeStart).filter((block) => block.end <= right.closeStart);
+  const copyrightBlocks = elementBoundaries(footerBody, "div", "footer-copyright", right.openEnd, right.closeStart).filter((block) => block.end <= right.closeStart);
+  if (socialBlocks.length !== 1) addFailure("FOOTER_SOCIALS_PRESERVED", `${label} must preserve exactly one footer-socials block in footer-right`, { route, file: label, expected: 1, found: socialBlocks.length });
+  if (copyrightBlocks.length !== 1) addFailure("FOOTER_COPYRIGHT_PRESERVED", `${label} must preserve exactly one footer-copyright block in footer-right`, { route, file: label, expected: 1, found: copyrightBlocks.length });
+  if (socialBlocks.length === 1 && site?.socialProfiles) {
+    const socialAnchors = findTags(socialBlocks[0].body, "a");
+    const hrefs = socialAnchors.map((tag) => parseAttributes(tag).href ?? "");
+    const expected = [site.socialProfiles.instagram, site.socialProfiles.facebook];
+    if (hrefs.length !== expected.length || hrefs.some((href, index) => href !== expected[index])) addFailure("FOOTER_SOCIAL_LINKS_PRESERVED", `${label} footer social hrefs must preserve the configured Instagram/Facebook links`, { route, file: label, expected, found: hrefs });
+    const socialAnchorElements = findElements(socialBlocks[0].body, "a");
+    if (socialAnchors.some((tag, index) => !(parseAttributes(tag).class ?? "").split(/\s+/).includes("social-icon") || !/<svg\b/i.test(socialAnchorElements[index]?.body ?? ""))) addFailure("FOOTER_SOCIAL_ICONS", `${label} footer social links must use the shared social-icon SVG markup`, { route, file: label, expected: "two .social-icon anchors containing SVG icons" });
+  }
+  if (copyrightBlocks.length === 1) {
+    const copyright = stripTags(copyrightBlocks[0].body);
+    for (const value of [site?.legalName, site?.companyNumber, site?.vatNumber]) if (value && !copyright.includes(value)) addFailure("FOOTER_COPYRIGHT_CONTENT", `${label} footer copyright must preserve ${value}`, { route, file: label, expected: value });
+  }
+  if (/\bfooter-links\b|\bseo-footer-links\b/i.test(right.body)) addFailure("FOOTER_RIGHT_CONTENT_SCOPE", `${label} footer-right may contain only social links and copyright content`, { route, file: label });
+  const identity = stripTags(left.body);
+  if (site?.name && !identity.includes(site.name)) addFailure("FOOTER_IDENTITY_PRESERVED", `${label} footer-left must preserve the configured identity`, { route, file: label, expected: site.name });
+  if (!identity.includes("Your Time, Defined.")) addFailure("FOOTER_TAGLINE_PRESERVED", `${label} footer-left must preserve the canonical tagline`, { route, file: label, expected: "Your Time, Defined." });
+  const policyHrefs = findTags(left.body, "a").map((tag) => parseAttributes(tag).href ?? "");
+  for (const href of EXPECTED_POLICY_HREFS) if (!policyHrefs.includes(href)) addFailure("FOOTER_POLICY_LINK_PRESERVED", `${label} must preserve footer policy link ${href}`, { route, file: label, expected: href });
 }
 
 function inspectQuarkShimmerStyles() {
@@ -499,6 +805,31 @@ function inspectQuarkShimmerStyles() {
   if (!/animation:\s*quarkGlimmerSweep\s+5\.6s\s+cubic-bezier\(0\.4,\s*0,\s*0\.2,\s*1\)\s+infinite;/.test(stylesheet)) addFailure("QUARK_SHIMMER_LUMINA_DURATION", "styles.css must use a 5.6-second gentle Quark glimmer loop", { file: "styles.css" });
   if (!/@keyframes quarkGlimmerSweep\s*\{[\s\S]*?0%\s*\{[\s\S]*?background-position:\s*150%\s+0;[\s\S]*?70%,\s*100%\s*\{[\s\S]*?background-position:\s*-150%\s+0;/.test(stylesheet)) addFailure("QUARK_SHIMMER_LUMINA_TIMING", "styles.css must use Lumina-style gentle one-pass timing, with a longer sweep and off-screen rest", { file: "styles.css" });
   if (!stylesheet.includes("prefers-reduced-motion: reduce")) addFailure("QUARK_SHIMMER_REDUCED_MOTION", "styles.css must disable the Quark shimmer for reduced-motion users", { file: "styles.css" });
+}
+
+function inspectFooterStyles() {
+  const stylesheet = readText(path.join(root, "styles.css"));
+  if (stylesheet === null) return;
+  const gridPattern = /\.site-footer\s*\{[\s\S]*?display:\s*grid;[\s\S]*?grid-template-columns:\s*minmax\(14rem,\s*0\.9fr\)\s+minmax\(20rem,\s*1\.25fr\)\s+minmax\(13rem,\s*0\.85fr\);[\s\S]*?align-items:\s*start;/;
+  if (!gridPattern.test(stylesheet)) addFailure("FOOTER_GRID", "styles.css must define the footer as a start-aligned three-column grid", { file: "styles.css", expected: "grid-template-columns: minmax(14rem, 0.9fr) minmax(20rem, 1.25fr) minmax(13rem, 0.85fr)" });
+  if (!stylesheet.includes(".site-footer > .seo-footer-links {")) addFailure("FOOTER_SEO_LINKS_STYLE_SCOPE", "styles.css must style contextual footer navigation as a direct footer child", { file: "styles.css", expected: ".site-footer > .seo-footer-links {" });
+  const mediumPattern = /@media\s*\(min-width:\s*901px\)\s*and\s*\(max-width:\s*1200px\)[\s\S]*?\.site-footer\s*\{[\s\S]*?grid-template-columns:/;
+  if (!mediumPattern.test(stylesheet)) addFailure("FOOTER_MEDIUM_GRID", "styles.css must tighten but retain three footer columns from 901–1200px", { file: "styles.css", expected: "@media (min-width: 901px) and (max-width: 1200px) .site-footer { grid-template-columns: ... }" });
+  const mobileLayoutPattern = /@media\s*\(max-width:\s*900px\)[\s\S]*?\.site-footer\s*\{[\s\S]*?grid-template-columns:\s*1fr;[\s\S]*?text-align:\s*center;/;
+  if (!mobileLayoutPattern.test(stylesheet)) addFailure("FOOTER_MOBILE_CENTERING", "styles.css must center and stack the complete footer at <=900px", { file: "styles.css", expected: "@media (max-width: 900px) .site-footer { grid-template-columns: 1fr; text-align: center; }" });
+  if (!/@media\s*\(max-width:\s*600px\)[\s\S]*?\.site-footer > \.seo-footer-links\s*\{[\s\S]*?grid-template-columns:\s*1fr;/.test(stylesheet)) addFailure("FOOTER_NARROW_NAV", "styles.css must collapse the contextual nav to one column at <=600px", { file: "styles.css", expected: "@media (max-width: 600px) .site-footer > .seo-footer-links { grid-template-columns: 1fr; }" });
+  if (!/\.footer-socials\s+a\s*\{[\s\S]*?min-width:\s*44px;[\s\S]*?min-height:\s*44px;/.test(stylesheet)) addFailure("FOOTER_SOCIAL_HIT_AREA", "styles.css must keep footer social anchors at least 44px square", { file: "styles.css", expected: ".footer-socials a { min-width: 44px; min-height: 44px; }" });
+  const desktopTopAlignmentPattern = /@media\s*\(min-width:\s*901px\)[\s\S]*?\.site-footer\s*>\s*\.seo-footer-links\s*\{[\s\S]*?padding-top:\s*0;[\s\S]*?\}[\s\S]*?\.site-footer\s+\.footer-socials\s+a\s*\{[\s\S]*?align-items:\s*flex-start;/;
+  if (!desktopTopAlignmentPattern.test(stylesheet)) addFailure("FOOTER_DESKTOP_TOP_ALIGNMENT", "styles.css must top-align desktop footer identity, first contextual-link row, and visible social SVGs without changing mobile layout", { file: "styles.css", expected: "@media (min-width: 901px) .site-footer > .seo-footer-links { padding-top: 0; } .site-footer .footer-socials a { align-items: flex-start; }" });
+  const policyLinkRule = stylesheet.match(/\.site-footer \.footer-links a\s*\{([\s\S]*?)\}/)?.[1] ?? "";
+  const hasPolicyLinkStyle = /font-size:\s*0\.65rem;/.test(policyLinkRule) && /letter-spacing:\s*0\.05em;/.test(policyLinkRule) && /color:\s*rgba\(255,\s*255,\s*255,\s*0\.6\);/.test(policyLinkRule) && /text-decoration:\s*none;/.test(policyLinkRule);
+  if (!hasPolicyLinkStyle) addFailure("FOOTER_POLICY_LINK_STYLE", "styles.css must share static-style typography, muted color, and underline treatment for footer policy links", { file: "styles.css", expected: ".site-footer .footer-links a { font-size: 0.65rem; letter-spacing: 0.05em; color: rgba(255,255,255,0.6); text-decoration: none; }" });
+  if (/@media\s*\(max-width:\s*900px\)[\s\S]*?\.footer-watermark\s*\{[\s\S]*?height:\s*120px;/.test(stylesheet)) addFailure("FOOTER_WATERMARK_MOBILE_OVERRIDE", "styles.css must not override the approved subtle watermark clamp with a fixed 120px mobile height", { file: "styles.css", expected: "mobile footer watermark height remains clamp(84px, 9vw, 112px)" });
+  const ctaSelector = /\.seo-intro__links a:not\(\.btn-primary\):not\(\.btn-outline\)\s*\{/;
+  if (!ctaSelector.test(stylesheet)) addFailure("SEO_CTA_SELECTOR_SCOPE", "styles.css must exclude button classes from the generic SEO intro link treatment", { file: "styles.css", expected: ".seo-intro__links a:not(.btn-primary):not(.btn-outline) {" });
+  if (/\.seo-intro__links a,\s*\n\s*\.site-footer/.test(stylesheet)) addFailure("SEO_CTA_SELECTOR_BROAD", "styles.css must not let generic SEO intro link styling override CTA button classes", { file: "styles.css" });
+  if (!/\.seo-intro__links\s*\{[\s\S]*?align-items:\s*center;/.test(stylesheet)) addFailure("SEO_CTA_ALIGNMENT", "styles.css must vertically center the SEO intro CTA group", { file: "styles.css", expected: ".seo-intro__links { align-items: center; }" });
+  if (!/\.seo-intro__links\s+(?:>\s*)?\.btn-primary[\s\S]*?display:\s*inline-flex;[\s\S]*?align-items:\s*center;[\s\S]*?justify-content:\s*center;[\s\S]*?text-align:\s*center;[\s\S]*?padding:\s*1rem\s+2rem;/.test(stylesheet)) addFailure("SEO_CTA_BUTTON_GEOMETRY", "styles.css must explicitly preserve centered inline-flex CTA button geometry and symmetric padding", { file: "styles.css", expected: ".seo-intro__links .btn-primary/.btn-outline { inline-flex; align-items: center; justify-content: center; text-align: center; padding: 1rem 2rem; }" });
 }
 
 function registerUniqueMetadata(registry, kind, value, route, label) {
@@ -611,6 +942,9 @@ function requiredSchemaTypes(route) {
   if (["/sourcing", "/authenticity", "/logistics"].includes(route)) return ["Service", "BreadcrumbList"];
   if (route === "/watches" || /^\/watches\/[^/]+$/.test(route)) return ["CollectionPage", "ItemList"];
   if (/^\/watches\/[^/]+\/[^/]+$/.test(route)) return ["Product", "BreadcrumbList"];
+  if (["/luxury-watches-cyprus", "/luxury-watches-limassol"].includes(route)) return ["WebPage", "Service", "BreadcrumbList", "Organization"];
+  if (route === "/journal") return ["CollectionPage", "ItemList", "BreadcrumbList"];
+  if (route === "/journal/private-watch-sourcing-cyprus") return ["Article", "BreadcrumbList", "Organization"];
   return [];
 }
 
@@ -631,9 +965,10 @@ function inspectJsonLd(value, location, route, keyPath = "$") {
   }
 }
 
-function inspectInternalLinks(html, route, label) {
+function inspectInternalLinks(html, route, label, context = {}) {
   for (const tag of findTags(html, "a")) {
-    const href = parseAttributes(tag).href?.trim();
+    const attrs = parseAttributes(tag);
+    const href = attrs.href?.trim();
     if (!href || href.startsWith("#") || /^(?:mailto:|tel:|javascript:|data:)/i.test(href)) continue;
     let url;
     try {
@@ -642,9 +977,22 @@ function inspectInternalLinks(html, route, label) {
       continue;
     }
     if (url.hostname !== CANONICAL_HOST) continue;
+    const linkedRoute = normalizeRoute(url.pathname);
+    const nofollow = (attrs.rel ?? "").split(/\s+/).some((rel) => rel.toLowerCase() === "nofollow");
+    if (!nofollow && linkedRoute && context.expectedRoutes?.includes(linkedRoute) && linkedRoute !== route) {
+      if (!context.inboundRoutes.has(linkedRoute)) context.inboundRoutes.set(linkedRoute, new Set());
+      context.inboundRoutes.get(linkedRoute).add(route);
+    }
     if (url.pathname.toLowerCase().endsWith(".html") || /\/index\.html$/i.test(url.pathname)) {
       addFailure("INTERNAL_HTML_LINK", `${label} uses a non-clean internal link: ${href}`, { route, file: label, href });
     }
+  }
+}
+
+function inspectInboundRoutes(context) {
+  for (const route of REQUIRED_EDITORIAL_ROUTE_PATHS) {
+    const sources = context.inboundRoutes.get(route);
+    if (!sources || sources.size === 0) addFailure("EDITORIAL_INBOUND_LINK_MISSING", `No crawlable internal link points to required editorial route ${route}`, { route, expected: route });
   }
 }
 
@@ -735,7 +1083,41 @@ function inspectRobotsAndSitemap(expectedRoutes) {
     if (!expected.includes(location)) addFailure("SITEMAP_UNEXPECTED_ROUTE", `sitemap.xml contains a non-canonical or unintended URL: ${location}`, { file: path.relative(root, sitemapPath), url: location, count, route });
     if (route && /\/(?:manage|assets)(?:\/|$)/i.test(route)) addFailure("SITEMAP_EXCLUDED_PATH", `sitemap.xml must exclude manage/assets paths: ${location}`, { file: path.relative(root, sitemapPath), url: location, route });
     if (route && redirectPaths.has(route)) addFailure("SITEMAP_REDIRECT_PATH", `sitemap.xml must exclude redirect source path ${route}: ${location}`, { file: path.relative(root, sitemapPath), url: location, route });
+    if (route === "/404" || /\/404\.html$/i.test(location)) addFailure("SITEMAP_404_INCLUDED", `sitemap.xml must exclude the generated 404 page: ${location}`, { file: path.relative(root, sitemapPath), url: location, route });
   }
+}
+
+function inspectGenerated404(hasDist, site) {
+  if (!hasDist || options.sourceOnly) return;
+  const notFoundPath = path.join(distRoot, "404.html");
+  const html = readText(notFoundPath);
+  if (html === null) {
+    addFailure("GENERATED_404_MISSING", `Generated output must contain 404.html`, { file: path.relative(root, notFoundPath), expected: path.relative(root, notFoundPath) });
+    return;
+  }
+  inspectFooterContract("/404", html, path.relative(root, notFoundPath), site);
+  const notFoundFooter = elementBoundary(html, "footer");
+  const notFoundWatermark = notFoundFooter ? findTags(notFoundFooter.body, "img").map((tag) => parseAttributes(tag)).find((attrs) => attrs.class?.split(/\s+/).includes("footer-watermark")) : null;
+  if (notFoundWatermark?.src !== "/assets/logo_transparent.png") addFailure("GENERATED_404_WATERMARK_SOURCE", "Generated 404.html footer-watermark must use the root-absolute logo asset path", { file: path.relative(root, notFoundPath), expected: "/assets/logo_transparent.png", found: notFoundWatermark?.src ?? null });
+  const robots = metaValues(html, "name", "robots").map((value) => value.trim()).filter(Boolean);
+  if (robots.length !== 1) addFailure("GENERATED_404_ROBOTS", `Generated 404.html must contain exactly one nonempty robots meta tag`, { file: path.relative(root, notFoundPath), expected: "noindex,follow", found: robots });
+  else {
+    const directives = new Set(robots[0].toLowerCase().split(",").map((value) => value.trim()).filter(Boolean));
+    for (const directive of ["noindex", "follow"]) if (!directives.has(directive)) addFailure("GENERATED_404_ROBOTS_DIRECTIVE", `Generated 404.html robots metadata must include ${directive}`, { file: path.relative(root, notFoundPath), directive, expected: "noindex,follow", found: robots[0] });
+  }
+
+  const introParagraphs = findElements(html, "p").filter((element) => (parseAttributes(element.open).class ?? "").split(/\s+/).includes("seo-404-intro"));
+  if (introParagraphs.length !== 1) addFailure("GENERATED_404_INTRO_CLASS", "Generated 404.html must use exactly one dedicated seo-404-intro paragraph", { file: path.relative(root, notFoundPath), expected: 1, found: introParagraphs.length });
+  const sectionLevelIntros = findElements(html, "p").filter((element) => (parseAttributes(element.open).class ?? "").split(/\s+/).includes("seo-intro"));
+  if (sectionLevelIntros.length !== 0) addFailure("GENERATED_404_SECTION_INTRO_REUSE", "Generated 404.html must not apply the section-level seo-intro class to its lead paragraph", { file: path.relative(root, notFoundPath), expected: 0, found: sectionLevelIntros.length });
+  const stylesheet = readText(path.join(root, "styles.css"));
+  if (!stylesheet?.includes(".seo-article__header .seo-404-intro")) addFailure("GENERATED_404_INTRO_SELECTOR", "styles.css must give the 404 intro a selector specific enough to override the later article-header paragraph rule", { file: "styles.css", expected: ".seo-article__header .seo-404-intro" });
+
+  const primaryNav = findElements(html, "nav").find((element) => (parseAttributes(element.open).class ?? "").split(/\s+/).includes("seo-404-nav"));
+  const primaryLinks = primaryNav ? findTags(primaryNav.body, "a").map((tag) => parseAttributes(tag)).filter((attrs) => attrs.href) : [];
+  if (!primaryNav) addFailure("GENERATED_404_NAV_MISSING", "Generated 404.html must contain a dedicated primary navigation landmark", { file: path.relative(root, notFoundPath), expected: "nav.seo-404-nav" });
+  if (primaryLinks.length < 3) addFailure("GENERATED_404_NAV_LINKS", "Generated 404.html primary navigation must expose at least three static links", { file: path.relative(root, notFoundPath), expected: 3, found: primaryLinks.length });
+  if (/class=["'][^"']*\bnav-links\b/i.test(html)) addFailure("GENERATED_404_NAV_HIDDEN", "Generated 404.html must not use the script-controlled nav-links wrapper without its toggle behavior", { file: path.relative(root, notFoundPath) });
 }
 
 function inspectRouteSet(expectedRoutes) {
@@ -769,19 +1151,26 @@ function main() {
   inspectSiteConfig(site);
   const catalog = readJson(path.join(root, "watches.json"), "CATALOG");
   const catalogInfo = inspectCatalog(catalog);
-  const expectedRoutes = [...REQUIRED_STATIC_ROUTES, ...REQUIRED_GENERATED_ROUTES, ...catalogInfo.brandRoutes.map((entry) => entry.route), ...catalogInfo.expectedWatchRoutes];
+  const expectedRoutes = [...REQUIRED_STATIC_ROUTES, ...REQUIRED_GENERATED_ROUTES, ...catalogInfo.brandRoutes.map((entry) => entry.route), ...catalogInfo.expectedWatchRoutes, ...REQUIRED_EDITORIAL_ROUTE_PATHS];
   inspectRouteSet(expectedRoutes);
+  if (expectedRoutes.length !== 52) addFailure("CANONICAL_ROUTE_COUNT", `Expected exactly 52 canonical routes; found ${expectedRoutes.length}`, { expected: 52, found: expectedRoutes.length });
 
   const hasDist = fs.existsSync(distRoot) && fs.statSync(distRoot).isDirectory();
   const context = {
     site,
+    generatedOutput: hasDist && !options.sourceOnly,
     metadataRegistry: { titles: new Map(), descriptions: new Map() },
+    expectedRoutes,
+    inboundRoutes: new Map(),
     catalogImageSources: hasDist && !options.sourceOnly ? new Set(catalogInfo.records.flatMap((record) => recordImages(record)).map((source) => source.replace(/^\/+|^\.\//g, "").split(/[?#]/, 1)[0])) : new Set(),
     watchByRoute: new Map(catalogInfo.indexable.map((entry) => [entry.route, entry.record])),
   };
   if (!options.sourceOnly) inspectHomepageSource(catalogInfo, hasDist);
   inspectRoutePages(expectedRoutes, hasDist, context);
+  inspectInboundRoutes(context);
+  inspectGenerated404(hasDist, context.site);
   inspectQuarkShimmerStyles();
+  inspectFooterStyles();
   if (hasDist && !options.sourceOnly) inspectRobotsAndSitemap(expectedRoutes);
   else if (!options.sourceOnly) addFailure("GENERATED_CHECKS_SKIPPED", "robots.txt and sitemap.xml checks were skipped because dist/ is unavailable; run after npm run build", { expected: "dist/robots.txt and dist/sitemap.xml" });
 

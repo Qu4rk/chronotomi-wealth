@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { brandIntroductions, guides, journalPage, locationPages } from "../content/seo-content.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const ORIGIN = "https://www.chronotomi.com";
@@ -14,6 +15,7 @@ const STATIC_ROUTES = [
   ["/terms", "terms.html"],
 ];
 const FIXED_PAGE_ROUTES = ["/", "/watches", "/sourcing", "/authenticity", "/logistics", "/advisory", "/about", "/privacy", "/terms"];
+const REQUIRED_BRAND_SLUGS = ["rolex", "patek-philippe", "audemars-piguet", "cartier"];
 const CARD_IMAGE_SIZES = "(max-width: 800px) 100vw, 33vw";
 const DETAIL_IMAGE_SIZES = "(max-width: 800px) 100vw, 55vw";
 const GALLERY_IMAGE_SIZES = "(max-width: 800px) 50vw, 27vw";
@@ -29,12 +31,149 @@ function esc(value) {
 function slugify(value) {
   return String(value).toLowerCase().replaceAll("&", "and").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 }
+function elementBoundary(html, tagName, className, fromIndex = 0) {
+  const openingPattern = new RegExp(`<${tagName}\\b[^>]*>`, "gi");
+  openingPattern.lastIndex = fromIndex;
+  let opening;
+  while ((opening = openingPattern.exec(html)) !== null) {
+    if (className) {
+      const classes = (opening[0].match(/\bclass\s*=\s*["']([^"']*)["']/i)?.[1] ?? "").split(/\s+/).filter(Boolean);
+      if (!classes.includes(className)) continue;
+    }
+    const tokenPattern = new RegExp(`<\\/?${tagName}\\b[^>]*>`, "gi");
+    tokenPattern.lastIndex = opening.index;
+    let depth = 0;
+    let token;
+    while ((token = tokenPattern.exec(html)) !== null) {
+      if (/^<\//.test(token[0])) depth -= 1;
+      else if (!/\/\s*>$/.test(token[0])) depth += 1;
+      if (depth === 0) {
+        const closeStart = /^<\//.test(token[0]) ? token.index : token.index + token[0].length;
+        return {
+          start: opening.index,
+          openEnd: opening.index + opening[0].length,
+          closeStart,
+          end: token.index + token[0].length,
+          body: html.slice(opening.index + opening[0].length, closeStart),
+        };
+      }
+    }
+  }
+  return null;
+}
+function elementBoundaries(html, tagName, className, fromIndex = 0, untilIndex = html.length) {
+  const found = [];
+  let cursor = fromIndex;
+  while (cursor < untilIndex) {
+    const boundary = elementBoundary(html, tagName, className, cursor);
+    if (!boundary || boundary.start >= untilIndex) break;
+    found.push(boundary);
+    cursor = boundary.end;
+  }
+  return found;
+}
 function nonEmpty(value, label) {
   if (typeof value !== "string" || !value.trim()) fail(label + " must be a non-empty string");
 }
 function isoDate(value, label) {
   nonEmpty(value, label);
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value) || Number.isNaN(Date.parse(value + "T00:00:00Z"))) fail(label + " must be YYYY-MM-DD");
+}
+function routePath(value, label) {
+  nonEmpty(value, label);
+  if (value === "/" || !value.startsWith("/") || /\/$/.test(value) || /[?#]/.test(value) || /\.html$/i.test(value)) fail(label + " must be an extensionless absolute route without a trailing slash");
+  return value;
+}
+function ctaPath(value, label) {
+  nonEmpty(value, label);
+  if (!value.startsWith("/") || /[?]/.test(value)) fail(label + " must be an internal path");
+  const pathname = value.split("#", 1)[0] || "/";
+  if (pathname !== "/") routePath(pathname, label);
+  return value;
+}
+function wordRange(value, label) {
+  if (Array.isArray(value) && value.length === 2) value = { min: value[0], max: value[1] };
+  if (!value || typeof value !== "object" || !Number.isInteger(value.min) || !Number.isInteger(value.max) || value.min < 1 || value.max < value.min) fail(label + " must contain integer min/max word bounds");
+  return { min: value.min, max: value.max };
+}
+function wordCount(value) {
+  return String(value || "").replace(/<[^>]*>/g, " ").trim().split(/\s+/).filter(Boolean).length;
+}
+function enforceWordRange(value, range, label) {
+  const count = wordCount(value);
+  if (count < range.min || count > range.max) fail(label + " word count " + count + " is outside declared range " + range.min + "-" + range.max);
+  return count;
+}
+function contentParagraphs(value, label) {
+  if (!Array.isArray(value) || value.length === 0) fail(label + " must be a non-empty array of paragraphs");
+  value.forEach((paragraph, index) => nonEmpty(paragraph, label + "[" + index + "]"));
+  return value;
+}
+function contentSections(value, label) {
+  if (!Array.isArray(value) || value.length === 0) fail(label + " must be a non-empty array");
+  value.forEach((section, index) => {
+    if (!section || typeof section !== "object" || Array.isArray(section)) fail(label + "[" + index + "] must be an object");
+    nonEmpty(section.heading, label + "[" + index + "].heading");
+    contentParagraphs(section.paragraphs, label + "[" + index + "].paragraphs");
+  });
+  return value;
+}
+function validateEditorialContent() {
+  if (!Array.isArray(locationPages) || locationPages.length === 0) fail("locationPages must be a non-empty array");
+  if (!journalPage || typeof journalPage !== "object" || Array.isArray(journalPage)) fail("journalPage must be an object");
+  if (!Array.isArray(guides) || guides.length === 0) fail("guides must be a non-empty array");
+  if (!brandIntroductions || typeof brandIntroductions !== "object" || Array.isArray(brandIntroductions)) fail("brandIntroductions must be an object");
+  const records = [];
+  locationPages.forEach((page, index) => {
+    if (!page || typeof page !== "object" || Array.isArray(page)) fail("locationPages[" + index + "] must be an object");
+    for (const field of ["path", "title", "description", "eyebrow", "h1", "intro"]) nonEmpty(page[field], "locationPages[" + index + "]." + field);
+    routePath(page.path, "locationPages[" + index + "].path");
+    contentSections(page.sections, "locationPages[" + index + "].sections");
+    const cta = typeof page.cta === "string" ? { label: page.cta, href: "/sourcing" } : page.cta;
+    if (!cta || typeof cta !== "object" || Array.isArray(cta)) fail("locationPages[" + index + "].cta must be an object or string");
+    nonEmpty(cta.label, "locationPages[" + index + "].cta.label");
+    ctaPath(cta.href, "locationPages[" + index + "].cta.href");
+    if (!Array.isArray(page.areaServed) || page.areaServed.length === 0) fail("locationPages[" + index + "].areaServed must be a non-empty array");
+    page.areaServed.forEach((area, areaIndex) => nonEmpty(area, "locationPages[" + index + "].areaServed[" + areaIndex + "]"));
+    page.wordRange = wordRange(page.wordRange, "locationPages[" + index + "].wordRange");
+    enforceWordRange([page.intro, ...page.sections.flatMap((section) => section.paragraphs)].join(" "), page.wordRange, "locationPages[" + index + "]");
+    records.push(page);
+  });
+  for (const field of ["path", "title", "description", "eyebrow", "h1", "intro"]) nonEmpty(journalPage[field], "journalPage." + field);
+  routePath(journalPage.path, "journalPage.path");
+  records.push(journalPage);
+  guides.forEach((guide, index) => {
+    if (!guide || typeof guide !== "object" || Array.isArray(guide)) fail("guides[" + index + "] must be an object");
+    for (const field of ["path", "title", "description", "eyebrow", "h1", "summary"]) nonEmpty(guide[field], "guides[" + index + "]." + field);
+    routePath(guide.path, "guides[" + index + "].path");
+    isoDate(guide.datePublished, "guides[" + index + "].datePublished");
+    isoDate(guide.dateModified, "guides[" + index + "].dateModified");
+    if (guide.dateModified < guide.datePublished) fail("guides[" + index + "].dateModified must not precede datePublished");
+    contentSections(guide.sections, "guides[" + index + "].sections");
+    if (!Array.isArray(guide.relatedPaths)) fail("guides[" + index + "].relatedPaths must be an array");
+    guide.relatedPaths.forEach((related, relatedIndex) => routePath(related, "guides[" + index + "].relatedPaths[" + relatedIndex + "]"));
+    guide.wordRange = wordRange(guide.wordRange, "guides[" + index + "].wordRange");
+    enforceWordRange([guide.summary, ...guide.sections.flatMap((section) => section.paragraphs)].join(" "), guide.wordRange, "guides[" + index + "]");
+    records.push(guide);
+  });
+  const keys = Object.keys(brandIntroductions).sort();
+  if (keys.join("\n") !== REQUIRED_BRAND_SLUGS.slice().sort().join("\n")) fail("brandIntroductions must contain exactly the four approved brand slugs");
+  for (const slug of REQUIRED_BRAND_SLUGS) {
+    const intro = brandIntroductions[slug];
+    if (!intro || typeof intro !== "object" || Array.isArray(intro)) fail("brandIntroductions." + slug + " must be an object");
+    nonEmpty(intro.heading, "brandIntroductions." + slug + ".heading");
+    contentParagraphs(intro.paragraphs, "brandIntroductions." + slug + ".paragraphs");
+    enforceWordRange(intro.paragraphs.join(" "), { min: 180, max: 250 }, "brandIntroductions." + slug);
+  }
+  const paths = [...FIXED_PAGE_ROUTES, ...records.map((record) => record.path)];
+  const seen = new Set();
+  for (const route of paths) {
+    if (route !== "/") routePath(route, "content route");
+    if (seen.has(route)) fail("duplicate editorial route: " + route);
+    seen.add(route);
+  }
+  for (const guide of guides) for (const related of guide.relatedPaths) if (!seen.has(related)) fail("guides relatedPaths references an unknown route: " + related);
+  return { locationPages, journalPage, guides, brandIntroductions };
 }
 function validateSite(site, root = ROOT) {
   for (const key of ["name", "legalName", "email", "phone", "location", "companyNumber", "vatNumber", "origin"]) nonEmpty(site[key], "site." + key);
@@ -123,6 +262,7 @@ function makeRoute(origin, pathname, type, data) {
 }
 export function buildRouteManifest(catalog, options = {}) {
   const origin = options.origin || ORIGIN;
+  const pageMap = options.pageMap || {};
   const brands = Array.from(new Map(catalog.map(function(watch) { return [watch.brandSlug, { slug: watch.brandSlug, name: watch.brand }]; })).values());
   const routes = [
     makeRoute(origin, "/", "home"),
@@ -131,13 +271,26 @@ export function buildRouteManifest(catalog, options = {}) {
     ...brands.map(function(brand) { return makeRoute(origin, "/watches/" + brand.slug, "brand", { brand: brand }); }),
     ...catalog.map(function(watch) { return makeRoute(origin, "/watches/" + watch.brandSlug + "/" + watch.slug, "watch", { watch: watch }); }),
     makeRoute(origin, "/sourcing", "service", { service: "sourcing" }),
-    makeRoute(origin, "/authenticity", "service", { service: "authenticity" })
+    makeRoute(origin, "/authenticity", "service", { service: "authenticity" }),
+    ...locationPages.map((page) => makeRoute(origin, page.path, "location", { page })),
+    makeRoute(origin, journalPage.path, "journal", { page: journalPage }),
+    ...guides.map((guide) => makeRoute(origin, guide.path, "guide", { page: guide }))
   ];
   const paths = new Set();
   for (const entry of routes) {
     if (paths.has(entry.path)) fail("duplicate generated route: " + entry.path);
     if (entry.canonical !== (entry.path === "/" ? origin + "/" : origin + entry.path)) fail("canonical mismatch for " + entry.path);
     paths.add(entry.path);
+  }
+  const titles = new Set(), descriptions = new Set();
+  for (const entry of routes) {
+    const page = entry.page || pageMap[entry.path];
+    const title = page?.title || (entry.type === "brand" ? entry.brand.name + " Watches | Chronotomi Wealth" : entry.type === "watch" ? watchTitle(entry.watch) : null);
+    const description = page?.description || (entry.type === "brand" ? "Explore the curated Chronotomi Wealth selection of " + entry.brand.name + " references." : entry.type === "watch" ? entry.watch.summary : null);
+    if (title && titles.has(title.trim().toLowerCase())) fail("duplicate generated title: " + title);
+    if (description && descriptions.has(description.trim().toLowerCase())) fail("duplicate generated description: " + description);
+    if (title) titles.add(title.trim().toLowerCase());
+    if (description) descriptions.add(description.trim().toLowerCase());
   }
   return routes;
 }
@@ -214,7 +367,18 @@ function cards(catalog, pathname, brandSlug, root) {
   return catalog.filter(function(watch) { return !brandSlug || watch.brandSlug === brandSlug; }).map(function(watch) { return card(watch, pathname, root); }).join("\n");
 }
 function organization(site) {
-  return { "@type": "Organization", "@id": site.origin + "/#organization", name: site.name, legalName: site.legalName, url: site.origin + "/", email: site.email, telephone: site.phone, address: { "@type": "PostalAddress", addressLocality: site.address.addressLocality, addressCountry: site.address.addressCountry }, areaServed: site.areaServed, sameAs: Object.values(site.socialProfiles) };
+  return {
+    "@type": "Organization", "@id": site.origin + "/#organization", name: site.name, legalName: site.legalName,
+    url: site.origin + "/", logo: { "@type": "ImageObject", url: site.origin + site.socialDefaults.image, contentUrl: site.origin + site.socialDefaults.image, caption: site.socialDefaults.imageAlt },
+    email: site.email, telephone: site.phone,
+    address: { "@type": "PostalAddress", addressLocality: site.address.addressLocality, addressCountry: site.address.addressCountry },
+    areaServed: site.areaServed,
+    identifier: [
+      { "@type": "PropertyValue", propertyID: "Company Number", value: site.companyNumber },
+      { "@type": "PropertyValue", propertyID: "VAT Number", value: site.vatNumber }
+    ],
+    sameAs: Object.values(site.socialProfiles)
+  };
 }
 function breadcrumbList(site, items) {
   return { "@type": "BreadcrumbList", itemListElement: [{ "@type": "ListItem", position: 1, name: "Home", item: site.origin + "/" }].concat(items.map(function(item, index) { return { "@type": "ListItem", position: index + 2, name: item.name, item: item.url }; })) };
@@ -228,6 +392,16 @@ function aboutSchema(site) {
   return schemaGraph([
     organization(site),
     { "@type": "AboutPage", "@id": canonical + "#webpage", name: page.title, description: page.description, url: canonical, mainEntity: { "@id": site.origin + "/#organization" }, about: { "@id": site.origin + "/#organization" } }
+  ]);
+}
+function websiteSchema(site) {
+  return { "@type": "WebSite", "@id": site.origin + "/#website", name: "Chronotomi", alternateName: "Chronotomi Wealth", url: site.origin + "/", publisher: { "@id": site.origin + "/#organization" }, inLanguage: "en-CY" };
+}
+function homepageSchema(site) {
+  const page = site.pages["/"];
+  return schemaGraph([
+    organization(site), websiteSchema(site),
+    { "@type": "WebPage", "@id": site.origin + "/#webpage", name: page.title, description: page.description, url: site.origin + "/", isPartOf: { "@id": site.origin + "/#website" } }
   ]);
 }
 function serviceSchema(site, data) {
@@ -284,9 +458,10 @@ function replaceFixedHeadMetadata(html, site, route, label) {
   if (!viewport.test(updated)) fail(label + " is missing viewport metadata injection target");
   return updated.replace(viewport, function(match) { return match + "\n" + block; });
 }
-function head(title, description, canonical, schema, site) {
+function head(title, description, canonical, schema, site, socialImagePath = site.socialDefaults.image) {
   const pathname = new URL(canonical).pathname, prefix = assetHref(pathname, "");
-  const socialImage = site.origin + site.socialDefaults.image;
+  const socialPath = "/" + String(socialImagePath).replace(/^\/+/, "");
+  const socialImage = site.origin + socialPath;
   return [
     "<!doctype html><html lang=\"en\"><head><meta charset=\"UTF-8\" />",
     '<meta name="viewport" content="width=device-width, initial-scale=1.0" />',
@@ -308,20 +483,79 @@ function head(title, description, canonical, schema, site) {
     '<script type="application/ld+json">' + jsonLd(schema) + "</script></head><body>",
     '<header class="site-header" id="site-header"><a class="brand" href="/" aria-label="Chronotomi Wealth home">',
     '<picture><source type="image/avif" srcset="' + prefix + 'assets/logo_transparent.avif" /><source type="image/webp" srcset="' + prefix + 'assets/logo_transparent.webp" /><img class="brand-mark" src="' + prefix + 'assets/logo_transparent.png" alt="Chronotomi Wealth" /></picture>',
-    '<span class="brand-copy"><strong>Chronotomi Wealth</strong><small>Your Wealth, Excelled.</small></span></a><nav class="site-nav" aria-label="Primary">',
+    '<span class="brand-copy"><strong>Chronotomi Wealth</strong><small>Your Time, Defined.</small></span></a><nav class="site-nav" aria-label="Primary">',
     '<button class="nav-toggle" id="nav-toggle" aria-label="Toggle navigation" aria-expanded="false"><span class="hamburger"></span></button><div class="nav-links">',
     '<a href="/watches">Timepieces</a><a href="/sourcing">Sourcing</a><a href="/authenticity">Authenticity</a><a href="/about">About Us</a>',
     "</div></nav></header>"
   ].join("\n");
 }
-function footer(site, pathname) {
-  const prefix = assetHref(pathname, "");
+function footer(site, pathname, options = {}) {
+  const prefix = options.absoluteAssets ? "/" : assetHref(pathname, "");
+  const cyprusRoute = locationPages.find((page) => /cyprus/i.test(page.path))?.path || "/luxury-watches-cyprus";
+  const limassolRoute = locationPages.find((page) => /limassol/i.test(page.path))?.path || "/luxury-watches-limassol";
+  const policyLinks = '<div class="footer-links" style="display:flex;flex-direction:column;gap:0.3rem;margin-top:1rem;"><a href="/privacy">Privacy &amp; Discretion Policy</a><a href="/terms">Terms of Service</a><a href="/logistics">Acquisition &amp; Logistics Policy</a></div>';
+  const socialLinks = '<div class="footer-socials"><a href="' + esc(site.socialProfiles.instagram) + '" target="_blank" rel="noreferrer" class="social-icon" aria-label="Instagram"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 1 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg></a><a href="' + esc(site.socialProfiles.facebook) + '" target="_blank" rel="noreferrer" class="social-icon" aria-label="Facebook"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3.81l.39-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg></a></div>';
   return [
     '<footer class="site-footer" style="position:relative;overflow:hidden;background:#000;border-top:1px solid rgba(255,255,255,.05);">',
-    '<img src="' + prefix + 'assets/logo_transparent.png" class="footer-watermark" aria-hidden="true" alt="" /><div class="footer-left"><strong>' + esc(site.name) + '</strong><br/><span>Your Wealth, Excelled.</span></div>',
-    '<div class="footer-right"><div class="footer-socials"><a href="' + esc(site.socialProfiles.instagram) + '" rel="noreferrer" aria-label="Instagram">Instagram</a><a href="' + esc(site.socialProfiles.facebook) + '" rel="noreferrer" aria-label="Facebook">Facebook</a></div>',
+    '<img src="' + prefix + 'assets/logo_transparent.png" class="footer-watermark" aria-hidden="true" alt="" /><div class="footer-left" style="position:relative;z-index:2;"><strong>' + esc(site.name) + '</strong><br/><span>Your Time, Defined.</span>' + policyLinks + '</div>',
+    '<nav class="seo-footer-links" aria-label="Contextual links"><a href="' + esc(cyprusRoute) + '">Luxury watches in Cyprus</a><a href="' + esc(limassolRoute) + '">Luxury watches in Limassol</a><a href="' + esc(journalPage.path) + '">Journal</a><a href="/sourcing">Sourcing</a><a href="/watches">Watches</a></nav>',
+    '<div class="footer-right" style="position:relative;z-index:2;">' + socialLinks,
     '<div class="footer-copyright">&copy; 2026 ' + esc(site.legalName) + '<br>COMPANY NUMBER: ' + esc(site.companyNumber) + '<br>VAT NUMBER: ' + esc(site.vatNumber) + '<br><br>Brought to life by <a href="https://qu4rk.github.io/QuarkMade/" target="_blank" rel="noopener noreferrer" class="quark-link"><span class="quark-shimmer" data-text="Quark">Quark</span></a>.</div></div></footer></body></html>'
   ].join("\n");
+}
+function ctaDetails(cta) {
+  if (typeof cta === "string") return { label: cta, href: "/sourcing" };
+  return cta || { label: "Begin a private sourcing conversation", href: "/sourcing" };
+}
+function sectionMarkup(sections) {
+  return sections.map((section) => '<section class="seo-article__section"><h2>' + esc(section.heading) + '</h2>' + section.paragraphs.map((paragraph) => '<p>' + esc(paragraph) + '</p>').join("") + '</section>').join("\n");
+}
+function relatedMarkup(paths, site) {
+  if (!paths?.length) return "";
+  const links = paths.map((route) => {
+    const target = [...locationPages, journalPage, ...guides].find((page) => page.path === route);
+    return '<li><a href="' + esc(route) + '">' + esc(target?.h1 || target?.title || route) + '</a></li>';
+  }).join("");
+  return '<aside class="seo-related"><h2>Related reading</h2><ul>' + links + '</ul></aside>';
+}
+function locationSchema(site, page, canonical) {
+  return schemaGraph([
+    organization(site),
+    { "@type": "WebPage", "@id": canonical + "#webpage", name: page.title, description: page.description, url: canonical, about: { "@id": site.origin + "/#organization" } },
+    { "@type": "Service", "@id": canonical + "#service", name: page.h1, serviceType: "Private luxury watch sourcing", description: page.description, url: canonical, provider: { "@id": site.origin + "/#organization" }, areaServed: page.areaServed },
+    breadcrumbList(site, [{ name: page.h1, url: canonical }])
+  ]);
+}
+function journalSchema(site, page, canonical, guideEntries) {
+  return schemaGraph([
+    { "@type": "CollectionPage", "@id": canonical + "#collection", name: page.title, description: page.description, url: canonical, mainEntity: { "@type": "ItemList", numberOfItems: guideEntries.length, itemListElement: guideEntries.map((guide, index) => ({ "@type": "ListItem", position: index + 1, name: guide.h1, url: site.origin + guide.path })) } },
+    breadcrumbList(site, [{ name: "Journal", url: canonical }])
+  ]);
+}
+function guideSchema(site, guide, canonical) {
+  return schemaGraph([
+    organization(site),
+    { "@type": "Article", "@id": canonical + "#article", headline: guide.h1, name: guide.title, description: guide.description, url: canonical, datePublished: guide.datePublished, dateModified: guide.dateModified, author: { "@id": site.origin + "/#organization" }, publisher: { "@id": site.origin + "/#organization" }, mainEntityOfPage: canonical },
+    breadcrumbList(site, [{ name: "Journal", url: site.origin + journalPage.path }, { name: guide.h1, url: canonical }])
+  ]);
+}
+function editorialPage(page, type, site, canonical) {
+  const location = type === "location";
+  const cta = location ? ctaDetails(page.cta) : null;
+  const body = location
+    ? '<p class="seo-article__intro">' + esc(page.intro) + '</p><div class="seo-article__body">' + sectionMarkup(page.sections) + '</div><div class="seo-intro__links"><a class="btn-primary" href="' + esc(cta.href) + '">' + esc(cta.label) + '</a><a class="btn-outline" href="/watches">Explore watches</a><a class="btn-outline" href="' + esc(journalPage.path) + '">Read the Journal</a></div>'
+    : '<p class="seo-article__intro">' + esc(page.intro || page.summary) + '</p>';
+  return head(page.title, page.description, canonical, location ? locationSchema(site, page, canonical) : journalSchema(site, page, canonical, guides), site) +
+    '<main class="seo-page"><article class="seo-article"><header class="seo-article__header"><span class="eyebrow">' + esc(page.eyebrow) + '</span><h1>' + esc(page.h1) + '</h1></header>' + body + '</article></main>' + footer(site, new URL(canonical).pathname);
+}
+function guidePage(guide, site, canonical) {
+  return head(guide.title, guide.description, canonical, guideSchema(site, guide, canonical), site) +
+    '<main class="seo-page"><article class="seo-article"><header class="seo-article__header"><span class="eyebrow">' + esc(guide.eyebrow) + '</span><h1>' + esc(guide.h1) + '</h1><p class="seo-article__intro">' + esc(guide.summary) + '</p><p class="seo-article__date"><time datetime="' + esc(guide.dateModified) + '">Updated ' + esc(guide.dateModified) + '</time></p></header><div class="seo-article__body">' + sectionMarkup(guide.sections) + '</div>' + relatedMarkup(guide.relatedPaths, site) + '</article></main>' + footer(site, new URL(canonical).pathname);
+}
+function journalPageHtml(page, site, canonical) {
+  const cardsHtml = guides.map((guide) => '<article class="seo-related"><h2><a href="' + esc(guide.path) + '">' + esc(guide.h1) + '</a></h2><p>' + esc(guide.summary) + '</p><a class="btn-outline" href="' + esc(guide.path) + '">Read guide</a></article>').join("");
+  return head(page.title, page.description, canonical, journalSchema(site, page, canonical, guides), site) +
+    '<main class="seo-page"><article class="seo-article"><header class="seo-article__header"><span class="eyebrow">' + esc(page.eyebrow) + '</span><h1>' + esc(page.h1) + '</h1><p class="seo-article__intro">' + esc(page.intro) + '</p></header><div class="seo-article__body">' + cardsHtml + '</div></article></main>' + footer(site, new URL(canonical).pathname);
 }
 function rolexFilterPanel(isOpen = false) {
   const openClass = isOpen ? " is-open" : "";
@@ -375,6 +609,8 @@ function collectionPage(title, description, canonical, site, catalog, pathname, 
   const isRolex = Boolean(brand && brand.slug === "rolex");
   const rolexPanel = isRolex ? "\n" + rolexFilterPanel(true) : "";
   const emptyBlock = isRolex ? '\n        <div id="inventory-empty" class="inventory-empty" style="display: none;">\n          <h3>No matching timepieces found</h3>\n          <p>We source bespoke and rare Rolex references upon request.</p>\n          <a href="/sourcing" class="btn-primary">Request Private Sourcing</a>\n        </div>' : '';
+  const brandIntro = brandIntroductions[brand?.slug];
+  const brandIntroMarkup = brandIntro ? '<section class="seo-intro seo-brand-intro"><h2>' + esc(brandIntro.heading) + '</h2>' + brandIntro.paragraphs.map((paragraph) => '<p>' + esc(paragraph) + '</p>').join("") + '</section>' : '';
   return head(title, description, canonical, schema, site) +
     '<main class="seo-page">' +
     '<div class="seo-hero">' +
@@ -387,6 +623,7 @@ function collectionPage(title, description, canonical, site, catalog, pathname, 
     '<a class="btn-outline" href="/authenticity">Authenticity</a>' +
     '</div>' +
     '</div>' +
+    brandIntroMarkup +
     '<section class="seo-grid">' +
     rolexPanel +
     '<div class="inventory-grid" id="inventory-grid">' +
@@ -408,13 +645,14 @@ function watchTitle(watch) {
 }
 function watchPage(watch, site, canonical, pathname, root) {
   const image = watch.images[0];
+  const productName = watch.brand + " " + watch.model + " " + watch.reference;
   const schema = schemaGraph([
-    { "@type": "Product", "@id": canonical + "#product", name: watch.brand + " " + watch.model, description: watch.summary, sku: watch.reference, url: canonical, image: watch.images.map(function(item) { return site.origin + "/" + item.src; }), brand: { "@type": "Brand", name: watch.brand }, additionalProperty: [{ "@type": "PropertyValue", name: "Reference", value: watch.reference }, { "@type": "PropertyValue", name: "Case size", value: watch.caseSize }, { "@type": "PropertyValue", name: "Set", value: watch.set }] },
+    { "@type": "Product", "@id": canonical + "#product", name: productName, description: watch.summary, sku: watch.reference, url: canonical, image: [site.origin + "/" + image.src], brand: { "@type": "Brand", name: watch.brand }, additionalProperty: [{ "@type": "PropertyValue", name: "Reference", value: watch.reference }, { "@type": "PropertyValue", name: "Case size", value: watch.caseSize }, { "@type": "PropertyValue", name: "Set", value: watch.set }] },
     breadcrumbList(site, [{ name: "Watches", url: site.origin + "/watches" }, { name: watch.brand, url: site.origin + "/watches/" + watch.brandSlug }, { name: watch.model + " " + watch.reference, url: canonical }])
   ]);
   const gallery = watch.images.slice(1).map(function(item) { return responsivePicture(root, item, pathname, GALLERY_IMAGE_SIZES, { loading: "lazy", decoding: "async" }); }).join("");
   const inquiryHref = "/?watch=" + encodeURIComponent(watch.id) + "#inquire";
-  return head(watchTitle(watch), watch.summary, canonical, schema, site) +
+  return head(watchTitle(watch), watch.summary, canonical, schema, site, image.src) +
     '<main class="seo-page">' +
     '<div class="seo-detail-grid">' +
     '<div>' +
@@ -425,7 +663,7 @@ function watchPage(watch, site, canonical, pathname, root) {
     '</div>' +
     '<article class="seo-detail-info">' +
     '<span class="eyebrow">' + esc(watch.brand) + '</span>' +
-    '<h1>' + esc(watch.model) + '</h1>' +
+    '<h1>' + esc(productName) + '</h1>' +
     '<p class="lede">' + esc(watch.summary) + '</p>' +
     '<dl class="facts">' +
     '<div class="fact"><dt>Reference</dt><dd>' + esc(watch.reference) + '</dd></div>' +
@@ -486,13 +724,29 @@ function renderRoute(entry, catalog, site, root) {
   if (entry.type === "catalog") return collectionPage(site.pages["/watches"].title, site.pages["/watches"].description, entry.canonical, site, catalog, entry.path, undefined, root);
   if (entry.type === "brand") return collectionPage(entry.brand.name + " Watches | Chronotomi Wealth", "Explore the curated Chronotomi Wealth selection of " + entry.brand.name + " references.", entry.canonical, site, catalog, entry.path, entry.brand, root);
   if (entry.type === "watch") return watchPage(entry.watch, site, entry.canonical, entry.path, root);
+  if (entry.type === "location") return editorialPage(entry.page, entry.type, site, entry.canonical);
+  if (entry.type === "journal") return journalPageHtml(entry.page, site, entry.canonical);
+  if (entry.type === "guide") return guidePage(entry.page, site, entry.canonical);
   return servicePage(entry.service, site, entry.canonical, entry.path);
 }
 function copyPublic(root) {
   const dist = path.join(root, "dist");
   for (const file of HTML_PAGES) fs.copyFileSync(path.join(root, file), path.join(dist, file));
+  fs.copyFileSync(path.join(root, "404.html"), path.join(dist, "404.html"));
   for (const file of PUBLIC_FILES) fs.copyFileSync(path.join(root, file), path.join(dist, file));
   fs.cpSync(path.join(root, "assets"), path.join(dist, "assets"), { recursive: true });
+}
+function normalizeNotFoundFooter(root, site) {
+  const target = path.join(root, "dist", "404.html");
+  const html = fs.readFileSync(target, "utf8");
+  const existingFooter = elementBoundary(html, "footer");
+  const generatedMarkup = footer(site, "/", { absoluteAssets: true });
+  const generatedFooter = elementBoundary(generatedMarkup, "footer");
+  if (!existingFooter || !generatedFooter) fail("cannot normalize 404.html footer: expected existing and generated footer boundaries");
+  const replacement = generatedMarkup.slice(generatedFooter.start, generatedFooter.end);
+  const normalized = html.slice(0, existingFooter.start) + replacement + html.slice(existingFooter.end);
+  if (normalized === html || !normalized.includes('class="seo-footer-links"')) fail("cannot normalize 404.html footer: generated contextual footer structure was not inserted");
+  fs.writeFileSync(target, normalized);
 }
 function injectStaticSchemas(root, site) {
   const dist = path.join(root, "dist");
@@ -500,10 +754,40 @@ function injectStaticSchemas(root, site) {
   for (const entry of fixedFiles) {
     const target = path.join(dist, entry[1]);
     let html = replaceFixedHeadMetadata(fs.readFileSync(target, "utf8"), site, entry[0], entry[1]);
+    if (entry[0] === "/") html = replaceJsonLd(html, homepageSchema(site), entry[1]);
     if (entry[0] === "/about") html = replaceJsonLd(html, aboutSchema(site), entry[1]);
     if (entry[0] === "/logistics") html = replaceJsonLd(html, serviceSchema(site, { canonical: site.origin + "/logistics", name: "Timepiece Acquisition & Logistics", serviceType: "Luxury timepiece acquisition and logistics guidance", description: site.pages["/logistics"].description, breadcrumbName: "Acquisition & Logistics" }), entry[1]);
+    html = normalizeStaticBranding(html);
+    html = injectContextualFooterLinks(html, entry[0], entry[1]);
     fs.writeFileSync(target, html);
   }
+}
+function normalizeStaticBranding(html) {
+  return html.replaceAll("Your Wealth, Excelled.", "Your Time, Defined.");
+}
+function injectContextualFooterLinks(html, route, file) {
+  const cyprusRoute = locationPages.find((page) => /cyprus/i.test(page.path))?.path || "/luxury-watches-cyprus";
+  const limassolRoute = locationPages.find((page) => /limassol/i.test(page.path))?.path || "/luxury-watches-limassol";
+  const links = '<nav class="seo-footer-links" aria-label="Contextual links"><a href="' + esc(cyprusRoute) + '">Luxury watches in Cyprus</a><a href="' + esc(limassolRoute) + '">Luxury watches in Limassol</a><a href="' + esc(journalPage.path) + '">Journal</a><a href="/sourcing">Sourcing</a><a href="/watches">Watches</a></nav>';
+  const context = `${route} (${file})`;
+  const footer = elementBoundary(html, "footer");
+  if (!footer) fail(`cannot inject contextual footer links for ${context}: footer element is missing`);
+  const footerBody = footer.body;
+  const left = elementBoundary(footerBody, "div", "footer-left");
+  const right = left ? elementBoundary(footerBody, "div", "footer-right", left.end) : null;
+  if (!left || !right || left.end > right.start) fail(`cannot inject contextual footer links for ${context}: expected footer-left/footer-right sibling boundary is missing`);
+
+  const existingNavs = elementBoundaries(footerBody, "nav", "seo-footer-links");
+  const directNavs = existingNavs.filter((nav) => nav.start >= left.end && nav.end <= right.start);
+  if (existingNavs.length > 0) {
+    if (existingNavs.length !== 1 || directNavs.length !== 1) fail(`cannot inject contextual footer links for ${context}: existing seo-footer-links nav is not a direct sibling between footer-left/footer-right`);
+    return html;
+  }
+
+  const insertionPoint = footer.openEnd + right.start;
+  const updated = html.slice(0, insertionPoint) + links + html.slice(insertionPoint);
+  if (updated === html || !updated.includes(links)) fail(`cannot inject contextual footer links for ${context}: direct footer navigation insertion did not occur`);
+  return updated;
 }
 function writeSitemap(root, routes) {
   const rows = ['  <url><loc>' + ORIGIN + "/</loc></url>"];
@@ -512,12 +796,15 @@ function writeSitemap(root, routes) {
 }
 export function buildSite(root = ROOT) {
   const site = validateSite(readJson(path.join(root, "site.json")), root);
+  validateEditorialContent();
   const catalog = loadCatalog(root);
-  const routes = buildRouteManifest(catalog, { origin: site.origin });
+  const routes = buildRouteManifest(catalog, { origin: site.origin, pageMap: site.pages });
+  if (routes.length !== 52) fail("expected exactly 52 canonical routes after editorial integration; found " + routes.length);
   const dist = path.join(root, "dist");
   if (fs.existsSync(dist)) fs.rmSync(dist, { recursive: true, force: true });
   fs.mkdirSync(dist, { recursive: true });
   copyPublic(root);
+  normalizeNotFoundFooter(root, site);
   injectStaticSchemas(root, site);
   fs.writeFileSync(path.join(dist, "index.html"), injectHomepage(fs.readFileSync(path.join(dist, "index.html"), "utf8"), catalog, root));
   for (const entry of routes) {
